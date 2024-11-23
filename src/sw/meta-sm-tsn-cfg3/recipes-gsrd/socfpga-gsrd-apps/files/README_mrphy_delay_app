@@ -1,0 +1,30 @@
+Table of Contents
+=================
+1. prgm_mrphy_delay_app
+
+The prgm_mrphy_delay_app needs to be run only once after every boot. This
+application would read the delays in the mrphy ip from its registers using
+the sysfs enteries provided.
+This application after reading all the delays from mrphy ip, calculates the 
+total Egress and Ingress delays and programs the same into the XGMAC register
+again using the sysfs enteries provided.
+
+This is required for applications like TSN and PTP.
+
+The binaries of these applications can be found in /home/root/
+
+Usage of the application
+--------------------------------
+1. The application if executed without any parameters assumes that the sysfs enteries are
+   available at the location /sys/devices/platform/soc\@0/10810000.ethernet/net/eth0/
+   If this is the location of the sysfs of eth0, then the application alone can be executed as
+   
+   ./prgm_mrphy_delay_app
+
+2. If the sysfs of eth0 has a different location, then the path needs to be provided as below-
+   ./prgm_mrphy_delay_app /path/to/sysfs
+
+
+Using either of the above methods, and once executed, the application shows the values programmed
+in the Egress and Ingress registers of XGMAC with a successfull message at the end.
+

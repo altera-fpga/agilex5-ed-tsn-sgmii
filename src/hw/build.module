@@ -1,0 +1,5 @@
+hps_subsys
+tsn_subsys
+phymgmt_subsys
+jtag_subsys
+peripheral_subsys

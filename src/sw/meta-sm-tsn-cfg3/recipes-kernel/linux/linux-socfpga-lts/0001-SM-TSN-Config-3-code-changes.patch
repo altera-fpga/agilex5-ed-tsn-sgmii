@@ -1,0 +1,698 @@
+From bc5e3ffbff09e5bbc5af82982bd66e89894edc0a Mon Sep 17 00:00:00 2001
+From: "Vaidya, Mahesh R" <mahesh.r.vaidya@intel.com>
+Date: Tue, 13 Aug 2024 05:29:30 +0530
+Subject: [PATCH 1/2] SM TSN Config-3 code changes
+
+    1. Created mrphy driver.
+    2. Integrated mrphy driver with XGMAC socfpga driver.
+    3. Added sysfs for reading the mrphy's efifo and soft pcs latency.
+    4. Added sysfs to write to the xgmac's ingress and egress registers.
+
+Signed-off-by: Vaidya, Mahesh R <mahesh.r.vaidya@intel.com>
+---
+ drivers/net/ethernet/stmicro/stmmac/Makefile  |   2 +-
+ .../ethernet/stmicro/stmmac/dwmac-socfpga.c   | 132 ++++++++++
+ drivers/net/ethernet/stmicro/stmmac/mrphy.c   | 238 ++++++++++++++++++
+ drivers/net/ethernet/stmicro/stmmac/mrphy.h   |  36 +++
+ include/linux/stmmac.h                        |   4 +
+ net/core/net-sysfs.c                          | 136 ++++++++++
+ 6 files changed, 547 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/net/ethernet/stmicro/stmmac/mrphy.c
+ create mode 100644 drivers/net/ethernet/stmicro/stmmac/mrphy.h
+
+diff --git a/drivers/net/ethernet/stmicro/stmmac/Makefile b/drivers/net/ethernet/stmicro/stmmac/Makefile
+index a823d226ebc9..38cbf01b6d5e 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/Makefile
++++ b/drivers/net/ethernet/stmicro/stmmac/Makefile
+@@ -34,7 +34,7 @@ obj-$(CONFIG_DWMAC_IMX8)	+= dwmac-imx.o
+ obj-$(CONFIG_DWMAC_TEGRA)	+= dwmac-tegra.o
+ obj-$(CONFIG_DWMAC_VISCONTI)	+= dwmac-visconti.o
+ stmmac-platform-objs:= stmmac_platform.o
+-dwmac-altr-socfpga-objs := altr_tse_pcs.o dwmac-socfpga.o
++dwmac-altr-socfpga-objs := mrphy.o altr_tse_pcs.o dwmac-socfpga.o
+ 
+ obj-$(CONFIG_STMMAC_PCI)	+= stmmac-pci.o
+ obj-$(CONFIG_DWMAC_INTEL)	+= dwmac-intel.o
+diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c
+index 596ec63ecb9d..bd4347aaa77f 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c
++++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c
+@@ -19,6 +19,7 @@
+ #include "stmmac_ptp.h"
+ 
+ #include "altr_tse_pcs.h"
++#include "mrphy.h"
+ #include "dwxgmac2.h"
+ 
+ #include "altr_tse_pcs.h"
+@@ -67,6 +68,7 @@ struct socfpga_dwmac {
+ 	struct reset_control *stmmac_ocp_rst;
+ 	void __iomem *splitter_base;
+ 	bool f2h_ptp_ref_clk;
++	struct mr_phy  mrphy;
+ 	struct tse_pcs pcs;
+ 	const struct socfpga_dwmac_ops *ops;
+ };
+@@ -76,6 +78,7 @@ static void socfpga_dwmac_fix_mac_speed(void *priv, unsigned int speed, unsigned
+ 	struct socfpga_dwmac *dwmac = (struct socfpga_dwmac *)priv;
+ 	void __iomem *splitter_base = dwmac->splitter_base;
+ 	void __iomem *sgmii_adapter_base = dwmac->pcs.sgmii_adapter_base;
++	void __iomem *mrphy_base = dwmac->mrphy.mrphy_base;
+ 	struct device *dev = dwmac->dev;
+ 	struct net_device *ndev = dev_get_drvdata(dev);
+ 	struct phy_device *phy_dev = ndev->phydev;
+@@ -110,8 +113,98 @@ static void socfpga_dwmac_fix_mac_speed(void *priv, unsigned int speed, unsigned
+ 		       sgmii_adapter_base + SGMII_ADAPTER_CTRL_REG);
+ 		tse_pcs_fix_mac_speed(&dwmac->pcs, phy_dev, speed);
+ 	}
++	if (mrphy_base)
++		mrphy_fix_mac_speed(&dwmac->mrphy, phy_dev, speed);
+ }
+ 
++static int socfpga_mrphy_get_efifo_tx_latency(void *priv, u32 *efifo_tx_lat)
++{
++	struct socfpga_dwmac *dwmac = (struct socfpga_dwmac *)priv;
++	void __iomem *mrphy_base = dwmac->mrphy.mrphy_base;
++
++	if ((mrphy_base) && !(readw(mrphy_base + MRPHY_DET_LAT_CTRL_REG)
++				    & MRPHY_TX_DL_BLOCK_IN_RESET))
++	{
++		/* get the integer and fraction part in the Q13.8 fomrat */
++		/* 7:0 fraction part */
++		*efifo_tx_lat = readw(mrphy_base + MRPHY_EFIFO_TX_DELAY_REG) & 0xFF;
++		/* 12:0 -> 20:8 integer part */
++		*efifo_tx_lat |= ((readw(mrphy_base +
++				   MRPHY_EFIFO_TX_DELAY_REG +
++				   2) & 0x1FFF) << 8);
++		return 0;
++	}
++	else
++		return -1;
++}
++
++static int socfpga_mrphy_get_efifo_rx_latency(void *priv, u32 *efifo_rx_lat)
++{
++	struct socfpga_dwmac *dwmac = (struct socfpga_dwmac *)priv;
++	void __iomem *mrphy_base = dwmac->mrphy.mrphy_base;
++
++	if ((mrphy_base) && !(readw(mrphy_base + MRPHY_DET_LAT_CTRL_REG)
++				    & MRPHY_RX_DL_BLOCK_IN_RESET))
++	{
++		/* get the integer and fraction part in the Q13.8 fomrat */
++		/* 7:0 fraction part */
++		*efifo_rx_lat = readw(mrphy_base + MRPHY_EFIFO_RX_DELAY_REG)
++				      & 0xFF;
++		/* 12:0 -> 20:8 integer part */
++		*efifo_rx_lat |= ((readw(mrphy_base +
++				   MRPHY_EFIFO_RX_DELAY_REG +
++				   2) & 0x1FFF) << 8);
++		return 0;
++	}
++	else
++		return -1;
++}
++
++static int socfpga_mrphy_get_pcs_soft_tx_latency(void *priv, u32 *pcs_tx_lat)
++{
++	struct socfpga_dwmac *dwmac = (struct socfpga_dwmac *)priv;
++	void __iomem *mrphy_base = dwmac->mrphy.mrphy_base;
++
++	if ((mrphy_base) && !(readw(mrphy_base + MRPHY_DET_LAT_CTRL_REG)
++				    & MRPHY_TX_DL_BLOCK_IN_RESET))
++	{
++		/* get the integer and fraction part in the Q12.10 fomrat */
++		/* 9:0 fraction part */
++		*pcs_tx_lat = readw(mrphy_base + MRPHY_PCS_SOFT_TX_DELAY_REG)
++			      & 0x3FF;
++		/* 11:0 -> 21:10 integer part */
++		*pcs_tx_lat |= ((readw(mrphy_base +
++				       MRPHY_PCS_SOFT_TX_DELAY_REG +
++				       2) & 0xFFF) << 10);
++		return 0;
++	}
++	else
++		return -1;
++}
++
++static int socfpga_mrphy_get_pcs_soft_rx_latency(void *priv, u32 *pcs_rx_lat)
++{
++	struct socfpga_dwmac *dwmac = (struct socfpga_dwmac *)priv;
++	void __iomem *mrphy_base = dwmac->mrphy.mrphy_base;
++
++	if ((mrphy_base) && !(readw(mrphy_base + MRPHY_DET_LAT_CTRL_REG)
++			      & MRPHY_RX_DL_BLOCK_IN_RESET))
++	{
++		/* get the integer and fraction part in the Q12.10 fomrat */
++		/* 9:0 fraction part */
++		*pcs_rx_lat = readw(mrphy_base + MRPHY_PCS_SOFT_RX_DELAY_REG)
++				    & 0x3FF;
++		/* 11:0 -> 21:10 integer part */
++		*pcs_rx_lat |= ((readw(mrphy_base +
++				       MRPHY_PCS_SOFT_RX_DELAY_REG +
++				       2) & 0xFFF) << 10);
++		return 0;
++	}
++	else
++		return -1;
++}
++
++
+ static void get_smtgtime(struct mii_bus *mii, int smtg_addr,
+ 			  u64 *smtg_time_ctr0, u64 *smtg_time_ctr1)
+ {
+@@ -239,6 +332,7 @@ static int socfpga_dwmac_parse_data(struct socfpga_dwmac *dwmac, struct device *
+ 	struct resource res_splitter;
+ 	struct resource res_tse_pcs;
+ 	struct resource res_sgmii_adapter;
++	struct resource res_mrphy;
+ 
+ 	sys_mgr_base_addr =
+ 		altr_sysmgr_regmap_lookup_by_phandle(np, "altr,sysmgr-syscon");
+@@ -345,6 +439,28 @@ static int socfpga_dwmac_parse_data(struct socfpga_dwmac *dwmac, struct device *
+ 				goto err_node_put;
+ 			}
+ 		}
++
++		index = of_property_match_string(np_sgmii_adapter, "reg-names",
++						 "mrphy");
++
++		if (index >= 0) {
++			if (of_address_to_resource(np_sgmii_adapter, index,
++						   &res_mrphy)) {
++				dev_err(dev,
++					"%s: ERROR: failed mapping mrphy control port\n",
++					__func__);
++				ret = -EINVAL;
++				goto err_node_put;
++			}
++
++			dwmac->mrphy.mrphy_base =
++				devm_ioremap_resource(dev, &res_mrphy);
++
++			if (IS_ERR(dwmac->mrphy.mrphy_base)) {
++				ret = PTR_ERR(dwmac->mrphy.mrphy_base);
++				goto err_node_put;
++			}
++		}
+ 	}
+ 	dwmac->reg_offset = reg_offset;
+ 	dwmac->reg_shift = reg_shift;
+@@ -505,6 +621,14 @@ static int socfpga_gen10_set_phy_mode(struct socfpga_dwmac *dwmac)
+ 			return -EINVAL;
+ 		}
+ 	}
++
++	if (dwmac->mrphy.mrphy_base) {
++		if (mrphy_init(dwmac->mrphy.mrphy_base, &dwmac->mrphy) != 0) {
++			dev_err(dwmac->dev, "Unable to initialize MRPHY");
++			return -EINVAL;
++		}
++	}
++
+ 	return 0;
+ }
+ 
+@@ -558,6 +682,14 @@ static int socfpga_dwmac_probe(struct platform_device *pdev)
+ 	plat_dat->bsp_priv = dwmac;
+ 	plat_dat->fix_mac_speed = socfpga_dwmac_fix_mac_speed;
+ 
++	if(dwmac->mrphy.mrphy_base)
++	{
++		plat_dat->mrphy_get_efifo_rx_latency = socfpga_mrphy_get_efifo_rx_latency;
++		plat_dat->mrphy_get_efifo_tx_latency = socfpga_mrphy_get_efifo_tx_latency;
++		plat_dat->mrphy_get_pcs_rx_latency = socfpga_mrphy_get_pcs_soft_rx_latency;
++		plat_dat->mrphy_get_pcs_tx_latency = socfpga_mrphy_get_pcs_soft_tx_latency;
++	}
++
+ 	/* Cross Timestamp support for SMTG Hub */
+ 	if (of_property_read_bool(pdev->dev.of_node, "altr,smtg-hub")) {
+ 		dev_info(dev, "SMTG Hub Cross Timestamp supported\n");
+diff --git a/drivers/net/ethernet/stmicro/stmmac/mrphy.c b/drivers/net/ethernet/stmicro/stmmac/mrphy.c
+new file mode 100644
+index 000000000000..8ae8bb1e1c8b
+--- /dev/null
++++ b/drivers/net/ethernet/stmicro/stmmac/mrphy.c
+@@ -0,0 +1,238 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/* Copyright Intel Corporation (C) 2023. All rights reserved.
++ *
++ * Author: Mahesh R Vaidya <mahesh.r.vaidya@intel.com>
++ */
++
++#include <linux/mfd/syscon.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
++#include <linux/of_net.h>
++#include <linux/phy.h>
++#include <linux/regmap.h>
++#include <linux/reset.h>
++#include <linux/stmmac.h>
++
++#include "stmmac.h"
++#include "stmmac_platform.h"
++#include "mrphy.h"
++
++#define MRPHY_CONTROL_AN_EN_MASK			BIT(12)
++#define MRPHY_CONTROL_REG				0x00
++#define MRPHY_CONTROL_RESTART_AN_MASK			BIT(9)
++#define MRPHY_CTRL_AUTONEG_SGMII			0x1140
++#define MRPHY_IF_MODE_REG				0x28
++#define MRPHY_LINK_TIMER_0_REG			0x24
++#define MRPHY_LINK_TIMER_1_REG			0x26
++#define MRPHY_SIZE					0x40
++#define MRPHY_STATUS_AN_COMPLETED_MASK		BIT(5)
++#define MRPHY_STATUS_LINK_MASK			0x0004
++#define MRPHY_STATUS_REG				0x02
++#define MRPHY_SGMII_SPEED_1000			BIT(3)
++#define MRPHY_SGMII_SPEED_100				BIT(2)
++#define MRPHY_SGMII_SPEED_10				0x0
++#define MRPHY_SW_RST_MASK				0x8000
++#define MRPHY_PARTNER_ABILITY_REG			0x0A
++#define MRPHY_PARTNER_DUPLEX_FULL			0x1000
++#define MRPHY_PARTNER_DUPLEX_HALF			0x0000
++#define MRPHY_PARTNER_DUPLEX_MASK			0x1000
++#define MRPHY_PARTNER_SPEED_MASK			GENMASK(11, 10)
++#define MRPHY_PARTNER_SPEED_1000			BIT(11)
++#define MRPHY_PARTNER_SPEED_100			BIT(10)
++#define MRPHY_PARTNER_SPEED_10			0x0000
++#define MRPHY_PARTNER_SPEED_1000			BIT(11)
++#define MRPHY_PARTNER_SPEED_100			BIT(10)
++#define MRPHY_PARTNER_SPEED_10			0x0000
++#define MRPHY_SGMII_SPEED_MASK			GENMASK(3, 2)
++#define MRPHY_SGMII_LINK_TIMER_0			0x0D40
++#define MRPHY_SGMII_LINK_TIMER_1			0x0003
++#define MRPHY_SW_RESET_TIMEOUT			100
++#define MRPHY_USE_SGMII_AN_MASK			BIT(1)
++#define MRPHY_USE_SGMII_ENA				BIT(0)
++#define MRPHY_IF_USE_SGMII				0x03
++
++#define AUTONEGO_LINK_TIMER				20
++
++static int mrphy_reset(void __iomem *base, struct mr_phy *mrphy)
++{
++	int counter = 0;
++	u16 val;
++
++	val = readw(base + MRPHY_CONTROL_REG);
++	val |= MRPHY_SW_RST_MASK;
++	writew(val, base + MRPHY_CONTROL_REG);
++
++	while (counter < MRPHY_SW_RESET_TIMEOUT) {
++		val = readw(base + MRPHY_CONTROL_REG);
++		val &= MRPHY_SW_RST_MASK;
++		if (val == 0)
++			break;
++		counter++;
++		udelay(1);
++	}
++	if (counter >= MRPHY_SW_RESET_TIMEOUT) {
++		dev_err(mrphy->dev, "MRPHY could not get out of sw reset\n");
++		return -ETIMEDOUT;
++	}
++
++	return 0;
++}
++
++int mrphy_init(void __iomem *base, struct mr_phy *mrphy)
++{
++	int ret = 0;
++	writew(0, base + MRPHY_GMII8_ADAPTER_REG);
++
++/*	writew(MRPHY_IF_USE_SGMII, base + MRPHY_IF_MODE_REG);
++
++	writew(MRPHY_CTRL_AUTONEG_SGMII, base + MRPHY_CONTROL_REG);
++	writew(MRPHY_SGMII_LINK_TIMER_0, base + MRPHY_LINK_TIMER_0_REG);
++	writew(MRPHY_SGMII_LINK_TIMER_1, base + MRPHY_LINK_TIMER_1_REG);
++	ret = mrphy_reset(base, mrphy); */
++
++	return ret;
++}
++
++/*static void mrphy_link_timer_callback(struct mr_phy *mrphy)
++{
++	u16 val = 0;
++	void __iomem *mrphy_base = mrphy->mrphy_base;
++
++	val = readw(mrphy_base + MRPHY_STATUS_REG);
++	val &= MRPHY_STATUS_LINK_MASK;
++
++	if (val != 0) {
++		dev_dbg(mrphy->dev, "Adapter: Link is established\n");
++	} else {
++		mod_timer(&mrphy->aneg_link_timer, jiffies +
++			  msecs_to_jiffies(AUTONEGO_LINK_TIMER));
++	}
++}
++
++static void auto_nego_timer_callback(struct mr_phy *mrphy)
++{
++	u16 val = 0;
++	u16 speed = 0;
++	u16 duplex = 0;
++	void __iomem *mrphy_base = mrphy->mrphy_base;
++
++	val = readw(mrphy_base + MRPHY_STATUS_REG);
++	val &= MRPHY_STATUS_AN_COMPLETED_MASK;
++
++	if (val != 0) {
++		dev_dbg(mrphy->dev, "Adapter: Auto Negotiation is completed\n");
++		val = readw(mrphy_base + MRPHY_PARTNER_ABILITY_REG);
++		speed = val & MRPHY_PARTNER_SPEED_MASK;
++		duplex = val & MRPHY_PARTNER_DUPLEX_MASK;
++
++		if (speed == MRPHY_PARTNER_SPEED_10 &&
++		    duplex == MRPHY_PARTNER_DUPLEX_FULL)
++			dev_dbg(mrphy->dev,
++				"Adapter: Link Partner is Up - 10/Full\n");
++		else if (speed == MRPHY_PARTNER_SPEED_100 &&
++			 duplex == MRPHY_PARTNER_DUPLEX_FULL)
++			dev_dbg(mrphy->dev,
++				"Adapter: Link Partner is Up - 100/Full\n");
++		else if (speed == MRPHY_PARTNER_SPEED_1000 &&
++			 duplex == MRPHY_PARTNER_DUPLEX_FULL)
++			dev_dbg(mrphy->dev,
++				"Adapter: Link Partner is Up - 1000/Full\n");
++		else if (speed == MRPHY_PARTNER_SPEED_10 &&
++			 duplex == MRPHY_PARTNER_DUPLEX_HALF)
++			dev_err(mrphy->dev,
++				"Adapter does not support Half Duplex\n");
++		else if (speed == MRPHY_PARTNER_SPEED_100 &&
++			 duplex == MRPHY_PARTNER_DUPLEX_HALF)
++			dev_err(mrphy->dev,
++				"Adapter does not support Half Duplex\n");
++		else if (speed == MRPHY_PARTNER_SPEED_1000 &&
++			 duplex == MRPHY_PARTNER_DUPLEX_HALF)
++			dev_err(mrphy->dev,
++				"Adapter does not support Half Duplex\n");
++		else
++			dev_err(mrphy->dev,
++				"Adapter: Invalid Partner Speed and Duplex\n");
++	} else {
++		val = readw(mrphy_base + MRPHY_CONTROL_REG);
++		val |= MRPHY_CONTROL_RESTART_AN_MASK;
++		writew(val, mrphy_base + MRPHY_CONTROL_REG);
++
++		mrphy_reset(mrphy_base, mrphy);
++		mod_timer(&mrphy->aneg_link_timer, jiffies +
++			  msecs_to_jiffies(AUTONEGO_LINK_TIMER));
++	}
++}
++
++static void aneg_link_timer_callback(struct timer_list *t)
++{
++	struct mr_phy *mrphy = from_timer(mrphy, t, aneg_link_timer);
++
++	if (mrphy->autoneg == AUTONEG_ENABLE)
++		auto_nego_timer_callback(mrphy);
++	else if (mrphy->autoneg == AUTONEG_DISABLE)
++		mrphy_link_timer_callback(mrphy);
++}*/
++
++void mrphy_fix_mac_speed(struct mr_phy *mrphy, struct phy_device *phy_dev,
++			   unsigned int speed)
++{
++	void __iomem *mrphy_base = mrphy->mrphy_base;
++	/*u32 val;
++
++	mrphy->autoneg = phy_dev->autoneg;
++
++	if (phy_dev->autoneg == AUTONEG_ENABLE) {
++		val = readw(mrphy_base + MRPHY_CONTROL_REG);
++		val |= MRPHY_CONTROL_AN_EN_MASK;
++		writew(val, mrphy_base + MRPHY_CONTROL_REG);
++
++		val = readw(mrphy_base + MRPHY_IF_MODE_REG);
++		val |= MRPHY_USE_SGMII_AN_MASK;
++		writew(val, mrphy_base + MRPHY_IF_MODE_REG);
++
++		val = readw(mrphy_base + MRPHY_CONTROL_REG);
++		val |= MRPHY_CONTROL_RESTART_AN_MASK;
++
++		mrphy_reset(mrphy_base, mrphy);
++
++		timer_setup(&mrphy->aneg_link_timer, aneg_link_timer_callback,
++			    0);
++		mod_timer(&mrphy->aneg_link_timer, jiffies +
++			  msecs_to_jiffies(AUTONEGO_LINK_TIMER));
++	} else if (phy_dev->autoneg == AUTONEG_DISABLE) {
++		val = readw(mrphy_base + MRPHY_CONTROL_REG);
++		val &= ~MRPHY_CONTROL_AN_EN_MASK;
++		writew(val, mrphy_base + MRPHY_CONTROL_REG);
++
++		val = readw(mrphy_base + MRPHY_IF_MODE_REG);
++		val &= ~MRPHY_USE_SGMII_AN_MASK;
++		writew(val, mrphy_base + MRPHY_IF_MODE_REG);
++
++		val = readw(mrphy_base + MRPHY_IF_MODE_REG);
++		val &= ~MRPHY_SGMII_SPEED_MASK;
++
++		switch (speed) {
++		case 1000:
++			val |= MRPHY_SGMII_SPEED_1000;
++			break;
++		case 100:
++			val |= MRPHY_SGMII_SPEED_100;
++			break;
++		case 10:
++			val |= MRPHY_SGMII_SPEED_10;
++			break;
++		default:
++			return;
++		}
++		writew(val, mrphy_base + MRPHY_IF_MODE_REG);
++
++		mrphy_reset(mrphy_base, mrphy);
++
++		timer_setup(&mrphy->aneg_link_timer, aneg_link_timer_callback,
++			    0);
++		mod_timer(&mrphy->aneg_link_timer, jiffies +
++			  msecs_to_jiffies(AUTONEGO_LINK_TIMER));
++	}*/
++	mrphy_reset(mrphy_base, mrphy);
++	mrphy_init(mrphy_base, mrphy);
++}
+diff --git a/drivers/net/ethernet/stmicro/stmmac/mrphy.h b/drivers/net/ethernet/stmicro/stmmac/mrphy.h
+new file mode 100644
+index 000000000000..38ed30fb56b0
+--- /dev/null
++++ b/drivers/net/ethernet/stmicro/stmmac/mrphy.h
+@@ -0,0 +1,36 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright Intel Corporation (C) 2023. All rights reserved.
++ *
++ * Author: Mahesh R Vaidya <mahesh.r.vaidya@intel.com>
++ */
++
++#ifndef __MRPHY_H__
++#define __MRPHY_H__
++
++#include <linux/phy.h>
++#include <linux/timer.h>
++
++#define	MRPHY_DET_LAT_CTRL_REG		0x2E
++#define	MRPHY_TX_DL_BLOCK_IN_RESET	0x4
++#define MRPHY_RX_DL_BLOCK_IN_RESET	0x8
++
++#define MRPHY_GMII8_ADAPTER_REG		0x16
++#define	MRPHY_EFIFO_TX_DELAY_REG	0x30
++#define	MRPHY_EFIFO_RX_DELAY_REG	0x34
++
++#define	MRPHY_PCS_SOFT_TX_DELAY_REG	0x38
++#define	MRPHY_PCS_SOFT_RX_DELAY_REG	0x3C
++
++struct mr_phy {
++	struct device *dev;
++	void __iomem *mrphy_base;
++	struct timer_list aneg_link_timer;
++	int autoneg;
++};
++
++
++int mrphy_init(void __iomem *base, struct mr_phy *mrphy);
++void mrphy_fix_mac_speed(struct mr_phy *mrphy, struct phy_device *phy_dev,
++			   unsigned int speed);
++
++#endif /* __MRPHY_H__ */
+diff --git a/include/linux/stmmac.h b/include/linux/stmmac.h
+index 65ae21d370c6..74b6fbec5d2d 100644
+--- a/include/linux/stmmac.h
++++ b/include/linux/stmmac.h
+@@ -282,6 +282,10 @@ struct plat_stmmacenet_data {
+ 	struct stmmac_txq_cfg tx_queues_cfg[MTL_MAX_TX_QUEUES];
+ 	void (*fix_mac_speed)(void *priv, unsigned int speed, unsigned int mode);
+ 	int (*fix_soc_reset)(void *priv, void __iomem *ioaddr);
++	int (*mrphy_get_efifo_rx_latency)(void *priv,  unsigned int *rx_lat);
++	int (*mrphy_get_efifo_tx_latency)(void *priv,  unsigned int *tx_lat);
++	int (*mrphy_get_pcs_rx_latency)(void *priv, unsigned int *pcs_rx_lat);
++	int (*mrphy_get_pcs_tx_latency)(void *priv, unsigned int *pcs_tx_lat);
+ 	int (*serdes_powerup)(struct net_device *ndev, void *priv);
+ 	void (*serdes_powerdown)(struct net_device *ndev, void *priv);
+ 	void (*speed_mode_2500)(struct net_device *ndev, void *priv);
+diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
+index 5a9487af44e0..6b795f48127e 100644
+--- a/net/core/net-sysfs.c
++++ b/net/core/net-sysfs.c
+@@ -27,10 +27,12 @@
+ 
+ #include "dev.h"
+ #include "net-sysfs.h"
++#include "../../drivers/net/ethernet/stmicro/stmmac/stmmac.h"
+ 
+ #ifdef CONFIG_SYSFS
+ static const char fmt_hex[] = "%#x\n";
+ static const char fmt_dec[] = "%d\n";
++static const char fmt_uint[] = "%u\n";
+ static const char fmt_ulong[] = "%lu\n";
+ static const char fmt_u64[] = "%llu\n";
+ 
+@@ -611,6 +613,134 @@ static int modify_napi_threaded(struct net_device *dev, unsigned long val)
+ 	return ret;
+ }
+ 
++static ssize_t eth_tx_latency_store(struct device *dev, struct device_attribute *attr,
++				    const char *buf, size_t len)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct stmmac_priv *priv = netdev_priv(netdev);
++	u64 val = 0;
++
++	if (netif_running(netdev)) {
++		if(!(kstrtoull(buf, 0, &val))) {
++			writeq(val, priv->ioaddr + 0xd60);
++			return (ssize_t)len;
++		}
++	}
++	return -EINVAL;
++}
++
++static ssize_t eth_tx_latency_show(struct device *dev,
++				   struct device_attribute *attr, char *buf)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct stmmac_priv *priv = netdev_priv(netdev);
++	u64 val = 0;
++
++	if (netif_running(netdev))
++	{
++		val = readq(priv->ioaddr + 0xd60);
++		return sprintf(buf, fmt_u64, val);
++	}
++
++	return -EINVAL;
++}
++static DEVICE_ATTR_RW(eth_tx_latency);
++
++static ssize_t eth_rx_latency_store(struct device *dev, struct device_attribute *attr,
++				    const char *buf, size_t len)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct stmmac_priv *priv = netdev_priv(netdev);
++	u64 val = 0;
++
++	if (netif_running(netdev)) {
++		if(!(kstrtoull(buf, 0, &val))) {
++			writeq(val, priv->ioaddr + 0xd58);
++			return (ssize_t)len;
++		}
++	}
++        return -EINVAL;
++}
++
++static ssize_t eth_rx_latency_show(struct device *dev,
++                                   struct device_attribute *attr, char *buf)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct stmmac_priv *priv = netdev_priv(netdev);
++	u64 val;
++
++	if (netif_running(netdev)) {
++		val = readq(priv->ioaddr + 0xd58);
++		return sprintf(buf, fmt_u64, val);
++	}
++	return -EINVAL;
++}
++static DEVICE_ATTR_RW(eth_rx_latency);
++
++static ssize_t mrphy_efifo_rx_delay_show(struct device *dev,
++					 struct device_attribute *attr, char *buf)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct stmmac_priv *priv = netdev_priv(netdev);
++	u32 rx_lat;
++
++	if ((netif_running(netdev)) && (priv->plat->mrphy_get_efifo_rx_latency)) {
++		if(!(priv->plat->mrphy_get_efifo_rx_latency(priv->plat->bsp_priv,
++							    &rx_lat)))
++			return sprintf(buf, fmt_uint, rx_lat);
++	}
++	return -EINVAL;
++}
++static DEVICE_ATTR_RO(mrphy_efifo_rx_delay);
++
++static ssize_t mrphy_efifo_tx_delay_show(struct device *dev,
++					 struct device_attribute *attr, char *buf)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct stmmac_priv *priv = netdev_priv(netdev);
++	u32 tx_lat;
++
++	if ((netif_running(netdev)) && (priv->plat->mrphy_get_efifo_tx_latency)) {
++		if(!(priv->plat->mrphy_get_efifo_tx_latency(priv->plat->bsp_priv,
++							    &tx_lat)))
++			return sprintf(buf, fmt_uint, tx_lat);
++	}
++	return -EINVAL;
++}
++static DEVICE_ATTR_RO(mrphy_efifo_tx_delay);
++
++static ssize_t mrphy_pcs_rx_delay_show(struct device *dev,
++				       struct device_attribute *attr,
++				       char *buf)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct stmmac_priv *priv = netdev_priv(netdev);
++	u32 rx_lat;
++
++	if ((netif_running(netdev)) && (priv->plat->mrphy_get_pcs_rx_latency)) {
++		if(!(priv->plat->mrphy_get_pcs_rx_latency(priv->plat->bsp_priv, &rx_lat)))
++			return sprintf(buf, fmt_uint, rx_lat);
++	}
++	return -EINVAL;
++}
++static DEVICE_ATTR_RO(mrphy_pcs_rx_delay);
++
++static ssize_t mrphy_pcs_tx_delay_show(struct device *dev,
++				       struct device_attribute *attr,
++				       char *buf)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct stmmac_priv *priv = netdev_priv(netdev);
++	u32 tx_lat;
++
++	if ((netif_running(netdev)) && (priv->plat->mrphy_get_pcs_tx_latency)) {
++		if(!(priv->plat->mrphy_get_pcs_tx_latency(priv->plat->bsp_priv, &tx_lat)))
++			return sprintf(buf, fmt_uint, tx_lat);
++	}
++	return -EINVAL;
++}
++static DEVICE_ATTR_RO(mrphy_pcs_tx_delay);
++
+ static ssize_t threaded_store(struct device *dev,
+ 			      struct device_attribute *attr,
+ 			      const char *buf, size_t len)
+@@ -652,6 +782,12 @@ static struct attribute *net_class_attrs[] __ro_after_init = {
+ 	&dev_attr_carrier_up_count.attr,
+ 	&dev_attr_carrier_down_count.attr,
+ 	&dev_attr_threaded.attr,
++	&dev_attr_eth_tx_latency.attr,
++	&dev_attr_eth_rx_latency.attr,
++	&dev_attr_mrphy_efifo_rx_delay.attr,
++	&dev_attr_mrphy_efifo_tx_delay.attr,
++	&dev_attr_mrphy_pcs_rx_delay.attr,
++	&dev_attr_mrphy_pcs_tx_delay.attr,
+ 	NULL,
+ };
+ ATTRIBUTE_GROUPS(net_class);
+-- 
+2.25.1
+

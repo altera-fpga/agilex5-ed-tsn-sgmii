@@ -1,0 +1,1780 @@
+//****************************************************************************
+//
+// SPDX-License-Identifier: MIT-0
+// Copyright(c) 2019-2021 Intel Corporation.
+//
+//****************************************************************************
+// This is a generated system top level RTL file. 
+
+// Derive channel and width from hps_emif_topology
+@@set mystring $hps_emif_topology
+@@set pattern {[0-9]+}
+
+// Find and print each number individually
+@@set start 0
+@@while {[regexp $pattern [string range $mystring $start end] match]} {
+@@    set number $match
+@@if {$number <=5} {
+@@    set hps_emif_channel $number
+@@} else {
+@@	set hps_emif_width $number
+@@}
+@@    set start [expr {[string first $match $mystring] + [string length $match]}]
+@@}
+@@if {$hps_emif_ecc_en == 1} {
+@@   incr hps_emif_width 8
+@@   set hps_ddr_w $hps_emif_width
+@@   set hps_ddr_dm_w [expr $hps_emif_width/8]
+@@   set hps_ddr_dqs_w [expr $hps_emif_width/8]
+@@} else {
+@@   set hps_ddr_w $hps_emif_width
+@@   set hps_ddr_dm_w [expr $hps_emif_width/8]
+@@   set hps_ddr_dqs_w [expr $hps_emif_width/8]
+@@}
+
+@@if {$fpga_emif_ecc_en == 1} {
+@@   incr fpga_emif_width 8
+@@   set fpga_ddr_w $fpga_emif_width
+@@   set fpga_ddr_dm_w [expr $fpga_emif_width/8]
+@@   set fpga_ddr_dqs_w [expr $fpga_emif_width/8]
+@@} else {
+@@   set fpga_ddr_w $fpga_emif_width
+@@   set fpga_ddr_dm_w [expr $fpga_emif_width/8]
+@@   set fpga_ddr_dqs_w [expr $fpga_emif_width/8]
+@@}
+@@if {$tsn_en == 0} {
+module ${top_name} (
+@@} else {
+@@ if {$tsn_concurrent == 1} {
+module ${top_name} #(parameter NUM_PHY=3)(
+@@} else {
+module ${top_name} #(parameter NUM_PHY=1)(
+@@}
+@@}
+//Additional refclk_bti to preserve Etile XCVR
+@@if {$board == "hidden" || $board  == "cvr"} {
+input    wire          refclk_bti,
+@@}
+// Clock and Reset
+@@if {$user0_clk_src_select == 0} {
+input    wire          fpga_clk_100,
+@@}
+
+@@if {$sub_peri_en == 1} {
+@@if {$fpga_led_pio_width > 0 } {
+output   wire [$fpga_led_pio_width-1:0]  fpga_led_pio,
+@@}
+@@if {$fpga_dipsw_pio_width > 0 } {
+input    wire [$fpga_dipsw_pio_width-1:0]  fpga_dipsw_pio,
+@@}
+@@if {$fpga_button_pio_width > 0} {
+input    wire [$fpga_button_pio_width-1:0]  fpga_button_pio,
+@@}
+@@}
+//HPS
+@@if {$sub_hps_en == 1} {
+@@if {$hps_emif_en == 1} {
+// HPS EMIF
+@@if {$hps_emif_type == "ddr4"} {
+output   wire          emif_hps_emif_mem_0_mem_ck_t,
+output   wire          emif_hps_emif_mem_0_mem_ck_c,
+output   wire [16:0]   emif_hps_emif_mem_0_mem_a,
+output   wire          emif_hps_emif_mem_0_mem_act_n,
+output   wire [1:0]    emif_hps_emif_mem_0_mem_ba,
+output   wire [1:0]    emif_hps_emif_mem_0_mem_bg,
+output   wire          emif_hps_emif_mem_0_mem_cke,
+output   wire          emif_hps_emif_mem_0_mem_cs_n,
+output   wire          emif_hps_emif_mem_0_mem_odt,
+output   wire          emif_hps_emif_mem_0_mem_reset_n,
+output   wire          emif_hps_emif_mem_0_mem_par,
+input    wire          emif_hps_emif_mem_0_mem_alert_n,
+input    wire          emif_hps_emif_oct_0_oct_rzqin,
+input    wire          emif_hps_emif_ref_clk_0_clk,
+@@if {$hps_emif_ecc_en == 1} {
+inout    wire [4:0]    emif_hps_emif_mem_0_mem_dqs_t,
+inout    wire [4:0]    emif_hps_emif_mem_0_mem_dqs_c,
+inout    wire [39:0]   emif_hps_emif_mem_0_mem_dq,
+@@} else {
+inout    wire [3:0]    emif_hps_emif_mem_0_mem_dqs_t,
+inout    wire [3:0]    emif_hps_emif_mem_0_mem_dqs_c,
+inout    wire [31:0]   emif_hps_emif_mem_0_mem_dq,
+@@}
+@@}
+@@if {$hps_emif_type == "lpddr4"} {
+output   wire          emif_hps_emif_mem_0_mem_ck_t,
+output   wire          emif_hps_emif_mem_0_mem_ck_c,
+output   wire          emif_hps_emif_mem_0_mem_cke,
+output   wire          emif_hps_emif_mem_0_mem_reset_n,
+input    wire          emif_hps_emif_oct_0_oct_rzqin,
+input    wire          emif_hps_emif_ref_clk_0_clk,
+inout    wire [1:0]    emif_hps_emif_mem_0_mem_dqs_t,
+inout    wire [1:0]    emif_hps_emif_mem_0_mem_dqs_c,
+inout    wire [15:0]   emif_hps_emif_mem_0_mem_dq,
+output   wire          emif_hps_emif_mem_0_mem_cs,
+output   wire [5:0]    emif_hps_emif_mem_0_mem_ca,
+inout    wire [1:0]    emif_hps_emif_mem_0_mem_dmi,
+@@}
+@@if {$hps_emif_type == "lpddr5"} {
+output   wire          emif_hps_emif_mem_0_mem_ck_t,
+output   wire          emif_hps_emif_mem_0_mem_ck_c,
+output   wire [1:0]    emif_hps_emif_mem_0_mem_wck_t,
+output   wire [1:0]    emif_hps_emif_mem_0_mem_wck_c,
+output   wire          emif_hps_emif_mem_0_mem_reset_n,
+input    wire          emif_hps_emif_oct_0_oct_rzqin,
+input    wire          emif_hps_emif_ref_clk_0_clk,
+inout    wire [1:0]    emif_hps_emif_mem_0_mem_rdqs_t,
+inout    wire [1:0]    emif_hps_emif_mem_0_mem_rdqs_c,
+inout    wire [15:0]   emif_hps_emif_mem_0_mem_dq,
+output   wire          emif_hps_emif_mem_0_mem_cs,
+output   wire [6:0]    emif_hps_emif_mem_0_mem_ca,
+inout    wire [1:0]    emif_hps_emif_mem_0_mem_dmi,
+@@if {$hps_emif_channel == 2 && $hps_emif_width == 16} {
+output   wire          emif_hps_emif_mem_1_mem_ck_t,
+output   wire          emif_hps_emif_mem_1_mem_ck_c,
+output   wire [1:0]    emif_hps_emif_mem_1_mem_wck_t,
+output   wire [1:0]    emif_hps_emif_mem_1_mem_wck_c,
+input    wire          emif_hps_emif_oct_1_oct_rzqin,
+inout    wire [1:0]    emif_hps_emif_mem_1_mem_rdqs_t,
+inout    wire [1:0]    emif_hps_emif_mem_1_mem_rdqs_c,
+inout    wire [15:0]   emif_hps_emif_mem_1_mem_dq,
+output   wire          emif_hps_emif_mem_1_mem_cs,
+output   wire [6:0]    emif_hps_emif_mem_1_mem_ca,
+inout    wire [1:0]    emif_hps_emif_mem_1_mem_dmi,
+@@}
+@@}
+@@}
+@@if {$hps_jtag_en == 1} {
+input    wire          hps_jtag_tck,
+input    wire          hps_jtag_tms,
+output   wire          hps_jtag_tdo,
+input    wire          hps_jtag_tdi,
+@@}
+@@if {$hps_sdmmc4b_q3_en == 1 || $hps_sdmmc4b_q1_en == 1 || $hps_sdmmc8b_q1_en == 1} {
+@@# Assumption with only single SDMMC controller to be enabled onto HPS IO at one time 
+output   wire          hps_sdmmc_CCLK, 
+inout    wire          hps_sdmmc_CMD,          
+inout    wire          hps_sdmmc_D0,          
+inout    wire          hps_sdmmc_D1,          
+inout    wire          hps_sdmmc_D2,        
+inout    wire          hps_sdmmc_D3,        
+@@}
+@@if {$hps_sdmmc12b_q3_alt_en == 1 || $hps_sdmmc8b_q1_en == 1} {
+inout    wire          hps_sdmmc_D4,          
+inout    wire          hps_sdmmc_D5,          
+inout    wire          hps_sdmmc_D6,        
+inout    wire          hps_sdmmc_D7,  
+@@}
+@@if {$hps_sdmmc_wp_q3_en == 1} {
+input    wire          hps_sdmmc_WPROT,
+@@}
+@@if {$hps_sdmmc_pwr_q4_en == 1 || $hps_sdmmc_pwr_q2_en == 1} {
+output   wire          hps_sdmmc_PWREN,
+@@}
+@@if {$hps_sdmmc_pupd_q4_en == 1  || $hps_sdmmc_pupd_q2_en == 1} {
+output   wire          hps_sdmmc_PUD_DATA2,
+@@}
+@@if {$hps_sdmmc_dstrb_q4_en == 1 || $hps_sdmmc_dstrb_q2_en == 1} {
+input    wire          hps_sdmmc_STROBE,
+@@}
+
+@@if {$hps_usb0_en == 1} {
+inout    wire          hps_usb0_DATA0,         
+inout    wire          hps_usb0_DATA1,      
+inout    wire          hps_usb0_DATA2,        
+inout    wire          hps_usb0_DATA3,       
+inout    wire          hps_usb0_DATA4,        
+inout    wire          hps_usb0_DATA5,      
+inout    wire          hps_usb0_DATA6,      
+inout    wire          hps_usb0_DATA7,         
+input    wire          hps_usb0_CLK,         
+output   wire          hps_usb0_STP,       
+input    wire          hps_usb0_DIR,        
+input    wire          hps_usb0_NXT, 
+@@}
+@@if {$hps_usb0_en == 1 && $hps_usb1_en == 1} { 
+input    wire          usb31_io_vbus_det,                  
+input    wire          usb31_io_flt_bar,                   
+output   wire [1:0]    usb31_io_usb_ctrl,
+input    wire          usb31_io_usb31_id,                  
+input    wire          usb31_phy_refclk_p_clk,             
+//input    wire          usb31_phy_refclk_p_clk(n),             
+input    wire          usb31_phy_rx_serial_n_i_rx_serial_n,
+input    wire          usb31_phy_rx_serial_p_i_rx_serial_p,
+output   wire          usb31_phy_tx_serial_n_o_tx_serial_n,
+output   wire          usb31_phy_tx_serial_p_o_tx_serial_p,
+@@} elseif {$hps_usb0_en == 1 || $hps_usb1_en == 1} {
+input    wire          usb31_io_vbus_det,                  
+input    wire          usb31_io_flt_bar,                   
+output   wire [1:0]    usb31_io_usb_ctrl,
+input    wire          usb31_io_usb31_id,                  
+input    wire          usb31_phy_refclk_p_clk,             
+//input    wire          usb31_phy_refclk_p_clk(n),             
+input    wire          usb31_phy_rx_serial_n_i_rx_serial_n,
+input    wire          usb31_phy_rx_serial_p_i_rx_serial_p,
+output   wire          usb31_phy_tx_serial_n_o_tx_serial_n,
+output   wire          usb31_phy_tx_serial_p_o_tx_serial_p,
+@@}
+@@if {$hps_usb1_en == 1} {
+inout    wire          hps_usb1_DATA0,         
+inout    wire          hps_usb1_DATA1,      
+inout    wire          hps_usb1_DATA2,        
+inout    wire          hps_usb1_DATA3,       
+inout    wire          hps_usb1_DATA4,        
+inout    wire          hps_usb1_DATA5,      
+inout    wire          hps_usb1_DATA6,      
+inout    wire          hps_usb1_DATA7,         
+input    wire          hps_usb1_CLK,         
+output   wire          hps_usb1_STP,       
+input    wire          hps_usb1_DIR,        
+input    wire          hps_usb1_NXT, 
+@@}
+@@if {$hps_emac0_rmii_en == 1 || $hps_emac0_rgmii_en == 1} {
+output   wire          hps_emac0_TX_CLK,       //TODO: may need to change RMII TX CLK to be input instead, check
+input    wire          hps_emac0_RX_CLK,      
+output   wire          hps_emac0_TX_CTL,
+input    wire          hps_emac0_RX_CTL,      
+output   wire          hps_emac0_TXD0,       
+output   wire          hps_emac0_TXD1,
+input    wire          hps_emac0_RXD0,     
+input    wire          hps_emac0_RXD1,    
+output   wire          hps_emac0_PPS,    
+input    wire          hps_emac0_PPS_TRIG,            
+@@}
+@@if {$hps_emac0_rgmii_en == 1} {
+output   wire          hps_emac0_TXD2,        
+output   wire          hps_emac0_TXD3,
+input    wire          hps_emac0_RXD2,        
+input    wire          hps_emac0_RXD3, 
+@@}
+@@if {$hps_mdio0_q1_en == 1 || $hps_mdio0_q3_en == 1 || $hps_mdio0_q4_en == 1} {
+inout    wire          hps_emac0_MDIO,         
+output   wire          hps_emac0_MDC,
+@@}
+@@if {$hps_emac1_rmii_en == 1 || $hps_emac1_rgmii_en == 1} {
+output   wire          hps_emac1_TX_CLK,       
+input    wire          hps_emac1_RX_CLK,      
+output   wire          hps_emac1_TX_CTL,
+input    wire          hps_emac1_RX_CTL,      
+output   wire          hps_emac1_TXD0,       
+output   wire          hps_emac1_TXD1,
+input    wire          hps_emac1_RXD0,     
+input    wire          hps_emac1_RXD1,   
+output   wire          hps_emac1_PPS,    
+input    wire          hps_emac1_PPS_TRIG,
+@@}
+@@if {$hps_emac1_rgmii_en == 1} {
+output   wire          hps_emac1_TXD2,        
+output   wire          hps_emac1_TXD3,
+input    wire          hps_emac1_RXD2,        
+input    wire          hps_emac1_RXD3,
+@@}
+@@if {$hps_mdio1_q1_en == 1 || $hps_mdio1_q4_en == 1} {
+inout    wire          hps_emac1_MDIO,         
+output   wire          hps_emac1_MDC,
+@@}
+@@if {$hps_emac2_rmii_en == 1 || $hps_emac2_rgmii_en == 1} {
+output   wire          hps_emac2_TX_CLK,       
+input    wire          hps_emac2_RX_CLK,      
+output   wire          hps_emac2_TX_CTL,
+input    wire          hps_emac2_RX_CTL,      
+output   wire          hps_emac2_TXD0,       
+output   wire          hps_emac2_TXD1,
+input    wire          hps_emac2_RXD0,     
+input    wire          hps_emac2_RXD1, 
+output   wire          hps_emac2_PPS,    
+input    wire          hps_emac2_PPS_TRIG,
+@@}
+@@if {$hps_emac2_rgmii_en == 1} {
+output   wire          hps_emac2_TXD2,        
+output   wire          hps_emac2_TXD3,
+input    wire          hps_emac2_RXD2,        
+input    wire          hps_emac2_RXD3,
+@@}
+@@if {$hps_mdio2_q1_en == 1 || $hps_mdio2_q3_en == 1} {
+inout    wire          hps_emac2_MDIO,         
+output   wire          hps_emac2_MDC,
+@@}
+@@if {$hps_spim0_q1_en == 1 || $hps_spim0_q4_en == 1} {
+output   wire          hps_spim0_CLK,
+output   wire          hps_spim0_MOSI,
+input    wire          hps_spim0_MISO,
+output   wire          hps_spim0_SS0_N,
+@@}
+@@if {$hps_spim0_2ss_en == 1} {
+output   wire          hps_spim0_SS1_N,
+@@}
+@@if {$hps_spim1_q1_en == 1 || $hps_spim1_q2_en == 1 || $hps_spim1_q3_en == 1} {
+output   wire          hps_spim1_CLK,
+output   wire          hps_spim1_MOSI,
+input    wire          hps_spim1_MISO,
+output   wire          hps_spim1_SS0_N,
+@@}
+@@if {$hps_spim1_2ss_en == 1} {
+output   wire          hps_spim1_SS1_N,
+@@}
+@@if {$hps_spis0_q1_en == 1 || $hps_spis0_q2_en == 1 || $hps_spis0_q3_en == 1} {
+input    wire          hps_spis0_CLK,
+input    wire          hps_spis0_MOSI,
+output   wire          hps_spis0_MISO,
+input    wire          hps_spis0_SS0_N,
+@@}
+@@if {$hps_spis1_q1_en == 1 || $hps_spis1_q3_en == 1 || $hps_spis1_q4_en == 1} {
+input    wire          hps_spis1_CLK,
+input    wire          hps_spis1_MOSI,
+output   wire          hps_spis1_MISO,
+input    wire          hps_spis1_SS0_N,
+@@}
+@@if {$hps_uart0_q1_en == 1 || $hps_uart0_q2_en == 1 || $hps_uart0_q3_en == 1} {
+input    wire          hps_uart0_RX,       
+output   wire          hps_uart0_TX, 
+@@}
+@@if {$hps_uart0_fc_en == 1} {
+input    wire          hps_uart0_CTS_N,       
+output   wire          hps_uart0_RTS_N, 
+@@}
+@@if {$hps_uart1_q1_en == 1 || $hps_uart1_q3_en == 1 || $hps_uart1_q4_en == 1} {
+input    wire          hps_uart1_RX,       
+output   wire          hps_uart1_TX, 
+@@}
+@@if {$hps_uart1_fc_en == 1} {
+input    wire          hps_uart1_CTS_N,       
+output   wire          hps_uart1_RTS_N, 
+@@}
+@@if {$hps_i2c0_q1_en == 1 || $hps_i2c0_q2_en == 1 || $hps_i2c0_q3_en == 1} {
+inout    wire          hps_i2c0_SDA,        
+inout    wire          hps_i2c0_SCL, 
+@@}
+@@if {$hps_i2c1_q1_en == 1 || $hps_i2c1_q2_en == 1 || $hps_i2c1_q3_en == 1 || $hps_i2c1_q4_en == 1} {
+inout    wire          hps_i2c1_SDA,        
+inout    wire          hps_i2c1_SCL, 
+@@}
+@@if {$hps_i3c0_q1_en == 1 || $hps_i3c0_q2_en == 1 || $hps_i3c0_q3_en == 1 || $hps_i3c0_q4_en == 1} {
+inout    wire          hps_i3c0_SDA,        
+inout    wire          hps_i3c0_SCL, 
+@@}
+@@if {$hps_i3c1_q1_en == 1 || $hps_i3c1_q2_en == 1 || $hps_i3c1_q3_en == 1 || $hps_i3c1_q4_en == 1} {
+inout    wire          hps_i3c1_SDA,        
+inout    wire          hps_i3c1_SCL, 
+@@}
+@@if {$hps_i2c_emac0_q1_en == 1 || $hps_i2c_emac0_q3_en == 1 || $hps_i2c_emac0_q4_en == 1} {
+inout    wire          hps_i2c_emac0_SDA,        
+inout    wire          hps_i2c_emac0_SCL,  
+@@}
+@@if {$hps_i2c_emac1_q1_en == 1 || $hps_i2c_emac1_q4_en == 1} {
+inout    wire          hps_i2c_emac1_SDA,        
+inout    wire          hps_i2c_emac1_SCL,  
+@@}
+@@if {$hps_i2c_emac2_q1_en == 1 || $hps_i2c_emac2_q3_en == 1 || $hps_i2c_emac2_q4_en == 1} {
+inout    wire          hps_i2c_emac2_SDA,        
+inout    wire          hps_i2c_emac2_SCL,  
+@@}
+@@if {$hps_nand_q12_en == 1 || $hps_nand_q34_en == 1} {
+output   wire          hps_nand_ALE,
+output   wire          hps_nand_CE_N,
+inout    wire          hps_nand_DQS,
+output   wire          hps_nand_CLE,
+output   wire          hps_nand_RE_N,
+input    wire          hps_nand_RB_N,
+output   wire          hps_nand_WP_N,
+output   wire          hps_nand_WE_N,
+inout    wire          hps_nand_ADQ0,
+inout    wire          hps_nand_ADQ1,
+inout    wire          hps_nand_ADQ2,
+inout    wire          hps_nand_ADQ3,
+inout    wire          hps_nand_ADQ4,
+inout    wire          hps_nand_ADQ5,
+inout    wire          hps_nand_ADQ6,
+inout    wire          hps_nand_ADQ7,
+@@}
+@@if {$hps_nand_16b_en == 1} {
+inout    wire          hps_nand_ADQ8,
+inout    wire          hps_nand_ADQ9,
+inout    wire          hps_nand_ADQ10,
+inout    wire          hps_nand_ADQ11,
+inout    wire          hps_nand_ADQ12,
+inout    wire          hps_nand_ADQ13,
+inout    wire          hps_nand_ADQ14,
+inout    wire          hps_nand_ADQ15,
+@@}
+@@if {$hps_trace_q12_en == 1 || $hps_trace_q34_en == 1} {
+output   wire          hps_trace_CLK, 
+output   wire          hps_trace_D0, 
+output   wire          hps_trace_D1, 
+output   wire          hps_trace_D2, 
+output   wire          hps_trace_D3,
+@@}
+@@if {$hps_trace_8b_en == 1 || $hps_trace_12b_en ==1 || $hps_trace_16b_en ==1} {
+output   wire          hps_trace_D4,
+output   wire          hps_trace_D5, 
+output   wire          hps_trace_D6, 
+output   wire          hps_trace_D7, 
+@@}
+@@if {$hps_trace_12b_en == 1 || $hps_trace_16b_en ==1} {
+output   wire          hps_trace_D8,
+output   wire          hps_trace_D9, 
+output   wire          hps_trace_D10, 
+output   wire          hps_trace_D11, 
+@@}
+@@if {$hps_trace_16b_en == 1} {
+output   wire          hps_trace_D12,
+output   wire          hps_trace_D13, 
+output   wire          hps_trace_D14, 
+output   wire          hps_trace_D15, 
+@@}
+@@if {$hps_gpio0_en == 1} {
+@@  foreach io_num $hps_gpio0_list {
+inout    wire          hps_gpio0_io${io_num},
+@@  }
+@@}
+@@if {$hps_gpio1_en == 1} {
+@@  foreach io_num $hps_gpio1_list {
+inout    wire          hps_gpio1_io${io_num},
+@@  }
+@@}
+@@if {$hps_pll_out_en == 1} {
+output   wire          hps_pll0_clk,
+output   wire          hps_pll1_clk,
+output   wire          hps_pll2_clk,
+output   wire          hps_pll3_clk,
+@@}
+@@if {$ftrace_en == 1} {
+output   wire [$ftrace_output_width-1:0]   ftrace_data,
+output   wire          ftrace_clk,
+@@}
+@@}
+@@if {$tsn_en == 1} {
+
+inout wire 			          c3_emac0_mdio_mdio0,
+output wire 				  c3_emac0_mdio_mdc0,
+output wire 	[NUM_PHY-1:0] pp_app_tx_serial_data,
+output wire 	[NUM_PHY-1:0] pp_app_tx_serial_data_n,
+input wire      [NUM_PHY-1:0] emac_ptp_trig,
+output wire     [NUM_PHY-1:0] emac_ptp_pps,
+input wire 		[NUM_PHY-1:0] app_pp_rx_serial_data,
+input wire 		[NUM_PHY-1:0] app_pp_rx_serial_data_n,
+input wire					  osc_clk,
+@@}
+
+@@if {$tsn_concurrent == 1} {
+inout	wire			i2c_scl,
+inout	wire			i2c_sda,
+inout   wire 			c3_emac0_mdio_mdio,
+output  wire 			c3_emac0_mdio_mdc,
+@@}
+
+
+
+
+
+
+@@if {$sub_hps_en == 1} {
+@@if {$hps_io_off == 0} {
+input    wire          hps_osc_clk,
+@@}
+@@}
+@@if {$sub_fpga_rgmii_en == 1} {
+input    wire          fpga_rgmii_rx_clk,
+input    wire [3:0]    fpga_rgmii_rxd,   
+input    wire          fpga_rgmii_rx_ctl,
+output   wire          fpga_rgmii_tx_clk,
+output   wire [3:0]    fpga_rgmii_txd,   
+output   wire          fpga_rgmii_tx_ctl,
+output   wire          emac1_mdc,
+inout    wire          emac1_mdio,
+@@}
+input    wire          fpga_reset_n
+);
+
+wire                   system_clk_100;
+@@if {$clk_gate_en == 1} {
+wire                   system_clk_100_gated;
+@@}
+wire                   ninit_done;
+wire                   fpga_reset_n_debounced_wire;
+reg                    fpga_reset_n_debounced;
+wire                   system_reset;
+@@if {$sub_fpga_rgmii_en == 1} {
+wire                   emac1_mdi;
+wire                   emac1_mdo;
+wire                   emac1_mdoe;
+wire                   fpga_rgmii_rx_clk_comp;
+
+assign emac1_mdio = emac1_mdoe? emac1_mdo : 1'bz;
+assign emac1_mdi  = emac1_mdio;
+@@}
+@@if {$sub_hps_en == 1} {
+wire                 h2f_reset;
+@@if {$user0_clk_src_select ==1} {
+wire                   user0_clk_src_clk;
+@@}
+@@if {$reset_watchdog_en == 1} {
+wire                   h2f_watchdog_reset;
+@@}
+@@if {$reset_hps_warm_en == 1} {
+wire                   h2f_warm_reset_handshake;
+@@}
+@@if {$reset_h2f_cold_en == 1} {
+wire                   h2f_cold_reset;
+@@}
+
+assign                combined_reset_n = fpga_reset_n & ~h2f_reset
+@@if {$reset_watchdog_en == 1} {
+& ~h2f_watchdog_reset
+@@}
+@@if {$reset_hps_warm_en == 1} {
+& ~h2f_warm_reset_handshake
+@@}
+@@if {$reset_h2f_cold_en == 1} {
+& ~h2f_cold_reset
+@@}
+& ~ninit_done;
+
+altera_reset_synchronizer #(
+    .ASYNC_RESET (1),
+    .DEPTH       (2)
+) sys_rst_inst (
+    .reset_in  (~combined_reset_n),
+    .clk       (system_clk_100),
+    .reset_out (system_reset)
+);
+             
+@@}
+@@  if {$user0_clk_src_select  == 1} {
+assign                 system_clk_100   = user0_clk_src_clk;
+@@  } else {
+assign                 system_clk_100   = fpga_clk_100;
+@@  }
+
+@@  if {$sub_peri_en ==1} {
+@@  if {$fpga_button_pio_width > 0} {
+wire [$fpga_button_pio_width-1:0]        fpga_debounced_buttons;
+@@  }
+@@  if {$fpga_led_pio_width > 0} {
+wire [$fpga_led_pio_width-2:0]           fpga_led_internal;
+wire                   heartbeat_led;
+reg  [22:0]            heartbeat_count;
+assign                 heartbeat_led = ~heartbeat_count[22];
+assign                 fpga_led_pio = {heartbeat_led,fpga_led_internal};
+@@  }
+@@  }
+@@if {$tsn_en == 1} {
+wire	app_pp_emac0_mdio_mdi0;		
+wire	pp_app_emac0_mdio_mdo0;
+wire	pp_app_emac0_mdio_mdoe0;
+//wire h2f_reset;
+wire csr_rst;
+wire avmm_rst;
+wire phy_reset;
+wire sys_pll_locked;
+wire io_pll_locked;
+wire pll_reset;
+wire    [NUM_PHY-1:0] src_grant, src_priority, src_req;
+wire    o_pma_clk;
+wire	[NUM_PHY-1:0] reg_mrphy_pll_lock, reg_tx_rdy, reg_rx_rdy, 
+						  reg_blk_lock;
+wire    [3*NUM_PHY - 1:0] reg_op_speed;						
+wire	[NUM_PHY-1:0] phy_tx_rst_n, phy_rx_rst_n;
+wire 	[NUM_PHY-1:0] ack_rst_n, ack_tx_rst_n, ack_rx_rst_n;
+wire 	[NUM_PHY-1:0] emac_mac_rst_tx_n, emac_mac_rst_rx_n;
+wire	[NUM_PHY-1:0] o_rst_n, csr_o_rst_n, sync_ack_i_rst_n, sync_mrphy_pll_lock_i,
+		      sync_rx_ready_i, sync_tx_ready_i;
+//HPS - MRPHY
+wire		[7:0]	hps_mrphy_data 		[NUM_PHY-1:0];
+wire		[NUM_PHY-1:0]		hps_mrphy_data_vld;
+wire		[NUM_PHY-1:0]		hps_mrphy_err;
+wire 		[NUM_PHY-1:0]		gmii8b_rst_tx_n, gmii8b_rst_rx_n, tx_digitalreset, rx_digitalreset;
+wire		[7:0]  mrphy_hps_data [NUM_PHY-1:0];
+wire		[NUM_PHY-1:0]		mrphy_hps_data_vld;
+wire		[NUM_PHY-1:0]		mrphy_hps_err;
+wire		[2:0] 	mac_speed [NUM_PHY-1:0];
+wire 		[NUM_PHY-1:0]		mac_col_det;
+wire		[NUM_PHY-1:0]		mac_car_sense;
+wire 		[NUM_PHY-1:0]		mrphy_hps_tx_clk;
+wire 		[NUM_PHY-1:0]		mrphy_hps_rx_clk;
+wire 		[NUM_PHY-1:0]		hps_mrphy_tx_clk; 
+//Avalon interface wires
+wire        csr_waitrequest; 
+wire [31:0] csr_readdata;     
+wire        csr_readdatavalid;
+wire [0:0]  csr_burstcount;   
+wire [31:0] csr_writedata;    
+wire [6:0]  csr_address;      
+wire        csr_write;        
+wire        csr_read;         
+wire [3:0]  csr_byteenable;  
+wire        csr_debugaccess;
+wire 	    mm_bridge_0140_017f_m0_write;
+wire 	    mm_bridge_0140_017f_m0_read;
+wire        mm_bridge_0140_017f_m0_waitrequest;
+wire [15:0] mm_bridge_0140_017f_m0_readdata;
+wire  	    mm_bridge_0140_017f_m0_readdatavalid;
+wire        mm_bridge_0380_03ff_m0_write;
+wire  	    mm_bridge_0380_03ff_m0_read;
+wire  	    mm_bridge_0380_03ff_m0_waitrequest;
+wire [31:0] mm_bridge_0380_03ff_m0_readdata;
+wire        mm_bridge_0380_03ff_m0_readdatavalid;
+@@if {$tsn_concurrent == 0} {
+wire  	    mm_bridge_0180_01ff_m0_write;
+wire        mm_bridge_0180_01ff_m0_read;
+wire  	    mm_bridge_0180_01ff_m0_waitrequest;
+wire [15:0] mm_bridge_0180_01ff_m0_readdata;
+wire        mm_bridge_0180_01ff_m0_readdatavalid;
+wire  	    mm_bridge_0200_02ff_m0_write;
+wire  	    mm_bridge_0200_02ff_m0_read;
+wire        mm_bridge_0200_02ff_m0_waitrequest;
+wire [31:0] mm_bridge_0200_02ff_m0_readdata;
+wire  	    mm_bridge_0200_02ff_m0_readdatavalid;
+wire  	    mm_bridge_0400_07ff_m0_write;
+wire  	    mm_bridge_0400_07ff_m0_read;
+wire        mm_bridge_0400_07ff_m0_waitrequest;
+wire [31:0] mm_bridge_0400_07ff_m0_readdata;
+wire  	    mm_bridge_0400_07ff_m0_readdatavalid;
+@@}
+@@if {$tsn_concurrent == 1} {
+wire  	    mm_bridge_01c0_01ff_m0_write;
+wire        mm_bridge_01c0_01ff_m0_read;
+wire  	    mm_bridge_01c0_01ff_m0_waitrequest;
+wire [31:0] mm_bridge_01c0_01ff_m0_readdata;
+wire        mm_bridge_01c0_01ff_m0_readdatavalid;
+wire  	    mm_bridge_0240_027f_m0_write;
+wire  	    mm_bridge_0240_027f_m0_read;
+wire        mm_bridge_0240_027f_m0_waitrequest;
+wire [31:0] mm_bridge_0240_027f_m0_readdata;
+wire  	    mm_bridge_0240_027f_m0_readdatavalid;
+wire  	    mm_bridge_0280_02ff_m0_write;
+wire  	    mm_bridge_0280_02ff_m0_read;
+wire        mm_bridge_0280_02ff_m0_waitrequest;
+wire [31:0] mm_bridge_0280_02ff_m0_readdata;
+wire  	    mm_bridge_0280_02ff_m0_readdatavalid;
+wire  	    mm_bridge_0400_04ff_m0_write;
+wire  	    mm_bridge_0400_04ff_m0_read;
+wire        mm_bridge_0400_04ff_m0_waitrequest;
+wire [31:0] mm_bridge_0400_04ff_m0_readdata;
+wire  	    mm_bridge_0400_04ff_m0_readdatavalid;
+wire		i2c_scl_oe;
+wire		i2c_sda_oe;
+wire		i2c_scl_in;
+wire		i2c_sda_in;
+wire		i2c_intr;
+//AVMM master to phymgmt
+wire [31:0] i2c_csr_readdata;    
+wire [31:0] i2c_csr_writedata;    
+wire [10:0] i2c_csr_address;      
+wire        i2c_csr_write;        
+wire        i2c_csr_read;     
+reg         i2c_csr_waitrequest;     
+reg         i2c_csr_readdatavalid;     
+//Avalon interface wires to MDIO IP
+wire        mdio_csr_waitrequest; 
+wire [31:0] mdio_csr_readdata;     
+reg         mdio_csr_readdatavalid;
+wire [0:0]  mdio_csr_burstcount;   
+wire [31:0] mdio_csr_writedata;    
+wire [5:0]  mdio_csr_address;      
+wire        mdio_csr_write;        
+wire        mdio_csr_read;         
+wire [3:0]  mdio_csr_byteenable;  
+wire        mdio_csr_debugaccess;
+wire	app_pp_emac0_mdio_mdi;		
+wire	pp_app_emac0_mdio_mdo;
+wire	pp_app_emac0_mdio_mdoe;
+@@}
+
+@@}
+@@if {$sub_hps_en == 1} {
+@@  if {$hps_f2h_irq_en == 1 || $hps_peri_irq_loopback_en == 1} {
+wire [31:0]            f2h_irq1_irq;
+wire [63:0]              fpga2hps_interrupt_irq;
+@@}
+@@if {$hps_usb0_en == 1 || $hps_usb1_en == 1} { 
+wire                   o_pma_cpu_clk;
+@@}
+@@if {$hps_stm_en == 1} {
+wire [43:0]            stm_hw_events;
+
+@@if {$sub_peri_en == 1 && $cross_trigger_en == 0} {
+@@ set stm_hw_events_option ""
+@@ set stm_hw_events_option_bitcount 0
+@@ if {$fpga_led_pio_width > 0} {
+@@	append stm_hw_events_option ", heartbeat_led, fpga_led_internal"
+@@	incr stm_hw_events_option_bitcount $fpga_led_pio_width
+@@ }
+@@ if {$fpga_dipsw_pio_width != 0} {
+@@	append stm_hw_events_option ", fpga_dipsw_pio"
+@@	incr stm_hw_events_option_bitcount $fpga_dipsw_pio_width
+@@ }
+@@ if {$fpga_button_pio_width != 0} {
+@@	append stm_hw_events_option ", fpga_debounced_buttons"
+@@	incr stm_hw_events_option_bitcount $fpga_button_pio_width
+@@ }
+@@# calculate remaining bit to set '0'
+@@ set stm_hw_events_option_bitcount [expr {32 - $stm_hw_events_option_bitcount}] 
+assign                 stm_hw_events = {{${stm_hw_events_option_bitcount}{1'b0}}${stm_hw_events_option}};
+@@} else {
+assign                 stm_hw_events    = 44'b0;
+@@  }
+@@}
+
+@@if {$hps_f2h_irq_en == 1 || $hps_peri_irq_loopback_en == 1} {
+assign                 f2h_irq1_irq    = {32'b0};
+assign                 fpga2hps_interrupt_irq    = {63'b0};
+@@}
+@@}
+
+// Qsys Top module
+${qsys_name} soc_inst (
+@@if {($user0_clk_src_select == 1 && $sub_hps_en == 1)} {
+.user0_clk_src_clk                         (user0_clk_src_clk), 
+@@}
+.clk_100_clk                               (system_clk_100),
+.ninit_done_ninit_done                     (ninit_done),
+@@if {$clk_gate_en == 1} {
+.clkctrl_input_ena                         (~ninit_done),
+.clkctrl_input_inclk                       (system_clk_100),
+.clkctrl_output_outclk                     (system_clk_100_gated),
+@@}
+@@if {$sub_peri_en == 1} {
+@@ if {$fpga_led_pio_width != 0} {
+.led_pio_external_connection_in_port       (fpga_led_internal),
+.led_pio_external_connection_out_port      (fpga_led_internal),
+@@}
+@@ if {$fpga_dipsw_pio_width != 0} {                
+.dipsw_pio_external_connection_export      (fpga_dipsw_pio),
+@@}
+@@ if {$fpga_button_pio_width != 0} {  
+.button_pio_external_connection_export     (fpga_debounced_buttons),
+@@}
+@@}
+
+@@if {$sub_hps_en == 1} {
+@@if {$hps_stm_en == 1} {
+.agilex_hps_f2h_stm_hw_events_stm_hwevents (stm_hw_events),     
+//Terminate the CS_JTAG.
+.agilex_hps_h2f_cs_ntrst                   (1'b1),  
+.agilex_hps_h2f_cs_tck                     (1'b1),    
+.agilex_hps_h2f_cs_tdi                     (1'b1),    
+.agilex_hps_h2f_cs_tdo                     (),    
+.agilex_hps_h2f_cs_tdoen                   (),  
+.agilex_hps_h2f_cs_tms                     (1'b1),    
+@@}
+@@if {$tsn_en == 1} {
+ .csr_rst_reset_n							(csr_rst),
+ //.ocm_clk1_clk								(),
+ //.ocm_reset1_reset							(),
+ //.ocm_reset1_reset_req						(),
+ .h2f_reset_reset							(h2f_reset),
+ .emac_ptp_clk_clk          	   	   	    ('b0), 
+ .emac_timestamp_data_data_in    	   	    (64'b0),
+ .emac_timestamp_clk_clk    	   	   	    ('b0),
+ .emac0_ptp_mac_ptp_trig			    (emac_ptp_trig[0]),
+ .emac0_ptp_mac_ptp_pps				    (emac_ptp_pps[0]),
+ .emac0_ptp_mac_ptp_tstmp_data			    (),	
+ .emac0_ptp_mac_ptp_tstmp_en			    (),
+@@if {$tsn_concurrent == 0} {
+ .emac0_mdio_mac_mdc                                (c3_emac0_mdio_mdc0),
+ .emac0_mdio_mac_mdi                                (app_pp_emac0_mdio_mdi0),
+ .emac0_mdio_mac_mdo                                (pp_app_emac0_mdio_mdo0),
+ .emac0_mdio_mac_mdoe                               (pp_app_emac0_mdio_mdoe0),
+@@}
+ .emac0_mac_tx_clk_o        	   	   	    (hps_mrphy_tx_clk[0]), //HA - Check this, connecting to get rid of IOPLL Fitter error
+ .emac0_mac_tx_clk_i        	   	   	    (mrphy_hps_tx_clk[0]), //HA - Check this, connecting to get rid of IOPLL Fitter error
+ .emac0_mac_rx_clk           		 	   (mrphy_hps_rx_clk[0]),
+ .emac0_mac_rst_tx_n         	   	   	   (emac_mac_rst_tx_n[0]),
+ .emac0_mac_rst_rx_n         	   	   	   (emac_mac_rst_rx_n[0]),
+ .emac0_mac_txen             	   	   	   (hps_mrphy_data_vld[0]),
+ .emac0_mac_txer             	   	   	   (hps_mrphy_err[0]    ),
+ .emac0_mac_rxdv             		 	   (mrphy_hps_data_vld[0]),
+ .emac0_mac_rxer             	   	   	   (mrphy_hps_err[0]    ),
+ .emac0_mac_rxd              	   	   	   (mrphy_hps_data[0]	),
+ .emac0_mac_col              	   	   	   ('b0),
+ .emac0_mac_crs              	   	   	   ('b0),
+ .emac0_mac_speed            		 	   (mac_speed[0]),
+ .emac0_mac_txd_o            	   	   	   (hps_mrphy_data[0]),
+@@if {$tsn_concurrent == 1} {
+ .emac1_ptp_mac_ptp_trig			    (emac_ptp_trig[1]),
+ .emac1_ptp_mac_ptp_pps				    (emac_ptp_pps[1]),
+ .emac1_ptp_mac_ptp_tstmp_data			    (),	
+ .emac1_ptp_mac_ptp_tstmp_en			    (),
+ .emac1_mac_tx_clk_o         	   	   	   (hps_mrphy_tx_clk[1]), //HA - Check this, connecting to get rid of IOPLL Fitter error
+ .emac1_mac_tx_clk_i         	   	   	   (mrphy_hps_tx_clk[1]), //HA - Check this, connecting to get rid of IOPLL Fitter error
+ .emac1_mac_rx_clk           	   	   	   (mrphy_hps_rx_clk[1]),
+ .emac1_mac_rst_tx_n         		 	   (emac_mac_rst_tx_n[1]),
+ .emac1_mac_rst_rx_n         	   	   	   (emac_mac_rst_rx_n[1]),
+ .emac1_mac_txen             	   	   	   (hps_mrphy_data_vld[1]),
+ .emac1_mac_txer             	   	   	   (hps_mrphy_err[1]    ),
+ .emac1_mac_rxdv             	   	   	   (mrphy_hps_data_vld[1]),
+ .emac1_mac_rxer             		 	   (mrphy_hps_err[1]    ),
+ .emac1_mac_rxd              	   	   	   (mrphy_hps_data[1]	),
+ .emac1_mac_col              	   	   	   ('b0),
+ .emac1_mac_crs              	   	   	   ('b0),
+ .emac1_mac_speed            	   	   	   (mac_speed[1]),
+ .emac1_mac_txd_o            		 	   (hps_mrphy_data[1]),
+ .emac2_ptp_mac_ptp_trig			    (emac_ptp_trig[2]),
+ .emac2_ptp_mac_ptp_pps				    (emac_ptp_pps[2]),
+ .emac2_ptp_mac_ptp_tstmp_data			    (),	
+ .emac2_ptp_mac_ptp_tstmp_en			    (),
+ .emac2_mac_tx_clk_o         	   	   	   (hps_mrphy_tx_clk[2]), //HA - Check this, connecting to get rid of IOPLL Fitter error
+ .emac2_mac_tx_clk_i         	   	   	   (mrphy_hps_tx_clk[2]), //HA - Check this, connecting to get rid of IOPLL Fitter error
+ .emac2_mac_rx_clk           	   	   	   (mrphy_hps_rx_clk[2]),
+ .emac2_mac_rst_tx_n         	   	   	   (emac_mac_rst_tx_n[2]),
+ .emac2_mac_rst_rx_n         		 	   (emac_mac_rst_rx_n[2]),
+ .emac2_mac_txen             	   	   	   (hps_mrphy_data_vld[2]),
+ .emac2_mac_txer             	   	   	   (hps_mrphy_err[2]    ),
+ .emac2_mac_rxdv             	   	   	   (mrphy_hps_data_vld[2]),
+ .emac2_mac_rxer             	   	   	   (mrphy_hps_err[2]    ),
+ .emac2_mac_rxd             		       (mrphy_hps_data[2]	),
+ .emac2_mac_col             	   	       ('b0),
+ .emac2_mac_crs             	   	       ('b0),
+ .emac2_mac_speed           	   	       (mac_speed[2]),
+ .emac2_mac_txd_o           	   	       (hps_mrphy_data[2]),
+@@}
+// .osc_clk_clk							   (osc_clk),
+@@}
+@@if {$hps_emif_en == 1} {
+@@if {$hps_emif_type == "ddr4"} {
+.emif_hps_emif_mem_ck_0_mem_ck_t           (emif_hps_emif_mem_0_mem_ck_t),
+.emif_hps_emif_mem_ck_0_mem_ck_c           (emif_hps_emif_mem_0_mem_ck_c),
+.emif_hps_emif_mem_0_mem_a                 (emif_hps_emif_mem_0_mem_a),
+.emif_hps_emif_mem_0_mem_act_n             (emif_hps_emif_mem_0_mem_act_n),
+.emif_hps_emif_mem_0_mem_ba                (emif_hps_emif_mem_0_mem_ba),
+.emif_hps_emif_mem_0_mem_bg                (emif_hps_emif_mem_0_mem_bg),
+.emif_hps_emif_mem_0_mem_cke               (emif_hps_emif_mem_0_mem_cke),
+.emif_hps_emif_mem_0_mem_cs_n              (emif_hps_emif_mem_0_mem_cs_n),
+.emif_hps_emif_mem_0_mem_odt               (emif_hps_emif_mem_0_mem_odt),
+.emif_hps_emif_mem_reset_n_mem_reset_n     (emif_hps_emif_mem_0_mem_reset_n),
+.emif_hps_emif_mem_0_mem_par               (emif_hps_emif_mem_0_mem_par),
+.emif_hps_emif_mem_0_mem_alert_n           (emif_hps_emif_mem_0_mem_alert_n),
+.emif_hps_emif_mem_0_mem_dqs_t             (emif_hps_emif_mem_0_mem_dqs_t),
+.emif_hps_emif_mem_0_mem_dqs_c             (emif_hps_emif_mem_0_mem_dqs_c),
+.emif_hps_emif_mem_0_mem_dq                (emif_hps_emif_mem_0_mem_dq),
+.emif_hps_emif_oct_0_oct_rzqin             (emif_hps_emif_oct_0_oct_rzqin),
+.emif_hps_emif_ref_clk_0_clk               (emif_hps_emif_ref_clk_0_clk),
+@@}
+@@if {$hps_emif_type == "lpddr4"} {
+.emif_hps_emif_mem_0_mem_ck_t              (emif_hps_emif_mem_0_mem_ck_t),
+.emif_hps_emif_mem_0_mem_ck_c              (emif_hps_emif_mem_0_mem_ck_c),
+.emif_hps_emif_mem_0_mem_cke               (emif_hps_emif_mem_0_mem_cke),
+.emif_hps_emif_mem_0_mem_reset_n           (emif_hps_emif_mem_0_mem_reset_n),
+.emif_hps_emif_mem_0_mem_dqs_t             (emif_hps_emif_mem_0_mem_dqs_t),
+.emif_hps_emif_mem_0_mem_dqs_c             (emif_hps_emif_mem_0_mem_dqs_c),
+.emif_hps_emif_mem_0_mem_dq                (emif_hps_emif_mem_0_mem_dq),
+.emif_hps_emif_oct_0_oct_rzqin             (emif_hps_emif_oct_0_oct_rzqin),
+.emif_hps_emif_ref_clk_0_clk               (emif_hps_emif_ref_clk_0_clk),
+.emif_hps_emif_mem_0_mem_cs                (emif_hps_emif_mem_0_mem_cs),
+.emif_hps_emif_mem_0_mem_ca                (emif_hps_emif_mem_0_mem_ca),
+.emif_hps_emif_mem_0_mem_dmi               (emif_hps_emif_mem_0_mem_dmi),
+@@}
+@@if {$hps_emif_type == "lpddr5"} {
+.emif_hps_emif_mem_0_mem_ck_t              (emif_hps_emif_mem_0_mem_ck_t),
+.emif_hps_emif_mem_0_mem_ck_c              (emif_hps_emif_mem_0_mem_ck_c),
+.emif_hps_emif_mem_0_mem_wck_t             (emif_hps_emif_mem_0_mem_wck_t),
+.emif_hps_emif_mem_0_mem_wck_c             (emif_hps_emif_mem_0_mem_wck_c),
+.emif_hps_emif_mem_0_mem_reset_n           (emif_hps_emif_mem_0_mem_reset_n),
+.emif_hps_emif_mem_0_mem_rdqs_t            (emif_hps_emif_mem_0_mem_rdqs_t),
+.emif_hps_emif_mem_0_mem_rdqs_c            (emif_hps_emif_mem_0_mem_rdqs_c),
+.emif_hps_emif_mem_0_mem_dq                (emif_hps_emif_mem_0_mem_dq),
+.emif_hps_emif_oct_0_oct_rzqin             (emif_hps_emif_oct_0_oct_rzqin),
+.emif_hps_emif_ref_clk_0_clk               (emif_hps_emif_ref_clk_0_clk),
+.emif_hps_emif_mem_0_mem_cs                (emif_hps_emif_mem_0_mem_cs),
+.emif_hps_emif_mem_0_mem_ca                (emif_hps_emif_mem_0_mem_ca),
+.emif_hps_emif_mem_0_mem_dmi               (emif_hps_emif_mem_0_mem_dmi),
+@@if {$hps_emif_channel == 2 && $hps_emif_width == 16} {
+.emif_hps_emif_mem_1_mem_ck_t              (emif_hps_emif_mem_1_mem_ck_t),
+.emif_hps_emif_mem_1_mem_ck_c              (emif_hps_emif_mem_1_mem_ck_c),
+.emif_hps_emif_mem_1_mem_wck_t             (emif_hps_emif_mem_1_mem_wck_t),
+.emif_hps_emif_mem_1_mem_wck_c             (emif_hps_emif_mem_1_mem_wck_c),
+.emif_hps_emif_mem_1_mem_rdqs_t            (emif_hps_emif_mem_1_mem_rdqs_t),
+.emif_hps_emif_mem_1_mem_rdqs_c            (emif_hps_emif_mem_1_mem_rdqs_c),
+.emif_hps_emif_mem_1_mem_dq                (emif_hps_emif_mem_1_mem_dq),
+.emif_hps_emif_oct_1_oct_rzqin             (emif_hps_emif_oct_1_oct_rzqin),
+.emif_hps_emif_mem_1_mem_cs                (emif_hps_emif_mem_1_mem_cs),
+.emif_hps_emif_mem_1_mem_ca                (emif_hps_emif_mem_1_mem_ca),
+.emif_hps_emif_mem_1_mem_dmi               (emif_hps_emif_mem_1_mem_dmi),
+@@}
+@@}
+@@}
+@@}
+@@if {$sub_fpga_rgmii_en == 1} {
+.phy_rgmii_rgmii_rx_clk                    (fpga_rgmii_rx_clk_comp),
+.phy_rgmii_rgmii_rxd                       (fpga_rgmii_rxd),  
+.phy_rgmii_rgmii_rx_ctl                    (fpga_rgmii_rx_ctl),
+.phy_rgmii_rgmii_tx_clk                    (fpga_rgmii_tx_clk),
+.phy_rgmii_rgmii_txd                       (fpga_rgmii_txd),  
+.phy_rgmii_rgmii_tx_ctl                    (fpga_rgmii_tx_ctl),
+.emac1_mdio_mac_mdc                        (emac1_mdc),
+.emac1_mdio_mac_mdi                        (emac1_mdi),
+.emac1_mdio_mac_mdo                        (emac1_mdo),
+.emac1_mdio_mac_mdoe                       (emac1_mdoe),  
+@@}
+@@if {$hps_jtag_en == 1} {
+.hps_io_jtag_tck                           (hps_jtag_tck),                
+.hps_io_jtag_tms                           (hps_jtag_tms),                
+.hps_io_jtag_tdo                           (hps_jtag_tdo),                 
+.hps_io_jtag_tdi                           (hps_jtag_tdi),    
+@@}
+@@if {$hps_emac0_rmii_en == 1 || $hps_emac0_rgmii_en == 1} {
+.hps_io_emac0_tx_clk                       (hps_emac0_TX_CLK),     
+.hps_io_emac0_rx_clk                       (hps_emac0_RX_CLK),     
+.hps_io_emac0_tx_ctl                       (hps_emac0_TX_CTL),    
+.hps_io_emac0_rx_ctl                       (hps_emac0_RX_CTL),    
+.hps_io_emac0_txd0                         (hps_emac0_TXD0),     
+.hps_io_emac0_txd1                         (hps_emac0_TXD1),
+.hps_io_emac0_rxd0                         (hps_emac0_RXD0),       
+.hps_io_emac0_rxd1                         (hps_emac0_RXD1),
+.hps_io_emac0_pps						   (hps_emac0_PPS),    
+.hps_io_emac0_pps_trig                     (hps_emac0_PPS_TRIG),
+@@}
+@@if {$hps_emac0_rgmii_en == 1} {
+.hps_io_emac0_txd2                         (hps_emac0_TXD2),      
+.hps_io_emac0_txd3                         (hps_emac0_TXD3),   
+.hps_io_emac0_rxd2                         (hps_emac0_RXD2),        
+.hps_io_emac0_rxd3                         (hps_emac0_RXD3),
+@@}
+@@if {$hps_mdio0_q1_en == 1 || $hps_mdio0_q3_en == 1 || $hps_mdio0_q4_en == 1} {
+.hps_io_mdio0_mdio                         (hps_emac0_MDIO),       
+.hps_io_mdio0_mdc                          (hps_emac0_MDC), 
+@@}
+@@if {$hps_emac1_rmii_en == 1 || $hps_emac1_rgmii_en == 1} {
+.hps_io_emac1_tx_clk                       (hps_emac1_TX_CLK),     
+.hps_io_emac1_rx_clk                       (hps_emac1_RX_CLK),     
+.hps_io_emac1_tx_ctl                       (hps_emac1_TX_CTL),    
+.hps_io_emac1_rx_ctl                       (hps_emac1_RX_CTL),    
+.hps_io_emac1_txd0                         (hps_emac1_TXD0),     
+.hps_io_emac1_txd1                         (hps_emac1_TXD1),
+.hps_io_emac1_rxd0                         (hps_emac1_RXD0),       
+.hps_io_emac1_rxd1                         (hps_emac1_RXD1),        
+@@}
+@@if {$hps_emac1_rgmii_en == 1} {
+.hps_io_emac1_txd2                         (hps_emac1_TXD2),      
+.hps_io_emac1_txd3                         (hps_emac1_TXD3),   
+.hps_io_emac1_rxd2                         (hps_emac1_RXD2),        
+.hps_io_emac1_rxd3                         (hps_emac1_RXD3),
+@@}
+@@if {$hps_mdio1_q1_en == 1 || $hps_mdio1_q4_en == 1} {
+.hps_io_mdio1_mdio                         (hps_emac1_MDIO),       
+.hps_io_mdio1_mdc                          (hps_emac1_MDC), 
+@@}
+@@if {$hps_emac2_rmii_en == 1 || $hps_emac2_rgmii_en == 1} {
+.hps_io_emac2_tx_clk                       (hps_emac2_TX_CLK),      
+.hps_io_emac2_rx_clk                       (hps_emac2_RX_CLK),  
+.hps_io_emac2_tx_ctl                       (hps_emac2_TX_CTL),     
+.hps_io_emac2_rx_ctl                       (hps_emac2_RX_CTL),  
+.hps_io_emac2_txd0                         (hps_emac2_TXD0),        
+.hps_io_emac2_txd1                         (hps_emac2_TXD1),  
+.hps_io_emac2_rxd0                         (hps_emac2_RXD0),   
+.hps_io_emac2_rxd1                         (hps_emac2_RXD1),     
+.hps_io_emac2_pps                          (hps_emac2_PPS),      
+.hps_io_emac2_pps_trig                     (hps_emac2_PPS_TRIG), 
+@@}
+@@if {$hps_emac2_rgmii_en == 1} {
+.hps_io_emac2_txd2                         (hps_emac2_TXD2),      
+.hps_io_emac2_txd3                         (hps_emac2_TXD3),  
+.hps_io_emac2_rxd2                         (hps_emac2_RXD2),     
+.hps_io_emac2_rxd3                         (hps_emac2_RXD3),   
+@@}
+@@if {$hps_mdio2_q1_en == 1 || $hps_mdio2_q3_en == 1} {
+.hps_io_mdio2_mdio                         (hps_emac2_MDIO),  
+.hps_io_mdio2_mdc                          (hps_emac2_MDC),  
+@@}
+@@if {$hps_sdmmc4b_q1_en == 1 || $hps_sdmmc4b_q3_en == 1 || $hps_sdmmc8b_q1_en == 1} {
+.hps_io_sdmmc_cclk                         (hps_sdmmc_CCLK),   
+.hps_io_sdmmc_cmd                          (hps_sdmmc_CMD), 
+.hps_io_sdmmc_data0                        (hps_sdmmc_D0),          
+.hps_io_sdmmc_data1                        (hps_sdmmc_D1),          
+.hps_io_sdmmc_data2                        (hps_sdmmc_D2),         
+.hps_io_sdmmc_data3                        (hps_sdmmc_D3),        
+@@}
+@@if {$hps_sdmmc8b_q1_en == 1 || $hps_sdmmc12b_q3_alt_en == 1} {
+.hps_io_sdmmc_data4                        (hps_sdmmc_D4),          
+.hps_io_sdmmc_data5                        (hps_sdmmc_D5),          
+.hps_io_sdmmc_data6                        (hps_sdmmc_D6),         
+.hps_io_sdmmc_data7                        (hps_sdmmc_D7),
+@@}
+@@if {$hps_sdmmc_wp_q3_en == 1} {
+.hps_io_sdmmc_wprot                        (hps_sdmmc_WPROT),
+@@}
+@@if {$hps_sdmmc_pupd_q4_en == 1} {
+.hps_io_sdmmc_pud_data2					   (hps_sdmmc_PUD_DATA2),
+@@}
+@@if {$hps_sdmmc_pwr_q4_en == 1} {
+.hps_io_sdmmc_pwren						   (hps_sdmmc_PWREN),
+@@}
+@@if {$hps_sdmmc_dstrb_q4_en == 1} {
+.hps_io_sdmmc_strobe					   (hps_sdmmc_STROBE),
+@@}
+@@if {$hps_nand_q12_en == 1 || $hps_nand_q34_en == 1} {
+.hps_io_nand_ale                           (hps_nand_ALE),
+.hps_io_nand_ce_n                          (hps_nand_CE_N),
+.hps_io_nand_dqs                           (hps_nand_DQS),
+.hps_io_nand_cle                           (hps_nand_CLE),
+.hps_io_nand_re_n                          (hps_nand_RE_N),
+.hps_io_nand_rb_n                          (hps_nand_RB_N),
+.hps_io_nand_wp_n                          (hps_nand_WP_N),
+.hps_io_nand_we_n                          (hps_nand_WE_N),
+.hps_io_nand_data0                         (hps_nand_ADQ0),
+.hps_io_nand_data1                         (hps_nand_ADQ1),
+.hps_io_nand_data2                         (hps_nand_ADQ2),
+.hps_io_nand_data3                         (hps_nand_ADQ3),
+.hps_io_nand_data4                         (hps_nand_ADQ4),
+.hps_io_nand_data5                         (hps_nand_ADQ5),
+.hps_io_nand_data6                         (hps_nand_ADQ6),
+.hps_io_nand_data7                         (hps_nand_ADQ7),
+@@}
+@@if {$hps_nand_16b_en == 1} {
+.hps_io_NAND_ADQ8                          (hps_nand_ADQ8),
+.hps_io_NAND_ADQ9                          (hps_nand_ADQ9),
+.hps_io_NAND_ADQ10                         (hps_nand_ADQ10),
+.hps_io_NAND_ADQ11                         (hps_nand_ADQ11),
+.hps_io_NAND_ADQ12                         (hps_nand_ADQ12),
+.hps_io_NAND_ADQ13                         (hps_nand_ADQ13),
+.hps_io_NAND_ADQ14                         (hps_nand_ADQ14),
+.hps_io_NAND_ADQ15                         (hps_nand_ADQ15),
+@@}
+@@if {$hps_i2c0_q1_en == 1 || $hps_i2c0_q2_en == 1 || $hps_i2c0_q3_en == 1} {
+.hps_io_i2c0_sda                           (hps_i2c0_SDA),     
+.hps_io_i2c0_scl                           (hps_i2c0_SCL),
+@@}
+@@if {$hps_i2c1_q1_en == 1 || $hps_i2c1_q2_en == 1 || $hps_i2c1_q3_en == 1 || $hps_i2c1_q4_en == 1} {
+.hps_io_i2c1_sda                           (hps_i2c1_SDA),     
+.hps_io_i2c1_scl                           (hps_i2c1_SCL),
+@@}
+@@if {$hps_i3c0_q1_en == 1 || $hps_i3c0_q2_en == 1 || $hps_i3c0_q3_en == 1 || $hps_i3c0_q4_en == 1} {
+.hps_io_i3c0_sda                           (hps_i3c0_SDA),     
+.hps_io_i3c0_scl                           (hps_i3c0_SCL),
+@@}
+@@if {$hps_i3c1_q1_en == 1 || $hps_i3c1_q2_en == 1 || $hps_i3c1_q3_en == 1 || $hps_i3c1_q4_en == 1} {
+.hps_io_i3c1_sda                           (hps_i3c1_SDA),     
+.hps_io_i3c1_scl                           (hps_i3c1_SCL),
+@@}
+@@if {$hps_i2c_emac0_q1_en == 1 || $hps_i2c_emac0_q3_en == 1 || $hps_i2c_emac0_q4_en == 1} {
+.hps_io_i2c_emac0_sda                       (hps_i2c_emac0_SDA),       
+.hps_io_i2c_emac0_scl                       (hps_i2c_emac0_SCL),                  
+@@}
+@@if {$hps_i2c_emac1_q1_en == 1 || $hps_i2c_emac1_q4_en == 1} {
+.hps_io_i2c_emac1_sda                       (hps_i2c_emac1_SDA),       
+.hps_io_i2c_emac1_scl                       (hps_i2c_emac1_SCL),                  
+@@}
+@@if {$hps_i2c_emac2_q1_en == 1 || $hps_i2c_emac2_q3_en == 1 || $hps_i2c_emac2_q4_en == 1} {
+.hps_io_i2c_emac2_sda                       (hps_i2c_emac2_SDA),       
+.hps_io_i2c_emac2_scl                       (hps_i2c_emac2_SCL),                  
+@@}
+@@if {$hps_uart0_q1_en == 1 || $hps_uart0_q2_en == 1 || $hps_uart0_q3_en == 1} {
+.hps_io_uart0_rx                           (hps_uart0_RX),          
+.hps_io_uart0_tx                           (hps_uart0_TX), 
+@@}                                 
+@@if {$hps_uart0_fc_en == 1} {
+.hps_io_uart0_cts_n                        (hps_uart0_CTS_N),  
+.hps_io_uart0_rts_n                        (hps_uart0_RTS_N),  
+@@}
+@@if {$hps_uart1_q1_en == 1 || $hps_uart1_q3_en == 1 || $hps_uart1_q4_en == 1} {
+.hps_io_uart1_rx                           (hps_uart1_RX),          
+.hps_io_uart1_tx                           (hps_uart1_TX), 
+@@}
+@@if {$hps_uart1_fc_en == 1} {
+.hps_io_uart1_cts_n                        (hps_uart1_CTS_N),  
+.hps_io_uart1_rts_n                        (hps_uart1_RTS_N),  
+@@}
+@@if {$hps_spim0_q1_en == 1 || $hps_spim0_q4_en == 1 } {
+.hps_io_spim0_clk                          (hps_spim0_CLK),
+.hps_io_spim0_mosi                         (hps_spim0_MOSI),
+.hps_io_spim0_miso                         (hps_spim0_MISO), 
+.hps_io_spim0_ss0_n                        (hps_spim0_SS0_N),
+@@}
+@@if {$hps_spim0_2ss_en == 1} {
+.hps_io_spim0_ss1_n                        (hps_spim0_SS1_N),
+@@}
+@@if {$hps_spim1_q1_en == 1 || $hps_spim1_q2_en == 1 || $hps_spim1_q3_en == 1} {
+.hps_io_spim1_clk                          (hps_spim1_CLK),
+.hps_io_spim1_mosi                         (hps_spim1_MOSI),
+.hps_io_spim1_miso                         (hps_spim1_MISO), 
+.hps_io_spim1_ss0_n                        (hps_spim1_SS0_N),
+@@}
+@@if {$hps_spim1_2ss_en == 1} {
+.hps_io_spim1_ss1_n                        (hps_spim1_SS1_N),
+@@}
+@@if {$hps_spis0_q1_en == 1 || $hps_spis0_q2_en == 1 || $hps_spis0_q3_en == 1} {
+.hps_io_spis0_CLK                          (hps_spis0_CLK),
+.hps_io_spis0_MOSI                         (hps_spis0_MOSI),
+.hps_io_spis0_MISO                         (hps_spis0_MISO),
+.hps_io_spis0_SS0_N                        (hps_spis0_SS0_N),
+@@}
+@@if {$hps_spis1_q1_en == 1 || $hps_spis1_q3_en == 1 || $hps_spis1_q4_en == 1} {
+.hps_io_spis1_clk                          (hps_spis1_CLK),
+.hps_io_spis1_mosi                         (hps_spis1_MOSI),
+.hps_io_spis1_miso                         (hps_spis1_MISO),
+.hps_io_spis1_ss0_n                        (hps_spis1_SS0_N),
+@@}
+@@if {$hps_usb0_en == 1} {
+.hps_io_usb0_clk                           (hps_usb0_CLK), 
+.hps_io_usb0_stp                           (hps_usb0_STP), 
+.hps_io_usb0_dir                           (hps_usb0_DIR),
+.hps_io_usb0_nxt                           (hps_usb0_NXT),
+.hps_io_usb0_data0                         (hps_usb0_DATA0),
+.hps_io_usb0_data1                         (hps_usb0_DATA1), 
+.hps_io_usb0_data2                         (hps_usb0_DATA2), 
+.hps_io_usb0_data3                         (hps_usb0_DATA3), 
+.hps_io_usb0_data4                         (hps_usb0_DATA4), 
+.hps_io_usb0_data5                         (hps_usb0_DATA5),
+.hps_io_usb0_data6                         (hps_usb0_DATA6), 
+.hps_io_usb0_data7                         (hps_usb0_DATA7),
+@@}
+@@if {$hps_usb0_en == 1 && $hps_usb1_en == 1} { 
+.usb31_io_vbus_det                         (usb31_io_vbus_det), 
+.usb31_io_flt_bar                          (usb31_io_flt_bar),                   
+.usb31_io_usb_ctrl                         (usb31_io_usb_ctrl),
+.usb31_io_usb31_id                         (usb31_io_usb31_id),                  
+.usb31_phy_refclk_p_clk                    (usb31_phy_refclk_p_clk),             
+//.usb31_phy_refclk_n_clk                    (usb31_phy_refclk_p_clk(n)),             
+.usb31_phy_rx_serial_n_i_rx_serial_n       (usb31_phy_rx_serial_n_i_rx_serial_n),
+.usb31_phy_rx_serial_p_i_rx_serial_p       (usb31_phy_rx_serial_p_i_rx_serial_p),
+.usb31_phy_tx_serial_n_o_tx_serial_n       (usb31_phy_tx_serial_n_o_tx_serial_n),
+.usb31_phy_tx_serial_p_o_tx_serial_p       (usb31_phy_tx_serial_p_o_tx_serial_p),
+.usb31_phy_pma_cpu_clk_clk                 (o_pma_cpu_clk),
+@@} elseif {$hps_usb0_en == 1 || $hps_usb1_en == 1} {
+.usb31_io_vbus_det                         (usb31_io_vbus_det), 
+.usb31_io_flt_bar                          (usb31_io_flt_bar),                   
+.usb31_io_usb_ctrl                         (usb31_io_usb_ctrl),
+.usb31_io_usb31_id                         (usb31_io_usb31_id),                  
+.usb31_phy_refclk_p_clk                    (usb31_phy_refclk_p_clk),             
+//.usb31_phy_refclk_n_clk                    (usb31_phy_refclk_p_clk(n)),             
+.usb31_phy_rx_serial_n_i_rx_serial_n       (usb31_phy_rx_serial_n_i_rx_serial_n),
+.usb31_phy_rx_serial_p_i_rx_serial_p       (usb31_phy_rx_serial_p_i_rx_serial_p),
+.usb31_phy_tx_serial_n_o_tx_serial_n       (usb31_phy_tx_serial_n_o_tx_serial_n),
+.usb31_phy_tx_serial_p_o_tx_serial_p       (usb31_phy_tx_serial_p_o_tx_serial_p),
+.usb31_phy_pma_cpu_clk_clk                 (o_pma_cpu_clk),
+@@}
+@@#existence of usb1 and usb0 is exclusive
+@@if {$hps_usb0_en == 1 || $hps_usb1_en == 1 || $tsn_en == 1} { 
+.o_pma_cu_clk_clk                          (o_pma_cpu_clk),
+@@}
+@@if {$hps_usb1_en == 1} { 
+.hps_io_usb1_clk                           (hps_usb1_CLK), 
+.hps_io_usb1_stp                           (hps_usb1_STP), 
+.hps_io_usb1_dir                           (hps_usb1_DIR),
+// Todo clarify for NXT or NXR
+.hps_io_usb1_nxt                           (hps_usb1_NXT),
+.hps_io_usb1_data0                         (hps_usb1_DATA0),
+.hps_io_usb1_data1                         (hps_usb1_DATA1), 
+.hps_io_usb1_data2                         (hps_usb1_DATA2), 
+.hps_io_usb1_data3                         (hps_usb1_DATA3), 
+.hps_io_usb1_data4                         (hps_usb1_DATA4), 
+.hps_io_usb1_data5                         (hps_usb1_DATA5),
+.hps_io_usb1_data6                         (hps_usb1_DATA6), 
+.hps_io_usb1_data7                         (hps_usb1_DATA7),
+@@}
+@@if {$hps_trace_q12_en == 1 || $hps_trace_q34_en == 1} {
+.hps_io_trace_clk                          (hps_trace_CLK),  
+.hps_io_trace_data0                           (hps_trace_D0),  
+.hps_io_trace_data1                           (hps_trace_D1),  
+.hps_io_trace_data2                           (hps_trace_D2),  
+.hps_io_trace_data3                           (hps_trace_D3),  
+@@}
+@@if {$hps_trace_8b_en == 1 || $hps_trace_12b_en ==1 || $hps_trace_16b_en ==1} {
+.hps_io_trace_data4                           (hps_trace_D4),  
+.hps_io_trace_data5                           (hps_trace_D5),  
+.hps_io_trace_data6                           (hps_trace_D6),  
+.hps_io_trace_data7                           (hps_trace_D7),  
+@@}
+@@if {$hps_trace_12b_en ==1 || $hps_trace_16b_en ==1} {
+.hps_io_trace_data8                           (hps_trace_D8),  
+.hps_io_trace_data9                           (hps_trace_D9),  
+.hps_io_trace_data10                          (hps_trace_D10),  
+.hps_io_trace_data11                          (hps_trace_D11), 
+@@}
+@@if {$hps_trace_16b_en ==1} {
+.hps_io_trace_data12                          (hps_trace_D12),  
+.hps_io_trace_data13                          (hps_trace_D13),  
+.hps_io_trace_data14                          (hps_trace_D14),  
+.hps_io_trace_data15                          (hps_trace_D15), 
+@@}
+@@if {$hps_gpio0_en == 1} {
+@@  foreach io_num $hps_gpio0_list {
+.hps_io_gpio${io_num}                          (hps_gpio0_io${io_num}),
+@@  }
+@@}
+@@if {$hps_gpio1_en == 1} {
+@@  foreach io_num $hps_gpio1_list {
+@@    set io_num_new [expr $io_num + 24]
+.hps_io_gpio${io_num_new}                          (hps_gpio1_io${io_num}),
+@@  }
+@@}
+@@if {$hps_pll_out_en == 1} {
+.hps_io_hps_io_cm_pll0                     (hps_pll0_clk),
+.hps_io_hps_io_cm_pll1                     (hps_pll1_clk),
+.hps_io_hps_io_cm_pll2                     (hps_pll2_clk),
+.hps_io_hps_io_cm_pll3                     (hps_pll3_clk),
+@@}
+@@if {$hps_f2h_irq_en == 1 || $hps_peri_irq_loopback_en == 1} {
+.f2h_irq1_in_irq                              (f2h_irq1_irq),
+//.fpga2hps_interrupt_irq                      (fpga2hps_interrupt_irq),
+@@}
+@@if {$ftrace_en == 1} {
+.ext_trace_f2h_clk_in_clk_ctl              (1'b1),     // use HPS internal debug trace clock to drive TRACE interface
+.ext_trace_f2h_clk_in_clk                  (1'b0),
+.ext_trace_trace_clk_out_clk               (ftrace_clk),
+.ext_trace_trace_data_out_export           (ftrace_data),
+@@}
+@@if {$hps_io_off == 0} {
+.hps_io_hps_osc_clk                        (hps_osc_clk), 
+@@}
+@@if {$tsn_en == 1} {
+.o_src_rs_grant_src_rs_grant                         (src_grant), 
+.i_src_rs_priority_src_rs_priority                   (src_priority),
+.i_src_rs_req_src_rs_req                             (src_req),   
+.phy_0_gmii8b_tx_clkin_clk                         			(hps_mrphy_tx_clk[0]),	//HA - Check this, connecting to get rid of IOPLL Fitter error  
+.phy_0_gmii8b_tx_rst_n_gmii8b_tx_rst_n             			(gmii8b_rst_tx_n[0]),
+.phy_0_gmii8b_rx_rst_n_gmii8b_rx_rst_n            			(gmii8b_rst_rx_n[0]),
+.phy_0_gmii8b_rx_clkout_clk                         		(mrphy_hps_rx_clk[0]),		
+.phy_0_gmii8b_tx_clkout_clk                         		(mrphy_hps_tx_clk[0]),
+.phy_0_rx_clkout_clk						(),			
+.phy_0_tx_clkout_clk						(),
+//.phy_0_rx_clkout_clk						(rx_clkout[0]),			//HA - Exported to get around fitter error
+//.phy_0_tx_clkout_clk						(tx_clkout[0]),
+.phy_0_rx_digitalreset_rx_digitalreset              		(rx_digitalreset[0]),
+.phy_0_tx_digitalreset_tx_digitalreset                      (tx_digitalreset[0]),
+.phy_0_gmii8b_mac_txen_export                               (hps_mrphy_data_vld[0]),
+.phy_0_gmii8b_mac_tx_d_export                               (hps_mrphy_data[0]),
+.phy_0_gmii8b_mac_txer_export                               (hps_mrphy_err[0]),
+.phy_0_gmii8b_mac_rxdv_export                       		(mrphy_hps_data_vld[0]),
+.phy_0_gmii8b_mac_rxd_export                                (mrphy_hps_data[0]),
+.phy_0_gmii8b_mac_rxer_export                               (mrphy_hps_err[0]),
+.phy_0_gmii8b_mac_speed_export                              ({mac_speed[0][2],~mac_speed[0][0]}), //ww23.1-conersion logic as shared by Emil //mac_speed[0][1:0]), 
+.phy_0_operating_speed_export                               (reg_op_speed[2:0]),
+.phy_0_mrphy_pll_lock_pll_locked_stable             		(reg_mrphy_pll_lock[0]),
+.phy_0_i_src_ch_pause_request_o_src_ch_pause_request        (1'b0),
+.phy_0_o_src_ch_pause_grant_i_src_ch_pause_grant            (),
+.phy_0_i_rst_n_i_rst_n                                      (o_rst_n[0]),
+.phy_0_o_rst_ack_n_o_rst_ack_n                              (ack_rst_n[0]),
+.phy_0_i_tx_rst_n_i_tx_rst_n                       			(phy_tx_rst_n[0]),
+.phy_0_i_rx_rst_n_i_rx_rst_n                                (phy_rx_rst_n[0]),
+.phy_0_o_tx_rst_ack_n_o_tx_rst_ack_n                        (ack_tx_rst_n[0]),
+.phy_0_o_rx_rst_ack_n_o_rx_rst_ack_n                        (ack_rx_rst_n[0]),
+.phy_0_tx_ready_tx_ready                                    (reg_tx_rdy[0]),
+.phy_0_rx_ready_rx_ready                           			(reg_rx_rdy[0]),
+.phy_0_xcvr_mode_export                                     (2'b01),				//HA - Check once
+.phy_0_i_pma_cu_clk_clk                                     (o_pma_cpu_clk),
+.phy_0_i_system_pll_lock_system_pll_lock                    (sys_pll_locked),
+.phy_0_i_src_rs_grant_src_rs_grant                          (src_grant[0]),
+.phy_0_o_src_rs_req_src_rs_req                     	    (src_req[0]),
+.phy_0_tx_serial_data_o_tx_serial_data                      (pp_app_tx_serial_data[0]),  
+.phy_0_tx_serial_data_n_o_tx_serial_data_n                  (pp_app_tx_serial_data_n[0]),
+.phy_0_rx_serial_data_i_rx_serial_data                      (app_pp_rx_serial_data[0]),  
+.phy_0_rx_serial_data_n_i_rx_serial_data_n                  (app_pp_rx_serial_data_n[0]),
+.phy_0_rx_is_lockedtodata_o_rx_is_lockedtodata		    (reg_blk_lock[0]),
+.phy_0_tx_pll_refclk_p_clk				    (osc_clk),
+//.phy_0_tx_pll_refclk_n_clk				    (),
+.phy_0_rx_cdr_refclk_p_clk				    (osc_clk),
+//.phy_0_rx_cdr_refclk_n_clk				    (),
+//.srcss_o_src_rs_grant_src_rs_grant                 (src_grant),
+//.srcss_i_src_rs_priority_src_rs_priority           (src_priority),      //Driving to 0
+//.srcss_i_src_rs_req_src_rs_req                     (src_req),           
+//.srcss_o_pma_cu_clk_clk                  (o_pma_clk),
+//Transceiver reconfiguration interface from 10G Multi-rate Reconfig - unused
+//.rsif_write                        ('b0),      //input    
+//.rsif_read                         ('b0),      //input
+//.rsif_address                      (18'b0),      //input
+//.rsif_byteenable                   (4'b0),      //input
+//.rsif_writedata                    (32'b0),      //input
+//.rsif_readdata                     (),         //output
+//.rsif_waitrequest                  (),         //output
+//.rsif_readdatavalid                (),         //output
+@@if {$tsn_concurrent == 1} {
+.phy_1_gmii8b_tx_clkin_clk                          		(hps_mrphy_tx_clk[1]),	//HA - Check this, connecting to get rid of IOPLL Fitter error 
+.phy_1_gmii8b_tx_rst_n_gmii8b_tx_rst_n                      (gmii8b_rst_tx_n[1]),
+.phy_1_gmii8b_rx_rst_n_gmii8b_rx_rst_n                      (gmii8b_rst_rx_n[1]),
+.phy_1_gmii8b_rx_clkout_clk                         		(mrphy_hps_rx_clk[1]),		
+.phy_1_gmii8b_tx_clkout_clk                         		(mrphy_hps_tx_clk[1]),
+//.phy_1_rx_clkout_clk						(rx_clkout[1]),			//HA - Exported to get around fitter erro
+//.phy_1_tx_clkout_clk						(tx_clkout[1]),
+.phy_1_rx_digitalreset_rx_digitalreset                      (rx_digitalreset[1]),
+.phy_1_tx_digitalreset_tx_digitalreset                      (tx_digitalreset[1]),
+.phy_1_gmii8b_mac_txen_export                      			(hps_mrphy_data_vld[1]),
+.phy_1_gmii8b_mac_tx_d_export                               (hps_mrphy_data[1]),
+.phy_1_gmii8b_mac_txer_export                               (hps_mrphy_err[1]),
+.phy_1_gmii8b_mac_rxdv_export                               (mrphy_hps_data_vld[1]),
+.phy_1_gmii8b_mac_rxd_export                                (mrphy_hps_data[1]),
+.phy_1_gmii8b_mac_rxer_export                      			(mrphy_hps_err[1]),
+.phy_1_gmii8b_mac_speed_export                              ({mac_speed[1][2],~mac_speed[1][0]}),
+//ww23.1-conersion logic as shared by Emil //mac_speed[1][1:0]), 
+.phy_1_operating_speed_export                               (reg_op_speed[5:3]),
+.phy_1_mrphy_pll_lock_pll_locked_stable                     (reg_mrphy_pll_lock[1]),
+.phy_1_i_src_ch_pause_request_o_src_ch_pause_request        (),
+.phy_1_o_src_ch_pause_grant_i_src_ch_pause_grant   			(),
+.phy_1_i_rst_n_i_rst_n                                      (o_rst_n[1]),
+.phy_1_o_rst_ack_n_o_rst_ack_n                              (ack_rst_n[1]),
+.phy_1_i_tx_rst_n_i_tx_rst_n                                (phy_tx_rst_n[1]),
+.phy_1_i_rx_rst_n_i_rx_rst_n                                (phy_rx_rst_n[1]),
+.phy_1_o_tx_rst_ack_n_o_tx_rst_ack_n               			(ack_tx_rst_n[1]),
+.phy_1_o_rx_rst_ack_n_o_rx_rst_ack_n                        (ack_rx_rst_n[1]),
+.phy_1_tx_ready_tx_ready                                    (reg_tx_rdy[1]),
+.phy_1_rx_ready_rx_ready                                    (reg_rx_rdy[1]),
+.phy_1_xcvr_mode_export                                     (2'b01),
+.phy_1_i_pma_cu_clk_clk                            			(o_pma_cpu_clk),
+.phy_1_i_system_pll_lock_system_pll_lock                    (sys_pll_locked),
+.phy_1_i_src_rs_grant_src_rs_grant                          (src_grant[1]),
+.phy_1_o_src_rs_req_src_rs_req                              (src_req[1]),
+.phy_1_tx_serial_data_o_tx_serial_data                      (pp_app_tx_serial_data[1]),  
+.phy_1_tx_serial_data_n_o_tx_serial_data_n        			(pp_app_tx_serial_data_n[1]),
+.phy_1_rx_serial_data_i_rx_serial_data                      (app_pp_rx_serial_data[1]),  
+.phy_1_rx_serial_data_n_i_rx_serial_data_n                  (app_pp_rx_serial_data_n[1]),
+.phy_1_rx_is_lockedtodata_o_rx_is_lockedtodata		    	(reg_blk_lock[1]),
+.phy_1_tx_pll_refclk_p_clk                                  (osc_clk),
+//.phy_1_tx_pll_refclk_n_clk                                  (),
+.phy_1_rx_cdr_refclk_p_clk                                  (osc_clk),
+//.phy_1_rx_cdr_refclk_n_clk                                  (),
+.phy_2_gmii8b_tx_clkin_clk                                  (hps_mrphy_tx_clk[2]),	//HA - Check this, connecting to get rid of IOPLL Fitter error 
+.phy_2_gmii8b_tx_rst_n_gmii8b_tx_rst_n                      (gmii8b_rst_tx_n[2]),
+.phy_2_gmii8b_rx_rst_n_gmii8b_rx_rst_n              		(gmii8b_rst_rx_n[2]),
+//.phy_2_rx_clkout_clk										(rx_clkout[2]),		//HA - Exported to get around fitter error
+//.phy_2_tx_clkout_clk										(tx_clkout[2]),
+.phy_2_gmii8b_rx_clkout_clk                         		(mrphy_hps_rx_clk[2]),		//HA - Should be there for other macs as well
+.phy_2_gmii8b_tx_clkout_clk                         		(mrphy_hps_tx_clk[2]),
+.phy_2_rx_digitalreset_rx_digitalreset                      (rx_digitalreset[2]),
+.phy_2_tx_digitalreset_tx_digitalreset                      (tx_digitalreset[2]),
+.phy_2_gmii8b_mac_txen_export                               (hps_mrphy_data_vld[2]),
+.phy_2_gmii8b_mac_tx_d_export                               (hps_mrphy_data[2]),
+.phy_2_gmii8b_mac_txer_export                    			(hps_mrphy_err[2]),
+.phy_2_gmii8b_mac_rxdv_export                               (mrphy_hps_data_vld[2]),
+.phy_2_gmii8b_mac_rxd_export                                (mrphy_hps_data[2]),
+.phy_2_gmii8b_mac_rxer_export                               (mrphy_hps_err[2]),
+.phy_2_gmii8b_mac_speed_export                              ({mac_speed[2][2],~mac_speed[2][0]}),
+//ww23.1-conersion logic as shared by Emil //mac_speed[2][1:0]), 
+.phy_2_operating_speed_export                       		(reg_op_speed[8:6]),
+.phy_2_mrphy_pll_lock_pll_locked_stable                     (reg_mrphy_pll_lock[2]),
+.phy_2_i_src_ch_pause_request_o_src_ch_pause_request        (),
+.phy_2_o_src_ch_pause_grant_i_src_ch_pause_grant            (),
+.phy_2_i_rst_n_i_rst_n                                      (o_rst_n[2]),
+.phy_2_o_rst_ack_n_o_rst_ack_n                     			(ack_rst_n[2]),
+.phy_2_i_tx_rst_n_i_tx_rst_n                                (phy_tx_rst_n[2]),
+.phy_2_i_rx_rst_n_i_rx_rst_n                                (phy_rx_rst_n[2]),
+.phy_2_o_tx_rst_ack_n_o_tx_rst_ack_n                        (ack_tx_rst_n[2]),
+.phy_2_o_rx_rst_ack_n_o_rx_rst_ack_n                        (ack_rx_rst_n[2]),
+.phy_2_tx_ready_tx_ready                           			(reg_tx_rdy[2]),
+.phy_2_rx_ready_rx_ready                                    (reg_rx_rdy[2]),
+.phy_2_xcvr_mode_export                                     (2'b01),
+.phy_2_i_pma_cu_clk_clk                                     (o_pma_cpu_clk),
+.phy_2_i_system_pll_lock_system_pll_lock                    (sys_pll_locked),
+.phy_2_i_src_rs_grant_src_rs_grant                  		(src_grant[2]),
+.phy_2_o_src_rs_req_src_rs_req                              (src_req[2]),
+.phy_2_tx_serial_data_o_tx_serial_data                      (pp_app_tx_serial_data[2]),  
+.phy_2_tx_serial_data_n_o_tx_serial_data_n                  (pp_app_tx_serial_data_n[2]),
+.phy_2_rx_serial_data_i_rx_serial_data                      (app_pp_rx_serial_data[2]),  
+.phy_2_rx_serial_data_n_i_rx_serial_data_n         			(app_pp_rx_serial_data_n[2]),
+.phy_2_rx_is_lockedtodata_o_rx_is_lockedtodata		    (reg_blk_lock[2]),
+.phy_2_tx_pll_refclk_p_clk                                  (osc_clk),
+//.phy_2_tx_pll_refclk_n_clk                                  (),
+.phy_2_rx_cdr_refclk_p_clk                                  (osc_clk),
+//.phy_2_rx_cdr_refclk_n_clk                                  (),
+@@}
+.mm_bridge_0140_017f_m0_waitrequest	(mm_bridge_0140_017f_m0_waitrequest), 
+.mm_bridge_0140_017f_m0_readdata	(mm_bridge_0140_017f_m0_readdata),     
+.mm_bridge_0140_017f_m0_readdatavalid	(mm_bridge_0140_017f_m0_readdatavalid),
+.mm_bridge_0140_017f_m0_burstcount	(),   
+.mm_bridge_0140_017f_m0_writedata	(),    
+.mm_bridge_0140_017f_m0_address		(),      
+.mm_bridge_0140_017f_m0_write		(mm_bridge_0140_017f_m0_write),        
+.mm_bridge_0140_017f_m0_read		(mm_bridge_0140_017f_m0_read),        
+.mm_bridge_0140_017f_m0_byteenable	(),   
+.mm_bridge_0140_017f_m0_debugaccess	(),
+.mm_bridge_0380_03ff_m0_waitrequest	(mm_bridge_0380_03ff_m0_waitrequest), 
+.mm_bridge_0380_03ff_m0_readdata	(mm_bridge_0380_03ff_m0_readdata),    
+.mm_bridge_0380_03ff_m0_readdatavalid	(mm_bridge_0380_03ff_m0_readdatavalid),
+.mm_bridge_0380_03ff_m0_burstcount	(),   
+.mm_bridge_0380_03ff_m0_writedata	(),    
+.mm_bridge_0380_03ff_m0_address		(),      
+.mm_bridge_0380_03ff_m0_write		(mm_bridge_0380_03ff_m0_write),        
+.mm_bridge_0380_03ff_m0_read		(mm_bridge_0380_03ff_m0_read),         
+.mm_bridge_0380_03ff_m0_byteenable	(),   
+.mm_bridge_0380_03ff_m0_debugaccess	(),   	
+@@if {$tsn_concurrent == 0} {
+.mm_bridge_0180_01ff_m0_waitrequest	(mm_bridge_0180_01ff_m0_waitrequest), 
+.mm_bridge_0180_01ff_m0_readdata	(mm_bridge_0180_01ff_m0_readdata),    
+.mm_bridge_0180_01ff_m0_readdatavalid	(mm_bridge_0180_01ff_m0_readdatavalid),
+.mm_bridge_0180_01ff_m0_burstcount	(),   
+.mm_bridge_0180_01ff_m0_writedata	(),    
+.mm_bridge_0180_01ff_m0_address		(),     
+.mm_bridge_0180_01ff_m0_write		(mm_bridge_0180_01ff_m0_write),       
+.mm_bridge_0180_01ff_m0_read		(mm_bridge_0180_01ff_m0_read),       
+.mm_bridge_0180_01ff_m0_byteenable	(),
+.mm_bridge_0180_01ff_m0_debugaccess	(),  
+.mm_bridge_0200_02ff_m0_waitrequest	(mm_bridge_0200_02ff_m0_waitrequest),  
+.mm_bridge_0200_02ff_m0_readdata	(mm_bridge_0200_02ff_m0_readdata),     
+.mm_bridge_0200_02ff_m0_readdatavalid	(mm_bridge_0200_02ff_m0_readdatavalid),
+.mm_bridge_0200_02ff_m0_burstcount	(),   
+.mm_bridge_0200_02ff_m0_writedata	(),    
+.mm_bridge_0200_02ff_m0_address		(),      
+.mm_bridge_0200_02ff_m0_write		(mm_bridge_0200_02ff_m0_write),        
+.mm_bridge_0200_02ff_m0_read		(mm_bridge_0200_02ff_m0_read),         
+.mm_bridge_0200_02ff_m0_byteenable	(),  
+.mm_bridge_0200_02ff_m0_debugaccess	(),  
+.mm_bridge_0400_07ff_m0_waitrequest	(mm_bridge_0400_07ff_m0_waitrequest),  
+.mm_bridge_0400_07ff_m0_readdata	(mm_bridge_0400_07ff_m0_readdata),     
+.mm_bridge_0400_07ff_m0_readdatavalid	(mm_bridge_0400_07ff_m0_readdatavalid),
+.mm_bridge_0400_07ff_m0_burstcount	(),   
+.mm_bridge_0400_07ff_m0_writedata	(),    
+.mm_bridge_0400_07ff_m0_address		(),      
+.mm_bridge_0400_07ff_m0_write		(mm_bridge_0400_07ff_m0_write),        
+.mm_bridge_0400_07ff_m0_read		(mm_bridge_0400_07ff_m0_read),         
+.mm_bridge_0400_07ff_m0_byteenable	(),  
+.mm_bridge_0400_07ff_m0_debugaccess	(),  
+@@}
+@@if {$tsn_concurrent == 1} {
+.mm_bridge_01c0_01ff_m0_waitrequest	(mm_bridge_01c0_01ff_m0_waitrequest), 
+.mm_bridge_01c0_01ff_m0_readdata	(mm_bridge_01c0_01ff_m0_readdata),    
+.mm_bridge_01c0_01ff_m0_readdatavalid	(mm_bridge_01c0_01ff_m0_readdatavalid),
+.mm_bridge_01c0_01ff_m0_burstcount	(),   
+.mm_bridge_01c0_01ff_m0_writedata	(),    
+.mm_bridge_01c0_01ff_m0_address		(),     
+.mm_bridge_01c0_01ff_m0_write		(mm_bridge_01c0_01ff_m0_write),       
+.mm_bridge_01c0_01ff_m0_read		(mm_bridge_01c0_01ff_m0_read),       
+.mm_bridge_01c0_01ff_m0_byteenable	(),
+.mm_bridge_01c0_01ff_m0_debugaccess	(),  
+.mm_bridge_0240_027f_m0_waitrequest	(mm_bridge_0240_027f_m0_waitrequest),  
+.mm_bridge_0240_027f_m0_readdata	(mm_bridge_0240_027f_m0_readdata),     
+.mm_bridge_0240_027f_m0_readdatavalid	(mm_bridge_0240_027f_m0_readdatavalid),
+.mm_bridge_0240_027f_m0_burstcount	(),   
+.mm_bridge_0240_027f_m0_writedata	(),    
+.mm_bridge_0240_027f_m0_address		(),      
+.mm_bridge_0240_027f_m0_write		(mm_bridge_0240_027f_m0_write),        
+.mm_bridge_0240_027f_m0_read		(mm_bridge_0240_027f_m0_read),         
+.mm_bridge_0240_027f_m0_byteenable	(),  
+.mm_bridge_0240_027f_m0_debugaccess	(),  
+.mm_bridge_0280_02ff_m0_waitrequest	(mm_bridge_0280_02ff_m0_waitrequest),  
+.mm_bridge_0280_02ff_m0_readdata	(mm_bridge_0280_02ff_m0_readdata),     
+.mm_bridge_0280_02ff_m0_readdatavalid	(mm_bridge_0280_02ff_m0_readdatavalid),
+.mm_bridge_0280_02ff_m0_burstcount	 (),   
+.mm_bridge_0280_02ff_m0_writedata	 (),    
+.mm_bridge_0280_02ff_m0_address		 (),      
+.mm_bridge_0280_02ff_m0_write		 (mm_bridge_0280_02ff_m0_write),        
+.mm_bridge_0280_02ff_m0_read		 (mm_bridge_0280_02ff_m0_read),         
+.mm_bridge_0280_02ff_m0_byteenable	 (),  
+.mm_bridge_0280_02ff_m0_debugaccess	 (),  
+.mm_bridge_0400_04ff_m0_waitrequest	 (mm_bridge_0400_04ff_m0_waitrequest),
+.mm_bridge_0400_04ff_m0_readdata	 (mm_bridge_0400_04ff_m0_readdata),
+.mm_bridge_0400_04ff_m0_readdatavalid(mm_bridge_0400_04ff_m0_readdatavalid),
+.mm_bridge_0400_04ff_m0_burstcount	 (),
+.mm_bridge_0400_04ff_m0_writedata	 (),
+.mm_bridge_0400_04ff_m0_address		 (),
+.mm_bridge_0400_04ff_m0_write		 (mm_bridge_0400_04ff_m0_write),
+.mm_bridge_0400_04ff_m0_read		 (mm_bridge_0400_04ff_m0_read),
+.mm_bridge_0400_04ff_m0_byteenable	 (),
+.mm_bridge_0400_04ff_m0_debugaccess	 (),
+.mm_bridge_0500_05ff_m0_waitrequest	 (mdio_csr_waitrequest),
+.mm_bridge_0500_05ff_m0_readdata	 (mdio_csr_readdata),
+.mm_bridge_0500_05ff_m0_readdatavalid(mdio_csr_readdatavalid),
+.mm_bridge_0500_05ff_m0_burstcount	 (),
+.mm_bridge_0500_05ff_m0_writedata	 (mdio_csr_writedata),
+.mm_bridge_0500_05ff_m0_address		 (mdio_csr_address),
+.mm_bridge_0500_05ff_m0_write		 (mdio_csr_write),
+.mm_bridge_0500_05ff_m0_read		 (mdio_csr_read),
+.mm_bridge_0500_05ff_m0_byteenable	 (),
+.mm_bridge_0500_05ff_m0_debugaccess	 (),
+.mm_bridge_0600_06ff_m0_waitrequest	 (i2c_csr_waitrequest),
+.mm_bridge_0600_06ff_m0_readdata	 (i2c_csr_readdata),
+.mm_bridge_0600_06ff_m0_readdatavalid(i2c_csr_readdatavalid),
+.mm_bridge_0600_06ff_m0_burstcount	 (),
+.mm_bridge_0600_06ff_m0_writedata	 (i2c_csr_writedata),
+.mm_bridge_0600_06ff_m0_address		 (i2c_csr_address),
+.mm_bridge_0600_06ff_m0_write		 (i2c_csr_write),
+.mm_bridge_0600_06ff_m0_read		 (i2c_csr_read),
+.mm_bridge_0600_06ff_m0_byteenable	 (),  
+.mm_bridge_0600_06ff_m0_debugaccess	 (),
+.phy_clk_clk                         (fpga_clk_100),
+.i2c_csr_readdata                    (i2c_csr_readdata     ),
+.i2c_csr_writedata                   (i2c_csr_writedata    ),
+.i2c_csr_address                     (i2c_csr_address      ),
+.i2c_csr_write                       (i2c_csr_write        ),
+.i2c_csr_read                        (i2c_csr_read         ),
+.i2c_interrupt_sender_irq            (i2c_intr),
+.i2c_serial_sda_in                   (i2c_sda_in),
+.i2c_serial_scl_in                   (i2c_scl_in),
+.i2c_serial_sda_oe                   (i2c_sda_oe),
+.i2c_serial_scl_oe                   (i2c_scl_oe),
+.phy_reset_reset                     (~csr_rst),
+@@}
+.intel_systemclk_gts_0_o_pll_lock_o_pll_lock                (sys_pll_locked),
+.intel_systemclk_gts_0_refclk_xcvr_clk			    (osc_clk),
+.i_refclk_rdy_data                                          (1'b1),				//Driving this to 1
+.iopll_locked_export								(io_pll_locked),
+.iopll_reset_reset  								(pll_reset),
+//.iopll_80m_clk_clk  								(),  //clock speed 80M latency_sclk -these both connected internally
+//.iopll_153m_clk_clk 								(),  //clock speed 153Mhz for DL(latency_measure_clk)
+.mm_bridge_0_m0_waitrequest                                 (csr_waitrequest),
+.mm_bridge_0_m0_readdata                                    (csr_readdata),
+.mm_bridge_0_m0_readdatavalid                      			(csr_readdatavalid),
+.mm_bridge_0_m0_burstcount                                  (csr_burstcount),
+.mm_bridge_0_m0_writedata                                   (csr_writedata),
+.mm_bridge_0_m0_address                                     (csr_address),
+.mm_bridge_0_m0_write                                       (csr_write),
+.mm_bridge_0_m0_read                               			(csr_read),
+.mm_bridge_0_m0_byteenable                                  (csr_byteenable),
+.mm_bridge_0_m0_debugaccess                                 (csr_debugaccess),
+.phy_rst_reset                                              (phy_reset),
+.avmm_reset_reset					    (avmm_rst),
+@@}                                                         
+.reset_reset_n                             (~system_reset)
+);
+
+@@if {$tsn_concurrent == 1} {
+//Generating mdio/i2c_csr_readdatavalid signal
+always @(posedge fpga_clk_100) begin
+	if(csr_rst == 1'b0) begin
+		mdio_csr_readdatavalid  <= 1'b0 ;
+		i2c_csr_readdatavalid  <= 1'b0 ;
+	end
+	else begin  
+		mdio_csr_readdatavalid <= mdio_csr_read & ~mdio_csr_waitrequest;
+		i2c_csr_readdatavalid  <= i2c_csr_read & ~i2c_csr_waitrequest;
+	end
+end		
+//Generating i2c_csr_waitrequest signal
+always @(posedge fpga_clk_100)	begin
+		if(csr_rst == 1'b0)
+			i2c_csr_waitrequest <= 1'b1;
+		else if((i2c_csr_waitrequest != 0) && (i2c_csr_write | i2c_csr_read))
+			i2c_csr_waitrequest <= 1'b0;
+		else
+			i2c_csr_waitrequest <= 1'b1;
+end
+		
+assign i2c_scl_in = i2c_scl;
+assign i2c_scl = i2c_scl_oe ? 1'b0 : 1'bz;
+	   
+assign i2c_sda_in = i2c_sda;
+assign i2c_sda = i2c_sda_oe ? 1'b0 : 1'bz;
+		
+@@}
+
+@@if {$tsn_en == 1} {
+		//Reset controller
+		rst_ctrl #(.NUM_PHY(NUM_PHY)) rst_ctrl_inst (
+			.app_pp_h2f_reset							 (h2f_reset),
+			.app_pp_system_rst_n						 (~system_reset),
+			.app_pp_system_clk							 (fpga_clk_100),
+			.app_pp_ninit_done							 (ninit_done),
+			.app_pp_pll_locked							 (io_pll_locked),    	//Connect this to iopll_locked_export (io_pll_locked),
+			.pp_app_pll_rst								 (pll_reset),		//Connect this to iopll_reset_reset
+			.pp_app_csr_rst_n							 (csr_rst),
+			.pp_app_avmm_rst							 (avmm_rst),
+			.csr_o_rst_n								 (csr_o_rst_n),
+			.sync_ack_i_rst_n							 (sync_ack_i_rst_n),
+			.sync_mrphy_pll_lock_i						 (sync_mrphy_pll_lock_i),
+			.sync_rx_ready_i							 (sync_rx_ready_i),
+			.sync_tx_ready_i							 (sync_tx_ready_i),
+			.o_rst_n									 (o_rst_n),
+			.emac_mac_rst_tx_n							 (emac_mac_rst_tx_n),
+			.emac_mac_rst_rx_n							 (emac_mac_rst_rx_n),
+			.phy_reset                                   (phy_reset),
+			.gmii8b_rst_tx_n                             (gmii8b_rst_tx_n),
+			.tx_digitalreset                             (tx_digitalreset),
+			.gmii8b_rst_rx_n                             (gmii8b_rst_rx_n),
+			.rx_digitalreset							 (rx_digitalreset)
+		); 
+	
+		//CSR Register space
+		csr_shell #(.NUM_PHY(NUM_PHY)) usr_csr_space (
+			//input
+			.csr_clk		     	(fpga_clk_100),
+			.reset					(avmm_rst),
+			.csr_wr_data			(csr_writedata),
+			.csr_read				(csr_read),			
+            .csr_write				(csr_write),
+            .csr_byteenable			(csr_byteenable),
+            .csr_address			(csr_address),
+			.csr_waitrequest		(csr_waitrequest),	
+			.csr_rd_data			(csr_readdata),
+			.csr_rd_vld				(csr_readdatavalid),
+			.mrphy_pll_lock_i	    (reg_mrphy_pll_lock),
+	    	.rx_ready_i				(reg_rx_rdy),
+	    	.tx_ready_i             (reg_tx_rdy),
+	    	.rx_block_lock_i        (reg_blk_lock),					//Check1 - if this connection is correct
+	    	.reg_op_speed            (reg_op_speed),
+	    	.ack_i_rst_n            (ack_rst_n),
+            .ack_i_tx_rst_n         (ack_tx_rst_n),
+            .ack_i_rx_rst_n         (ack_rx_rst_n),
+            .we_dr_err_stat_i       (1'b0),							//Check1 - Temp, Driving to 0
+            .phy_delay_i			(16'b0),							//Check1 - Temp, Driving to 0
+			.csr_o_rst_n			(csr_o_rst_n),
+			.o_tx_rst_n			(phy_tx_rst_n),
+			.o_rx_rst_n			(phy_rx_rst_n),
+			.sync_ack_i_rst_n		(sync_ack_i_rst_n),
+			.sync_mrphy_pll_lock_i	(sync_mrphy_pll_lock_i),
+			.sync_rx_ready_i		(sync_rx_ready_i),
+			.sync_tx_ready_i		(sync_tx_ready_i)
+	);
+
+		tsn_rsvd_csr  #(.DATA_WIDTH(16)) 
+				csr_0140_017f
+			  ( .clk					(fpga_clk_100),
+				.rst					(avmm_rst),
+				.write_i				(mm_bridge_0140_017f_m0_write),
+				.read_i					(mm_bridge_0140_017f_m0_read),
+				.waitrequest_o			(mm_bridge_0140_017f_m0_waitrequest),
+				.readdata_o				(mm_bridge_0140_017f_m0_readdata),
+				.readdatavalid_o		(mm_bridge_0140_017f_m0_readdatavalid)			
+		);
+		
+		tsn_rsvd_csr csr_0380_03ff (
+				.clk					(fpga_clk_100),
+				.rst					(avmm_rst),
+				.write_i				(mm_bridge_0380_03ff_m0_write),
+				.read_i					(mm_bridge_0380_03ff_m0_read),
+				.waitrequest_o			(mm_bridge_0380_03ff_m0_waitrequest),
+				.readdata_o				(mm_bridge_0380_03ff_m0_readdata),
+				.readdatavalid_o		(mm_bridge_0380_03ff_m0_readdatavalid)			
+		);
+
+
+@@if {$tsn_concurrent == 0} {
+		tsn_rsvd_csr #(.DATA_WIDTH(16))
+		csr_0180_01ff 
+			(	.clk					(fpga_clk_100),
+				.rst					(avmm_rst),
+				.write_i				(mm_bridge_0180_01ff_m0_write),
+				.read_i					(mm_bridge_0180_01ff_m0_read),
+				.waitrequest_o			(mm_bridge_0180_01ff_m0_waitrequest),
+				.readdata_o				(mm_bridge_0180_01ff_m0_readdata),
+				.readdatavalid_o		(mm_bridge_0180_01ff_m0_readdatavalid)			
+		);
+
+		tsn_rsvd_csr csr_0200_02ff (
+				.clk					(fpga_clk_100),
+				.rst					(avmm_rst),
+				.write_i				(mm_bridge_0200_02ff_m0_write),
+				.read_i					(mm_bridge_0200_02ff_m0_read),
+				.waitrequest_o			(mm_bridge_0200_02ff_m0_waitrequest),
+				.readdata_o				(mm_bridge_0200_02ff_m0_readdata),
+				.readdatavalid_o		(mm_bridge_0200_02ff_m0_readdatavalid)			
+		);
+	
+		tsn_rsvd_csr csr_0400_07ff (
+				.clk					(fpga_clk_100),
+				.rst					(avmm_rst),
+				.write_i				(mm_bridge_0400_07ff_m0_write),
+				.read_i					(mm_bridge_0400_07ff_m0_read),
+				.waitrequest_o			(mm_bridge_0400_07ff_m0_waitrequest),
+				.readdata_o				(mm_bridge_0400_07ff_m0_readdata),
+				.readdatavalid_o		(mm_bridge_0400_07ff_m0_readdatavalid)			
+		);
+		
+		
+
+@@}
+
+@@if {$tsn_en == 1} {
+assign c3_emac0_mdio_mdio0 = pp_app_emac0_mdio_mdoe0 ? pp_app_emac0_mdio_mdo0 : 1'bz;
+assign app_pp_emac0_mdio_mdi0  = c3_emac0_mdio_mdio0;
+
+
+assign src_priority = 'b0;
+@@}
+
+@@if {$tsn_concurrent == 1} {
+		assign c3_emac0_mdio_mdio = pp_app_emac0_mdio_mdoe ? pp_app_emac0_mdio_mdo : 1'bz;
+		assign app_pp_emac0_mdio_mdi  = c3_emac0_mdio_mdio;
+		
+		tsn_rsvd_csr csr_01c0_01ff (
+				.clk					(fpga_clk_100),
+				.rst					(avmm_rst),
+				.write_i				(mm_bridge_01c0_01ff_m0_write),
+				.read_i					(mm_bridge_01c0_01ff_m0_read),
+				.waitrequest_o			(mm_bridge_01c0_01ff_m0_waitrequest),
+				.readdata_o				(mm_bridge_01c0_01ff_m0_readdata),
+				.readdatavalid_o		(mm_bridge_01c0_01ff_m0_readdatavalid)			
+		);
+
+		tsn_rsvd_csr csr_0240_027f (
+				.clk					(fpga_clk_100),
+				.rst					(avmm_rst),
+				.write_i				(mm_bridge_0240_027f_m0_write),
+				.read_i					(mm_bridge_0240_027f_m0_read),
+				.waitrequest_o			(mm_bridge_0240_027f_m0_waitrequest),
+				.readdata_o				(mm_bridge_0240_027f_m0_readdata),
+				.readdatavalid_o		(mm_bridge_0240_027f_m0_readdatavalid)			
+		);
+
+		tsn_rsvd_csr csr_0280_02ff (
+				.clk					(fpga_clk_100),
+				.rst					(avmm_rst),
+				.write_i				(mm_bridge_0280_02ff_m0_write),
+				.read_i					(mm_bridge_0280_02ff_m0_read),
+				.waitrequest_o			(mm_bridge_0280_02ff_m0_waitrequest),
+				.readdata_o				(mm_bridge_0280_02ff_m0_readdata),
+				.readdatavalid_o		(mm_bridge_0280_02ff_m0_readdatavalid)	
+		);
+		
+		tsn_rsvd_csr csr_0400_04ff (
+				.clk					(fpga_clk_100),
+				.rst					(avmm_rst),
+				.write_i				(mm_bridge_0400_04ff_m0_write),
+				.read_i					(mm_bridge_0400_04ff_m0_read),
+				.waitrequest_o			(mm_bridge_0400_04ff_m0_waitrequest),
+				.readdata_o				(mm_bridge_0400_04ff_m0_readdata),
+				.readdatavalid_o		(mm_bridge_0400_04ff_m0_readdatavalid)			
+		);
+		
+	//ETHERNET MDIO Core IP
+	altera_eth_mdio avmm2mdio (
+		 .clk               (fpga_clk_100)                 //   input,   width = 1,       clock.clk
+		,.reset		        (~csr_rst)                 //   input,   width = 1, clock_reset.reset
+		,.csr_read          (mdio_csr_read       )    //   input,   width = 1,         csr.write
+		,.csr_write         (mdio_csr_write      )    //   input,   width = 1,            .read
+		,.csr_address       (mdio_csr_address    )    //   input,   width = 6,            .address
+		,.csr_writedata     (mdio_csr_writedata  )    //   input,  width = 32,            .writedata
+		,.csr_readdata      (mdio_csr_readdata   )    //  output,  width = 32,            .readdata
+		,.csr_waitrequest	(mdio_csr_waitrequest)	  //  output,   width = 1,            .waitrequest
+		,.mdc               (c3_emac0_mdio_mdc)   //  output,   width = 1,        mdio.mdc
+		,.mdio_in           (app_pp_emac0_mdio_mdi)   //   input,   width = 1,            .mdio_in
+		,.mdio_out          (pp_app_emac0_mdio_mdo)   //  output,   width = 1,            .mdio_out
+		,.mdio_oen          (pp_app_emac0_mdio_mdoe)  //  output,   width = 1,            .mdio_oen
+		
+	);
+@@}
+@@}
+
+// debounce fpga_reset_n
+debounce fpga_reset_n_debounce_inst (
+.clk                                       (system_clk_100_internal),
+.reset_n                                   (~ninit_done),
+.data_in                                   (fpga_reset_n),
+.data_out                                  (fpga_reset_n_debounced_wire)
+);
+defparam fpga_reset_n_debounce_inst.WIDTH = 1;
+defparam fpga_reset_n_debounce_inst.POLARITY = "LOW";
+defparam fpga_reset_n_debounce_inst.TIMEOUT = 10000;               // at 100Mhz this is a debounce time of 1ms
+defparam fpga_reset_n_debounce_inst.TIMEOUT_WIDTH = 32;            // ceil(log2(TIMEOUT))
+
+always @ (posedge system_clk_100_internal or posedge ninit_done)
+begin
+    if (ninit_done == 1'b1)
+        fpga_reset_n_debounced <= 1'b0;
+    else
+        fpga_reset_n_debounced <= fpga_reset_n_debounced_wire;  
+end
+
+@@if {$sub_peri_en == 1} {
+@@ if {$fpga_button_pio_width != 0} {  
+// Debounce logic to clean out glitches within 1ms
+debounce debounce_inst (
+.clk                                       (system_clk_100),
+.reset_n                                   (~system_reset),  
+.data_in                                   (fpga_button_pio),
+.data_out                                  (fpga_debounced_buttons)
+);
+defparam debounce_inst.WIDTH = $fpga_button_pio_width;
+defparam debounce_inst.POLARITY = "LOW";
+defparam debounce_inst.TIMEOUT = 10000;               // at 100Mhz this is a debounce time of 1ms
+defparam debounce_inst.TIMEOUT_WIDTH = 32;            // ceil(log2(TIMEOUT))
+@@}
+
+@@  if {$fpga_led_pio_width > 0} {
+always @(posedge system_clk_100 or posedge system_reset) begin
+  if (system_reset)
+    heartbeat_count <= 23'd0;
+  else
+    heartbeat_count <= heartbeat_count + 23'd1;
+end
+@@}
+@@}
+
+endmodule

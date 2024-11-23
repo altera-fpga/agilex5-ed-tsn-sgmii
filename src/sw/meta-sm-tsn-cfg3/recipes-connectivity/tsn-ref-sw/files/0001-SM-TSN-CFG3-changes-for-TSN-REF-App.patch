@@ -1,0 +1,85 @@
+From 433456b7e982296c98fd98156ac2eac39930a91a Mon Sep 17 00:00:00 2001
+From: Mahesh R Vaidya <mahesh.r.vaidya@intel.com>
+Date: Thu, 14 Nov 2024 12:34:48 +0530
+Subject: [PATCH] SM TSN CFG3 changes for TSN REF App
+
+1. Ensure the config is point to the SGMII 2.5G configuration.
+2. Increase the neighbor progagation threshold from 800 to 10000.
+
+Signed-off-by: Mahesh R Vaidya <mahesh.r.vaidya@intel.com>
+---
+ common/gPTP_SGMII-MV2110-2_5G.cfg | 2 +-
+ shell/agilex5/tsq1a.config        | 2 +-
+ shell/agilex5/tsq1b.config        | 2 +-
+ shell/agilex5/vs1a.config         | 2 +-
+ shell/agilex5/vs1b.config         | 2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/common/gPTP_SGMII-MV2110-2_5G.cfg b/common/gPTP_SGMII-MV2110-2_5G.cfg
+index 29e96c5..deb9aed 100644
+--- a/common/gPTP_SGMII-MV2110-2_5G.cfg
++++ b/common/gPTP_SGMII-MV2110-2_5G.cfg
+@@ -10,7 +10,7 @@ priority2		248
+ logAnnounceInterval	0
+ logSyncInterval		-3
+ syncReceiptTimeout	3
+-neighborPropDelayThresh	800
++neighborPropDelayThresh	10000
+ min_neighbor_prop_delay	-20000000
+ assume_two_step		1
+ path_trace_enabled	1
+diff --git a/shell/agilex5/tsq1a.config b/shell/agilex5/tsq1a.config
+index 29c468c..62510a8 100644
+--- a/shell/agilex5/tsq1a.config
++++ b/shell/agilex5/tsq1a.config
+@@ -25,7 +25,7 @@ IRQ_AFFINITY_FILE="irq_affinity_4c_8tx_8rx.map"
+ # Phase: Setup
+ 
+ PTP_IFACE_APPEND=".vlan"
+-PTP_PHY_HW="RGMII-MV1510-1G"
++PTP_PHY_HW="SGMII-MV2110-2_5G"
+ PTP_TX_Q=0
+ PTP_RX_Q=0
+ 
+diff --git a/shell/agilex5/tsq1b.config b/shell/agilex5/tsq1b.config
+index 97a1f8f..d093d09 100644
+--- a/shell/agilex5/tsq1b.config
++++ b/shell/agilex5/tsq1b.config
+@@ -25,7 +25,7 @@ IRQ_AFFINITY_FILE="irq_affinity_4c_8tx_8rx.map"
+ # Phase: Setup
+ 
+ PTP_IFACE_APPEND=".vlan"
+-PTP_PHY_HW="RGMII-MV1510-1G"
++PTP_PHY_HW="SGMII-MV2110-2_5G"
+ PTP_TX_Q=0
+ PTP_RX_Q=0
+ 
+diff --git a/shell/agilex5/vs1a.config b/shell/agilex5/vs1a.config
+index 284c282..ad4f047 100644
+--- a/shell/agilex5/vs1a.config
++++ b/shell/agilex5/vs1a.config
+@@ -43,7 +43,7 @@ VLAN_RX_MAP_XDP=("vlan_prio 1 hw_tc 1"
+                 )
+ 
+ PTP_IFACE_APPEND=".vlan"
+-PTP_PHY_HW="RGMII-MV1510-1G"
++PTP_PHY_HW="SGMII-MV2110-2_5G"
+ PTP_TX_Q=1
+ PTP_RX_Q=1
+ 
+diff --git a/shell/agilex5/vs1b.config b/shell/agilex5/vs1b.config
+index 87c56f2..849c2e3 100644
+--- a/shell/agilex5/vs1b.config
++++ b/shell/agilex5/vs1b.config
+@@ -36,7 +36,7 @@ VLAN_RX_MAP_XDP=("vlan_prio 1 hw_tc 1"
+                 )
+ 
+ PTP_IFACE_APPEND=".vlan"
+-PTP_PHY_HW="RGMII-MV1510-1G"
++PTP_PHY_HW="SGMII-MV2110-2_5G"
+ PTP_TX_Q=1
+ PTP_RX_Q=1
+ 
+-- 
+2.34.1
+
