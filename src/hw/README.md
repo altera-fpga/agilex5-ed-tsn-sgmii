@@ -18,7 +18,7 @@ This reference design demonstrating the following system integration between Har
 This repository hosts build scripts for AGILEX 5 TSN Config3 System reference design.
 
 ## Dependency
-* Intel Quartus Prime 23.4
+* Intel Quartus Prime 24.3
 * Supported Board
   - Intel Agilex 5 Premium Development Kit
 
