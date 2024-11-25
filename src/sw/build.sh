@@ -132,7 +132,7 @@ build_setup() {
 #------------------------------------------------------------------------------------------#
 	pushd $WORKSPACE > /dev/null
 		# Update submodules
-		git submodule update --init --remote -r
+		git submodule update --init -r
 	popd > /dev/null
 
 #------------------------------------------------------------------------------------------#
@@ -178,17 +178,14 @@ build_setup() {
 		echo 'PREFERRED_PROVIDER_virtual/kernel = "linux-socfpga-lts"' >> conf/site.conf
 		echo "PREFERRED_VERSION_linux-socfpga-lts = \"`cut -d. -f1-2 <<< "$LINUX_VER"`%\"" >> conf/site.conf
 		echo "KBRANCH = \"$LINUX_SOCFPGA_BRANCH\"" >> conf/site.conf
-		echo 'KERNEL_REPO = "git://github.com/intel-innersource/applications.fpga.soc.linux-socfpga.git"' >> conf/site.conf
 		# U-boot
 		echo 'PREFERRED_PROVIDER_virtual/bootloader = "u-boot-socfpga"' >> conf/site.conf
 		echo "UBOOT_CONFIG:${MACHINE} = \"$UB_CONFIG\"" >> conf/site.conf
 		echo "PREFERRED_VERSION_u-boot-socfpga = \"$UBOOT_VER%\"" >> conf/site.conf
 		echo "UBOOT_BRANCH = \"$UBOOT_SOCFPGA_BRANCH\"" >> conf/site.conf
-		echo 'UBOOT_REPO = "git://github.com/intel-innersource/applications.fpga.soc.uboot-socfpga.git"' >> conf/site.conf
 		# ATF
 		echo "PREFERRED_VERSION_arm-trusted-firmware = \"`cut -d. -f1-2 <<< "$ATF_VER"`\"" >> conf/site.conf
 		echo "ATF_BRANCH = \"$ATF_BRANCH\"" >> conf/site.conf
-		echo 'ATF_REPO = "git://github.com/intel-innersource/applications.fpga.soc.arm-trusted-firmware.git"' >> conf/site.conf
 		# Blacklist kernel-modules to prevent autoload from udev
 		echo 'KERNEL_MODULE_PROBECONF = "intel_fcs cfg80211"' >> conf/site.conf
 		echo 'module_conf_intel_fcs = "blacklist intel_fcs"' >> conf/site.conf
@@ -216,7 +213,7 @@ bitbake_image() {
 		bitbake u-boot-socfpga -c cleanall
 		echo -e "\n[INFO] Clean up previous ghrd build if any"
 		bitbake hw-ref-design -c cleanall
-		if [[ "$MACHINE" == *"agilex7_"* || "$MACHINE" == "stratix10" ]]; then
+		if [[ "$MACHINE" == *"agilex7_"* || "$MACHINE" == *"stratix10"* ]]; then
 			echo -e "\n[INFO] Clean up previous dtb build if any"
 			bitbake device-tree -c cleanall
 		fi
@@ -282,7 +279,7 @@ package() {
 			cp -vrL kernel.* $STAGING_FOLDER/	|| echo "[INFO] No .itb file found."
 		fi
 
-		if [[ "$MACHINE" == *"agilex5_"* || "$MACHINE" == *"agilex7_"* || "$MACHINE" == "stratix10" ]]; then
+		if [[ "$MACHINE" == *"agilex5_"* || "$MACHINE" == *"agilex7_"* || "$MACHINE" == *"stratix10"* ]]; then
 			cp -vrL devicetree/* $STAGING_FOLDER/	|| echo "[INFO] No dtb found."
 		elif [[ "$MACHINE" == "arria10" && "$IMAGE" == "nand" ]]; then
 			cp -vrL socfpga_arria10_socdk_nand.dtb $STAGING_FOLDER/		|| echo "[INFO] No dtb found."
@@ -293,7 +290,7 @@ package() {
 		fi
 	popd > /dev/null
 
-	if [[ "$MACHINE" == *"agilex"* || "$MACHINE" == "stratix10" ]]; then
+	if [[ "$MACHINE" == *"agilex"* || "$MACHINE" == *"stratix10"* ]]; then
 		mkdir -p $STAGING_FOLDER/u-boot-$MACHINE-socdk-$IMAGE-atf
 		ub_cp_destination=$STAGING_FOLDER/u-boot-$MACHINE-socdk-$IMAGE-atf
 	elif [[ "$MACHINE" == "arria10" || "$MACHINE" == "cyclone5" ]]; then
@@ -316,7 +313,7 @@ package() {
 		cp -vL spl/u-boot-spl.map $ub_cp_destination
 		cp -vL spl/u-boot-spl.bin $ub_cp_destination
 
-		if [[ "$MACHINE" == *"agilex"* || "$MACHINE" == "stratix10" ]]; then
+		if [[ "$MACHINE" == *"agilex"* || "$MACHINE" == *"stratix10"* ]]; then
 			cp -vL spl/u-boot-spl-dtb.hex $ub_cp_destination
 			cp -vL u-boot.itb $ub_cp_destination
 		elif [[ "$MACHINE" == "cyclone5" || "$MACHINE" == "arria10" ]]; then
@@ -337,7 +334,7 @@ package() {
 
 	# Copy u-boot script / extlinux.conf to u-boot staging folder
 	pushd $WORKSPACE/$MACHINE-$IMAGE-rootfs/tmp/deploy/images/$MACHINE/ > /dev/null
-		if [[ "$MACHINE" == *"agilex"* || "$MACHINE" == "stratix10" ]]; then
+		if [[ "$MACHINE" == *"agilex"* || "$MACHINE" == *"stratix10"* ]]; then
 			cp -vL u-boot.txt $ub_cp_destination
 			cp -vL boot.scr.uimg $ub_cp_destination
 		elif [[ "$MACHINE" == "arria10" && "$IMAGE" == "pr" ]]; then
