@@ -1,0 +1,20 @@
+[submodule "src/sw/poky"]
+	path = src/sw/poky
+	url = https://git.yoctoproject.org/git/poky
+	branch = scarthgap
+[submodule "src/sw/meta-intel-fpga"]
+	path = src/sw/meta-intel-fpga
+	url = https://git.yoctoproject.org/git/meta-intel-fpga
+	branch = scarthgap
+[submodule "src/sw/meta-intel-fpga-refdes"]
+	path = src/sw/meta-intel-fpga-refdes
+	url = https://github.com/altera-opensource/meta-intel-fpga-refdes.git
+	branch = scarthgap
+[submodule "src/sw/meta-openembedded"]
+	path = src/sw/meta-openembedded
+	url = https://git.openembedded.org/meta-openembedded
+	branch = scarthgap
+[submodule "src/sw/meta-clang"]
+	path = src/sw/meta-clang
+	url = https://github.com/kraj/meta-clang.git
+	branch = scarthgap
