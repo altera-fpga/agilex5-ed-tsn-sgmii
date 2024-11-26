@@ -1,4 +1,4 @@
-# Intel SoCFPGA Golden Software Reference Design
+# Intel SoCFPGA Golden Software Reference Design (SM TSN Config-3)
 
 GSRD is an Embedded Linux Reference Distribution optimized for SoCFPGA.  
 It is based on Yocto Project Poky reference distribution.
@@ -7,16 +7,13 @@ It is based on Yocto Project Poky reference distribution.
 
 * meta-intel-fpga - SoCFPGA BSP Core Layer
 * meta-intel-fpga-refdes - SoCFPGA GSRD Customization Layer
-* meta-sm-tsn-cfg3 - SoCFPGA GSRD Customization Layer for SM TSN CONFIG-3 Solution (QUARTUS 24.3/194 - KERNEL 6.6.37)
+* meta-sm-tsn-cfg3 - SoCFPGA GSRD Customization Layer for SM TSN CONFIG-3 Solution (QUARTUS 24.3/212 - KERNEL 6.6.37)
 
 Dependencies
 * poky - Core Layer from Yocto Project
 * meta-openembedded - Additional features (python, networking tools, etc) for GSRD
 
 ## Using The Script
-#### [Default GSRD Setup](#default-gsrd-setup-1)  
-#### [Default GSRD Setup with eSDK](#default-gsrd-setup-with-esdk-1)  
-#### [Custom GSRD Setup](#custom-gsrd-setup-1)  
 
 ## Supported Image Variant:  
 
@@ -24,33 +21,20 @@ Dependencies
 | -------------------------- | -------------------------------------------- |
 | Agilex5 DK-A5E065BB32AES1  |   gsrd [ qspi + emmc ]                       |
 
+## SM TSN Config-3 GSRD Setup
 
-## Custom GSRD Setup
-1. Clone the repository and checkout to release branch rel/24.3 .
-`$ git clone https://github.com/intel-innersource/applications.fpga.soc.agilex5e-ed-tsn-config3.git`
-`$ cd applications.fpga.soc.agilex5e-ed-tsn-config3`
-`$ git checkout rel/24.3`
+1. Clone the repository
+`$ git clone git@github.com:altera-fpga/agilex5-ed-tsn-sgmii.git
 
+2. Sync the submodules
+`$ cd agilex5-ed-tsn-sgmii/src/sw`
+`$ git submodule update --init -r`
 
-2. Run the agilex5_dk_a5e065bb32aes1-gsrd-build.sh script from src/sw to sync the submodules
-`$ cd src/sw`
+3. Run the agilex5_dk_a5e065bb32aes1-gsrd-build.sh script to sync the submodules
 `$ . agilex5_dk_a5e065bb32aes1-gsrd-build.sh`
 
-
-3. Run the build_setup to setup build environment
+4. Run the build_setup to setup build environment
 `$ build_setup`
-
-
-4. Update the srcrev of Linux, uboot and atf in recipe files below:
-   -meta-intel-fpga/recipes-kernel/linux/linux-socfpga-lts_6.6.bb
-   -meta-intel-fpga/recipes-bsp/arm-trusted-firmware/arm-trusted-firmware_v2.11.bb
-   -meta-intel-fpga/recipes-bsp/u-boot/u-boot-socfpga_v2024.04.bb
-
-   The srcrev can be taken from the latest commit in link below:
-   -Linux: Commits · https://github.com/intel-innersource/applications.fpga.soc.linux-socfpga/commits/socfpga-6.6.37-lts
-   -u-boot: Commits · https://github.com/intel-innersource/applications.fpga.soc.uboot-socfpga/commits/socfpga_v2024.04
-   -ATF: Commits · https://github.com/intel-innersource/applications.fpga.soc.arm-trusted-firmware/commits/socfpga_v2.11.0
-
 
 5. OPTIONAL:  GHRD:
 
