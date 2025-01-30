@@ -24,7 +24,7 @@ Dependencies
 ## SM TSN Config-3 GSRD Setup
 
 1. Clone the repository
-`$ git clone git@github.com:altera-fpga/agilex5-ed-tsn-sgmii.git
+`$ git clone https://github.com/altera-fpga/agilex5-ed-tsn-sgmii.git
 
 2. Sync the submodules
 `$ cd agilex5-ed-tsn-sgmii/src/sw`
