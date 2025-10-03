@@ -39,7 +39,7 @@ export $IMAGE
 #------------------------------------------------------------------------------------------#
 # Set Linux Version
 #------------------------------------------------------------------------------------------#
-export LINUX_VER=6.6.37
+export LINUX_VER=6.12.19
 echo "LINUX_VERSION        = $LINUX_VER"
 LINUX_SOCFPGA_BRANCH=socfpga-$LINUX_VER-lts
 echo "LINUX_SOCFPGA_BRANCH = $LINUX_SOCFPGA_BRANCH"
@@ -47,7 +47,7 @@ echo "LINUX_SOCFPGA_BRANCH = $LINUX_SOCFPGA_BRANCH"
 #------------------------------------------------------------------------------------------#
 # Set default U-Boot Version
 #------------------------------------------------------------------------------------------#
-export UBOOT_VER=v2024.04
+export UBOOT_VER=v2025.04
 export UBOOT_REL=
 echo "UBOOT_VERSION        = $UBOOT_VER$UBOOT_REL"
 UBOOT_SOCFPGA_BRANCH=socfpga_$UBOOT_VER$UBOOT_REL
@@ -57,16 +57,8 @@ echo "UBOOT_SOCFPGA_BRANCH = $UBOOT_SOCFPGA_BRANCH"
 # Set UB_CONFIG for each of the configurations
 #------------------------------------------------------------------------------------------#
 if [[ "$MACHINE" == *"agilex"* || "$MACHINE" == *"stratix10"* ]]; then
-	if [[ "$MACHINE" == *"dk_si_agf014eb"* ]]; then
-		UB_CONFIG="agilex7_dk_si_agf014ea-socdk-atf"
-	elif [[ "$MACHINE" == *"dk_si_agi027f"* ]]; then
-		UB_CONFIG="agilex7_dk_si_agi027fb-socdk-atf"
-	elif [[ "$MACHINE" == "agilex5_dk_a5e"* ]]; then
-		if [[ "$IMAGE" == "nand" ]]; then
-			UB_CONFIG="$MACHINE-socdk-$IMAGE-atf"
-		else
-			UB_CONFIG="$MACHINE-socdk-atf"
-		fi
+	if [[ "$MACHINE" == *"agilex7"* ]]; then
+		UB_CONFIG="agilex-socdk-atf"
 	elif [[ "$MACHINE" == *"stratix10"* ]]; then
 		UB_CONFIG="stratix10-socdk-atf"
 	else
@@ -84,7 +76,7 @@ echo "UBOOT_CONFIG         = $UB_CONFIG"
 #------------------------------------------------------------------------------------------#
 # Set Arm-Trusted-Firmware version
 #------------------------------------------------------------------------------------------#
-export ATF_VER=v2.11.0
+export ATF_VER=v2.12.1
 echo "ATF_VERSION          = $ATF_VER"
 ATF_BRANCH=socfpga_$ATF_VER
 echo "ATF_BRANCH           = $ATF_BRANCH"
@@ -95,6 +87,8 @@ echo -e "\n[INFO] To build default GSRD Image + eSDK:"
 echo -e "[INFO] Proceed with: build_esdk"
 echo -e "\n[INFO] To build step-by-step with customization:"
 echo -e "[INFO] Proceed with: build_setup"
+echo -e "\n[INFO] To build default GSRD Image + Xen Hypervisor:"
+echo -e "[INFO] Proceed with: build_hyp"
 echo -e "\n"
 
 #------------------------------------------------------------------------------------------#
@@ -153,10 +147,14 @@ build_setup() {
 		bitbake-layers add-layer ../meta-intel-fpga-refdes
 		bitbake-layers add-layer ../meta-openembedded/meta-oe
 		bitbake-layers add-layer ../meta-openembedded/meta-python
-		bitbake-layers add-layer ../meta-openembedded/meta-networking
-		bitbake-layers add-layer ../meta-clang
+
+		if ! [[ "$MACHINE" == "agilex3" && "$IMAGE" == "qspi" ]]; then
+			bitbake-layers add-layer ../meta-openembedded/meta-networking
+			bitbake-layers add-layer ../meta-clang
+		fi
+
 		if [[ "${MACHINE}" == *"agilex5_"* ]]; then
-			bitbake-layers add-layer ../meta-sm-tsn-cfg3
+			bitbake-layers add-layer ../meta-altera-tsn-sgmii
 		fi
 
 		# Show layers for checking purposes
@@ -171,8 +169,14 @@ build_setup() {
 		echo "DL_DIR = \"$WORKSPACE/downloads\"" >> conf/site.conf
 		echo "SSTATE_DIR ?= \"$WORKSPACE/sstate_cache\"" >> conf/site.conf
 		echo "IMAGE_TYPE:${MACHINE} = \"$IMAGE\"" >> conf/site.conf
-		echo 'DISTRO_FEATURES:append = " systemd usrmerge"' >> conf/site.conf
-		echo 'VIRTUAL-RUNTIME_init_manager = "systemd"' >> conf/site.conf
+		if ! [[ "$MACHINE" == "agilex3" && "$IMAGE" == "qspi" ]]; then
+			echo 'DISTRO_FEATURES:append = " systemd usrmerge"' >> conf/site.conf
+			echo 'VIRTUAL-RUNTIME_init_manager = "systemd"' >> conf/site.conf
+		else
+			echo 'IMAGE_FSTYPES:append = " cpio cpio.gz cpio.gz.u-boot ext3 jffs2 tar.gz multiubi"' >> conf/site.conf
+			echo 'CORE_IMAGE_EXTRA_INSTALL += "openssh gdbserver mtd-utils net-tools"' >> conf/site.conf
+			echo 'AGILEX3_QSPI_BUILD = "1"' >> conf/site.conf
+		fi
 		echo "require conf/machine/$MACHINE-gsrd.conf" >> conf/site.conf
 		# Linux
 		echo 'PREFERRED_PROVIDER_virtual/kernel = "linux-socfpga-lts"' >> conf/site.conf
@@ -193,6 +197,17 @@ build_setup() {
 		# Archive source file
 		echo 'INHERIT += "archiver"' >> conf/site.conf
 		echo 'ARCHIVER_MODE[src] = "original"' >> conf/site.conf
+
+		# Setting for Hypervisor build
+		if [[ "$HYP_BUILD" -eq 1 ]]; then
+			bitbake-layers add-layer ../meta-openembedded/meta-filesystems
+			bitbake-layers add-layer ../meta-virtualization
+
+			echo 'IMAGE_FSTYPES:append = " cpio cpio.gz cpio.gz.u-boot ext3 jffs2 tar.gz multiubi"' >> conf/site.conf
+			echo 'DISTRO_FEATURES:append = " virtualization xen"' >> conf/site.conf
+			echo 'IMAGE_INSTALL:append = " xen-tools net-tools"' >> conf/site.conf
+			echo 'HYP_BUILD = "1"' >> conf/site.conf
+		fi
 	popd > /dev/null
 
 	echo -e "\n[INFO] To build GSRD Image:"
@@ -219,7 +234,16 @@ bitbake_image() {
 		fi
 
 		echo -e "\n[INFO] Start bitbake process for target config.."
-		bitbake console-image-minimal gsrd-console-image 2>&1
+		if [[ "$MACHINE" == "agilex3" && "$IMAGE" == "qspi" ]]; then
+			bitbake core-image-minimal 2>&1
+		else
+			bitbake console-image-minimal gsrd-console-image 2>&1
+		fi
+
+		if [[ "$HYP_BUILD" -eq 1 ]]; then
+			bitbake xen-image-minimal console-image-minimal gsrd-console-image 2>&1
+		fi
+
 		if [ "$MACHINE" == "arria10" ]; then
 			bitbake xvfb-console-image 2>&1
 		fi
@@ -279,7 +303,7 @@ package() {
 			cp -vrL kernel.* $STAGING_FOLDER/	|| echo "[INFO] No .itb file found."
 		fi
 
-		if [[ "$MACHINE" == *"agilex5_"* || "$MACHINE" == *"agilex7_"* || "$MACHINE" == *"stratix10"* ]]; then
+		if [[ "$MACHINE" == *"agilex5_"* || "$MACHINE" == *"agilex7_"* || "$MACHINE" == *"stratix10"* || "$MACHINE" == "agilex3" ]]; then
 			cp -vrL devicetree/* $STAGING_FOLDER/	|| echo "[INFO] No dtb found."
 		elif [[ "$MACHINE" == "arria10" && "$IMAGE" == "nand" ]]; then
 			cp -vrL socfpga_arria10_socdk_nand.dtb $STAGING_FOLDER/		|| echo "[INFO] No dtb found."
@@ -336,7 +360,11 @@ package() {
 	pushd $WORKSPACE/$MACHINE-$IMAGE-rootfs/tmp/deploy/images/$MACHINE/ > /dev/null
 		if [[ "$MACHINE" == *"agilex"* || "$MACHINE" == *"stratix10"* ]]; then
 			cp -vL u-boot.txt $ub_cp_destination
-			cp -vL boot.scr.uimg $ub_cp_destination
+			cp -vL boot.scr.* $ub_cp_destination
+			if [[ "$HYP_BUILD" -eq 1 ]]; then
+				cp -vL u-boot_xen.txt $STAGING_FOLDER/
+				cp -vL xen $STAGING_FOLDER/
+			fi
 		elif [[ "$MACHINE" == "arria10" && "$IMAGE" == "pr" ]]; then
 			cp -vL u-boot.txt $ub_cp_destination
 			cp -vL boot.scr $ub_cp_destination
@@ -358,25 +386,13 @@ package() {
 	popd > /dev/null
 
 	pushd $STAGING_FOLDER
-		if [ "$MACHINE" == "agilex7_dk_si_agf014ea" ]; then
-			for file in *_dk_si_agf014ea*; do
-				mv "$file" "${file/_dk_si_agf014ea/}"
-			done
-		elif [ "$MACHINE" == "agilex7_dk_si_agf014eb" ]; then
+		if [ "$MACHINE" == "agilex7_dk_si_agf014eb" ]; then
 			for file in *_dk_si_agf014eb*; do
 				mv "$file" "${file/_dk_si_agf014eb/}"
 			done
-		elif [ "$MACHINE" == "agilex7_dk_dev_agf027f1es" ]; then
-			for file in *_dk_dev_agf027f1es*; do
-				mv "$file" "${file/_dk_dev_agf027f1es/}"
-			done
-		elif [ "$MACHINE" == "agilex7_dk_si_agi027fb" ]; then
-			for file in *_dk_si_agi027fb*; do
-				mv "$file" "${file/_dk_si_agi027fb/}"
-			done
-		elif [ "$MACHINE" == "agilex7_dk_si_agi027fa" ]; then
-			for file in *_dk_si_agi027fa*; do
-				mv "$file" "${file/_dk_si_agi027fa/}"
+		elif [ "$MACHINE" == "agilex7_dk_dev_agf023fa" ]; then
+			for file in *_dk_dev_agf023fa*; do
+				mv "$file" "${file/_dk_dev_agf023fa/}"
 			done
 		elif [ "$MACHINE" == "agilex7_dk_si_agi027fc" ]; then
 			for file in *_dk_si_agi027fc*; do
@@ -390,13 +406,9 @@ package() {
 			for file in *_dk_a5e065bb32aes1*; do
 				mv "$file" "${file/_dk_a5e065bb32aes1/}"
 			done
-		elif [ "$MACHINE" == "agilex5_dk_a5e013bb32aesi0" ]; then
-			for file in *_dk_a5e013bb32aesi0*; do
-				mv "$file" "${file/_dk_a5e013bb32aesi0/}"
-			done
-		elif [ "$MACHINE" == "agilex5_modular" ]; then
-			for file in *_modular*; do
-				mv "$file" "${file/_modular/}"
+		elif [ "$MACHINE" == "agilex5_mk_a5e065bb32aes1" ]; then
+			for file in *_mk_a5e065bb32aes1*; do
+				mv "$file" "${file/_mk_a5e065bb32aes1/}"
 			done
 		elif [ "$MACHINE" == "stratix10_htile" ]; then
 			for file in *_htile*; do
@@ -414,7 +426,7 @@ package() {
 	        	tar cvzf sdimage.tar.gz gsrd-console-image-stratix10.wic
             		md5sum sdimage.tar.gz > sdimage.tar.gz.md5sum
             		xz --best console-image-minimal-stratix10.wic
-	    	elif [[ "$MACHINE" == *"agilex5_dk_"* || "$MACHINE" == *"agilex5_modular"* ]]; then
+	    	elif [[ "$MACHINE" == *"agilex5_dk_"* || "$MACHINE" == *"agilex5_mk_"* ]]; then
 	        	tar cvzf sdimage.tar.gz gsrd-console-image-agilex5.wic
             		md5sum sdimage.tar.gz > sdimage.tar.gz.md5sum
             		xz --best console-image-minimal-agilex5.wic
@@ -451,4 +463,9 @@ build_esdk() {
 	build_setup
 	bitbake_esdk
 	package
+}
+
+build_hyp() {
+	export HYP_BUILD=1
+	build_default
 }

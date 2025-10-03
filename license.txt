@@ -29,3 +29,5 @@ arbitration agreement will be governed by Hong Kong law, and the seat and locati
 arbitrator and the proceedings will be conducted in English. The Arbitral Tribunal may only award monetary damages and may not award injunctive relief or any remedy that requires a party to license any intellectual 
 property rights. Regardless of the above or your location, claims for misappropriation of trade secrets and breach of confidentiality obligations may also be brought in any court that has jurisdiction over the parties 
 if the relief sought is limited to injunctive or other nonmonetary relief. The parties exclude the application of the United Nations Convention on Contracts for the International Sale of Goods (1980).
+
+

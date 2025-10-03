@@ -1,0 +1,23 @@
+Table of Contents
+=================
+1. tsn-delay-config
+
+The tsn-delay-config executable needs to be run only once after every boot. This
+application would read the delays in the mrphy ip from its registers using
+the sysfs enteries provided.
+This application after reading all the delays from mrphy ip, calculates the 
+total Egress and Ingress delays and programs the same into the XGMAC register
+again using the sysfs enteries provided.
+
+This is required for applications like TSN and PTP.
+
+The binary of this applications can be found in /home/root/tsn-delay-config
+
+Usage of the application
+--------------------------------
+1. The application once executed as below, looks for all the eth interfaces containing the mrphy delay
+   related sysfs parameters, reads these parameter values and then calculates and shows the values 
+   programmed in the Egress and Ingress registers of XGMAC with a successfull message at the end.
+   
+   ./tsn-delay-config
+
