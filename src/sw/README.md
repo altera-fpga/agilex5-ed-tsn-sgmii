@@ -23,8 +23,8 @@ Dependencies
 
 ## SM TSN Config-3 GSRD Setup
 1. Clone the repository and checkout to release branch rel/25.1.1 .
-`$ git clone https://github.com/intel-innersource/applications.fpga.soc.agilex5e-ed-tsn-config3.git`
-`$ cd applications.fpga.soc.agilex5e-ed-tsn-config3`
+`$ git clone https://github.com/altera-fpga/agilex5-ed-tsn-sgmii.git`
+`$ cd agilex5-ed-tsn-sgmii`
 `$ git checkout rel/25.1.1`
 `$ cd src/sw`
 
@@ -77,3 +77,13 @@ Dependencies
 
 7. Package binaries into build folder
 `$ package`
+
+
+## SM TSN Config-3 Kernel Bootup
+Note:
+For TSN and PTP tests, programming of the egress and ingress delays with delays of mrphy IP is required. Once you boot till kernel prompt, at the /home/root/ you will find the below files
+
+1. README_ tsn-delay-config 
+2. tsn-delay-config
+
+For the concurrent design, as the delay values needs to be updated for all the three interface eth0, eth1 and eth2, you just need to run the tsn-delay-config application just once at every power cycle (./tsn-delay-config), the application itself will detect automatically all the eth interfaces connected to the mrphy and will update the egress and ingress values. You can then run the PTP and TSN test cases.

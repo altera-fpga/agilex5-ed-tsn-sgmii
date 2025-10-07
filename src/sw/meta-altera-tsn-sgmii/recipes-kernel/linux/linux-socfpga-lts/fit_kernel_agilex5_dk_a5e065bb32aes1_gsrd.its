@@ -75,6 +75,17 @@
 			};
 		};
 
+		board-2 {
+			description = "board_2";
+			kernel = "kernel";
+			fdt = "fdt-4";
+			signature {
+				algo = "crc32";
+				key-name-hint = "dev";
+				sign-images = "fdt-4", "kernel";
+			};
+		};
+
         	board-4 {
             		description = "board_4";
             		kernel = "kernel";
