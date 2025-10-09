@@ -1,6 +1,6 @@
 # Yocto Project layer with Agilex™ 5 TSN - SGMII XCVR System Example Design (SM TSN Config-3)
 
-This directory contains a Yocto Project layer with the [Agilex™ 5 TSN - SGMII XCVR System Example](https://github.com/intel-innersource/applications.fpga.system-example-designs.agilex5e-ed-tsn-config3) for the [Intel® SoCFPGA Golden Software Reference Design (GSRD)](https://github.com/altera-opensource/gsrd-socfpga).
+This directory contains a Yocto Project layer with the [Agilex™ 5 TSN - SGMII XCVR System Example](https://github.com/altera-fpga/agilex5-ed-tsn-sgmii) for the [Intel® SoCFPGA Golden Software Reference Design (GSRD)](https://github.com/altera-opensource/gsrd-socfpga).
 
 ## Meta Layers
 
@@ -16,8 +16,6 @@ Dependencies
 
 |    Board                                               |   OPN             |    Image                |
 | ------------------------------------------------------ | ----------------- | ----------------------- | 
-| Agilex™ 5 FPGA E-Series Premium Development Kit        | DK-A5E065BB32AES1 |   gsrd [ qspi + emmc ]  |
-| ------------------------------------------------------ | ----------------- | ----------------------- |
 | Agilex™ 5 FPGA E-Series Modular Development Kit        | MK-A5E065BB32AES1 |   gsrd [ qspi + emmc ]  |
 
 
@@ -33,8 +31,6 @@ Dependencies
 
 |    Target                  |              Command                            |
 | -------------------------- | ----------------------------------------------- |
-| Agilex5 DK-A5E065BB32AES1  |   `$ . agilex5_dk_a5e065bb32aes1-gsrd-build.sh`                      |
-| -------------------------- | ----------------------------------------------- |
 | Agilex5 MK-A5E065BB32AES1  |   `$ . agilex5_mk_a5e065bb32aes1-gsrd-build.sh`|
 
 
@@ -47,8 +43,6 @@ Dependencies
               a. Add custom GHRD design in the below path:
                    $WORKSPACE/src/sw/meta-altera-tsn-sgmii/recipes-bsp/ghrd/files/
                    NOTE: Update/Replace the GHRD core rbf file with the same naming convention given below
-                            For Agilex5 DK-A5E065BB32AES1:-
-                                          agilex5_dk_a5e065bb32aes1_gsrd_ghrd.core.rbf
                             For Agilex5 MK-A5E065BB32AES1:-
                                           agilex5_mk_a5e065bb32aes1_gsrd_ghrd.core.rbf
 
@@ -57,12 +51,6 @@ Dependencies
                     Note: Update the SRC_URL using the example below
                            Include the required file with sha256sum
                         Example:-
-
-			For Agilex5 DK-A5E065BB32AES1:-
-			SRC_URI:agilex5_dk_a5e065bb32aes1 += "\
-					file://agilex5_dk_a5e065bb32aes1_gsrd_ghrd.core.rbf;name=agilex5_dk_a5e065bb32aes1_gsrd_core_cfg3 \
-					"
-			SRC_URI[agilex5_dk_a5e065bb32aes1_gsrd_core_cfg3.sha256sum] += "xxxxxx"
 
    			For Agilex5 MK-A5E065BB32AES1:-
    			SRC_URI:agilex5_mk_a5e065bb32aes1 += "\
