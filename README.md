@@ -1,6 +1,5 @@
-# Agilex 5 System On Chip (SoC) FPGA Example Design with Multi-rate Ethernet PHY Intel® FPGA IP Core
-This design is based on the Agilex 5 SoC Golden Hardware Reference Design (GHRD) which is part of the Golden System Reference Design (GSRD), adds a new subsystem with Multi-rate Ethernet Phy which covers all Hardware features specific to Config-3 TSN.
-
+# HPS with Multi-rate Ethernet PHY System Example Design for Agilex 5 Modular Development Kit"
+This design which is based on the Agilex 5 SoC Golden Hardware Reference Design (GHRD) is part of the Golden System Reference Design (GSRD), adds a new subsystem with Multi-rate Ethernet Phy which covers all Hardware features specific to TSN-SGMII XCVR.
 ## Description
 This design demonstrate 3x2.5G ports to HPS
 - Enable the Data path between HPS <-> XGMAC <->MR PHY (Direct mode) <-> Marvell PHY running at 2.5G rate.
