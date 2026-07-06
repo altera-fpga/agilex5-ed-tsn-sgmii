@@ -1,0 +1,103 @@
+From 2d04301d0c7fa0bbff234a64f283472efe6adf90 Mon Sep 17 00:00:00 2001
+From: Mahesh Vaidya <mahesh.vaidya@altera.com>
+Date: Thu, 2 Jul 2026 22:04:54 -0700
+Subject: [PATCH] net: stmmac: fix TX queue timeout caused by disabling NAPI
+ during tc offload
+
+stmmac_setup_tc_block_cb() disables and re-enables NAPI on all queues
+around every classifier offload operation, via
+__stmmac_disable_all_queues() and stmmac_enable_all_queues(). This opens
+a window during which a TX completion interrupt can be serviced while NAPI
+is disabled.
+
+napi_disable() leaves NAPIF_STATE_SCHED set on the NAPI instance. While it
+is set, napi_schedule_prep() returns false, so when a TX completion
+interrupt arrives in this window, stmmac_napi_check() cannot schedule the
+poll: the DMA interrupt status is read and acknowledged in hardware, but
+__napi_schedule() is never called. napi_enable() later clears
+NAPIF_STATE_SCHED but does not schedule a poll. Because the interrupt was
+already acknowledged, no further interrupt is raised for those descriptors,
+so stmmac_tx_clean() never runs for the affected queue.
+
+The frames themselves are transmitted successfully; only their completion
+is never processed. dirty_tx stays behind cur_tx and, crucially, the
+completed bytes are never reported to BQL via netdev_tx_completed_queue().
+The queue's BQL outstanding byte count therefore keeps growing until it
+exceeds the limit, at which point the stack sets __QUEUE_STATE_STACK_XOFF
+and freezes the queue.
+
+Normally BQL clears STACK_XOFF once completions are reported, but here
+that never happens, so the freeze is permanent: no further packets are
+enqueued, the queue's trans_start stops advancing, and after watchdog_timeo
+the netdev TX watchdog fires and resets the adapter. The queue is never
+stopped by the driver (netif_tx_queue_stopped() reads false); it is frozen
+only by BQL. This was confirmed at the timeout with drv_xoff=0,
+stack_xoff=1 and BQL outstanding (e.g. 310 bytes) above the
+limit (e.g. 200 bytes).
+
+The problem is easily reproduced by repeatedly adding and removing tc
+flower filters (for example VLAN-priority to traffic-class steering) while
+background traffic flows.
+
+Fix this by rescheduling NAPI on all queues after re-enabling them in
+stmmac_setup_tc_block_cb(). Any completion whose napi_schedule() was
+dropped while NAPI was disabled is then processed: stmmac_tx_clean()
+reclaims the pending descriptors and reports the completed bytes to
+BQL, which clears STACK_XOFF and lets the queue resume. Both the tx_napi
+and rxtx_napi (XDP zero-copy) paths are handled.
+
+Upstream-Status: Pending
+Fixes: 4dbbe8dde848 ("net: stmmac: Add support for U32 TC filter using Flexible RX Parser")
+Signed-off-by: Mahesh Vaidya <mahesh.vaidya@altera.com>
+---
+ .../net/ethernet/stmicro/stmmac/stmmac_main.c | 27 +++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+
+diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+index 65f6853c1b69..d71253a0e28f 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
++++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+@@ -6222,6 +6222,7 @@ static int stmmac_setup_tc_block_cb(enum tc_setup_type type, void *type_data,
+ {
+ 	struct stmmac_priv *priv = cb_priv;
+ 	int ret = -EOPNOTSUPP;
++	u32 q, maxq;
+ 
+ 	if (!tc_cls_can_offload_and_chain0(priv->dev, type_data))
+ 		return ret;
+@@ -6240,6 +6241,32 @@ static int stmmac_setup_tc_block_cb(enum tc_setup_type type, void *type_data,
+ 	}
+ 
+ 	stmmac_enable_all_queues(priv);
++
++	/* napi_disable() above leaves NAPIF_STATE_SCHED set, so a TX/RX
++	 * completion IRQ arriving during the disabled window has its
++	 * napi_schedule() dropped while the IRQ is still acknowledged in
++	 * HW. napi_enable() does not reschedule, so the completion is
++	 * never reaped: the bytes are never returned to BQL, the queue is
++	 * frozen by STACK_XOFF, and the TX watchdog resets the adapter.
++	 * Kick every NAPI so any dropped completion is processed.
++	 */
++	maxq = max(priv->plat->rx_queues_to_use,
++		   priv->plat->tx_queues_to_use);
++
++	for (q = 0; q < maxq; q++) {
++		struct stmmac_channel *ch = &priv->channel[q];
++
++		if (stmmac_xdp_is_enabled(priv) &&
++		    test_bit(q, priv->af_xdp_zc_qps)) {
++			napi_schedule(&ch->rxtx_napi);
++			continue;
++		}
++		if (q < priv->plat->rx_queues_to_use)
++			napi_schedule(&ch->rx_napi);
++		if (q < priv->plat->tx_queues_to_use)
++			napi_schedule(&ch->tx_napi);
++	}
++
+ 	return ret;
+ }
+ 
+-- 
+2.34.1
+

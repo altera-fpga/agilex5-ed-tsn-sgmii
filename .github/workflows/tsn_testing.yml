@@ -1,0 +1,40 @@
+name: TSN test
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      triggered_by_schedule:
+        type: boolean
+        required: false
+        default: false
+      triggered_by_tag_push:
+        type: boolean
+        required: false
+        default: false
+      release_tag:
+        type: string
+        required: false
+        default: ""
+  
+jobs:
+  tsn_test:
+    runs-on: [self-hosted, psgpac]
+    env:
+      COMMIT_SHA: /nfs/site/disks/pac_release_1/github/psgpac/util/build/commit_sha
+      BUILD_PATH: /nfs/site/disks/pac_release_1/github/psgpac/sed/testing/tsn_config3/build
+      EXEC_SCRIPT_DIR: /nfs/site/disks/pac_release_1/github/psgpac/sed/testing/tsn_config3/scripts
+      REGTEST: /nfs/site/disks/pac_release_1/github/psgpac/sed/testing/tsn_config3/test_cases
+        #      REPORT_PATH: /nfs/site/disks/pac_release_1/github/psgpac/sed/build/tsn-cfg3/agilex5/sm72/mdk_3x2.5G/latest/reports
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get date
+        run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+
+      - name: Trigger Regression test
+        run: |
+          cd ${{ env.EXEC_SCRIPT_DIR }} && \
+          bash Top_execution.sh
+

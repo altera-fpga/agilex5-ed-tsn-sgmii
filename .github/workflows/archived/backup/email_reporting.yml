@@ -1,0 +1,54 @@
+name: Email report
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+        PSGPAC_SSH_KEY:
+          required: true
+        SSH_HOST_KEY:
+          required: true
+    inputs:
+      triggered_by_schedule:
+        type: boolean
+        required: false
+        default: false
+      triggered_by_tag_push:
+        type: boolean
+        required: false
+        default: false
+      release_tag:
+        type: string
+        required: false
+        default: ""
+  
+  
+jobs:
+  reporting:
+    # runs-on: altera-innersource.prod.amr.dind
+    # container: cache-registry.altera.com/cache/library/alpine:3.21
+    runs-on: self-hosted
+    env:
+      SSH_HOST: psgpac@ascycron2.sc.altera.com
+      SED_REGRESSION_PATH: /nfs/site/disks/pac_release_1/github/psgpac/sed/regression_test/tests/scripts/tsn
+    steps:
+      # - name: Install packages
+      #   run: |
+      #     apk update
+      #     apk add git openssh-client rsync
+
+      # - name: Setup ssh
+      #   run: |
+      #     umask 077
+      #     mkdir -p /root/.ssh
+      #     echo '${{ secrets.PSGPAC_SSH_KEY }}' > /root/.ssh/id_ed25519
+      #     echo '${{ env.SSH_HOST }} ${{ env.SSH_HOST_KEY }}' >> /root/.ssh/known_hosts
+      #     echo ServerAliveInterval 30 >> /root/.ssh/config
+      #     echo User psgpac >> /root/.ssh/config
+
+      - name: sending reports
+        # if: ${{ inputs.triggered_by_schedule || inputs.triggered_by_tag_push }}
+        run: |
+          ssh "$SSH_HOST" "cd ${{env.SED_REGRESSION_PATH}} && \
+          python3 sed_tsn_cfg3_concurrent_3x2_5g_report.py"
+
+

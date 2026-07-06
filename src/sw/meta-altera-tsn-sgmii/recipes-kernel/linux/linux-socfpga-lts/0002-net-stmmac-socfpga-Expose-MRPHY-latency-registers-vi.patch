@@ -1,0 +1,363 @@
+From 28acc91b9a5bb62ddfd3f9bf581273db321c1e72 Mon Sep 17 00:00:00 2001
+From: Mahesh Vaidya <mahesh.vaidya@altera.com>
+Date: Sun, 24 May 2026 12:00:00 +0530
+Subject: [PATCH 2/3] net: stmmac: socfpga: Expose MRPHY latency registers via
+ sysfs
+
+Expose the MRPHY soft-PCS detection-latency registers and the XGMAC
+timestamp ingress/egress correction registers through per-port sysfs
+nodes:
+
+  /sys/class/net/ethN/eth_tx_latency        (RW, XGMAC egress correction)
+  /sys/class/net/ethN/eth_rx_latency        (RW, XGMAC ingress correction)
+  /sys/class/net/ethN/mrphy_efifo_tx_delay  (RO, Q13.8)
+  /sys/class/net/ethN/mrphy_efifo_rx_delay  (RO, Q13.8)
+  /sys/class/net/ethN/mrphy_pcs_tx_delay    (RO, Q12.10)
+  /sys/class/net/ethN/mrphy_pcs_rx_delay    (RO, Q12.10)
+
+These nodes are used by userspace (tsn-delay-config) to compensate
+for per-port PHY and PCS latency in PTP timestamps. The MRPHY
+soft-PCS reports its current latency in fixed-point Q-format, which
+userspace combines with the XGMAC TX/RX correction registers to
+compute the on-the-wire timestamp offset.
+
+Four function pointers are added to plat_stmmacenet_data so that the
+SoC-specific code can hand the MRPHY latency to the generic sysfs
+handlers without exposing the dwmac-socfpga internals.
+
+Upstream-Status: Pending
+Signed-off-by: Mahesh Vaidya <mahesh.vaidya@altera.com>
+---
+ .../ethernet/stmicro/stmmac/dwmac-socfpga.c   | 256 +++++++++++++++++-
+ drivers/net/ethernet/stmicro/stmmac/mrphy.h   |  18 ++
+ include/linux/stmmac.h                        |   4 +
+ 3 files changed, 277 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c
+index 35d820f79c3b..f88f989ca1b1 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c
++++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c
+@@ -146,6 +146,234 @@ static void socfpga_dwmac_fix_mac_speed(void *bsp_priv, int speed,
+ 		mrphy_fix_mac_speed(&dwmac->mrphy, phy_dev, speed);
+ }
+ 
++static int socfpga_mrphy_get_efifo_tx_latency(void *priv, u32 *efifo_tx_lat)
++{
++	struct socfpga_dwmac *dwmac = (struct socfpga_dwmac *)priv;
++	void __iomem *mrphy_base = dwmac->mrphy.mrphy_base;
++
++	if (!mrphy_base)
++		return -ENODEV;
++	if (readw(mrphy_base + MRPHY_DET_LAT_CTRL_REG) & MRPHY_TX_DL_BLOCK_IN_RESET)
++		return -EIO;
++
++	/* Q13.8: 8-bit fraction in lower word, 13-bit integer in upper word. */
++	*efifo_tx_lat = readw(mrphy_base + MRPHY_EFIFO_TX_DELAY_REG) &
++			MRPHY_EFIFO_Q_FRAC_MASK;
++	*efifo_tx_lat |= ((u32)readw(mrphy_base + MRPHY_EFIFO_TX_DELAY_REG +
++				     MRPHY_DELAY_HI_WORD_OFF) &
++			  MRPHY_EFIFO_Q_INT_MASK) << MRPHY_EFIFO_Q_INT_SHIFT;
++	return 0;
++}
++
++static int socfpga_mrphy_get_efifo_rx_latency(void *priv, u32 *efifo_rx_lat)
++{
++	struct socfpga_dwmac *dwmac = (struct socfpga_dwmac *)priv;
++	void __iomem *mrphy_base = dwmac->mrphy.mrphy_base;
++
++	if (!mrphy_base)
++		return -ENODEV;
++	if (readw(mrphy_base + MRPHY_DET_LAT_CTRL_REG) & MRPHY_RX_DL_BLOCK_IN_RESET)
++		return -EIO;
++
++	/* Q13.8: 8-bit fraction in lower word, 13-bit integer in upper word. */
++	*efifo_rx_lat = readw(mrphy_base + MRPHY_EFIFO_RX_DELAY_REG) &
++			MRPHY_EFIFO_Q_FRAC_MASK;
++	*efifo_rx_lat |= ((u32)readw(mrphy_base + MRPHY_EFIFO_RX_DELAY_REG +
++				     MRPHY_DELAY_HI_WORD_OFF) &
++			  MRPHY_EFIFO_Q_INT_MASK) << MRPHY_EFIFO_Q_INT_SHIFT;
++	return 0;
++}
++
++static int socfpga_mrphy_get_pcs_soft_tx_latency(void *priv, u32 *pcs_tx_lat)
++{
++	struct socfpga_dwmac *dwmac = (struct socfpga_dwmac *)priv;
++	void __iomem *mrphy_base = dwmac->mrphy.mrphy_base;
++
++	if (!mrphy_base)
++		return -ENODEV;
++	if (readw(mrphy_base + MRPHY_DET_LAT_CTRL_REG) & MRPHY_TX_DL_BLOCK_IN_RESET)
++		return -EIO;
++
++	/* Q12.10: 10-bit fraction in lower word, 12-bit integer in upper word. */
++	*pcs_tx_lat = readw(mrphy_base + MRPHY_PCS_SOFT_TX_DELAY_REG) &
++		      MRPHY_PCS_Q_FRAC_MASK;
++	*pcs_tx_lat |= ((u32)readw(mrphy_base + MRPHY_PCS_SOFT_TX_DELAY_REG +
++				   MRPHY_DELAY_HI_WORD_OFF) &
++			MRPHY_PCS_Q_INT_MASK) << MRPHY_PCS_Q_INT_SHIFT;
++	return 0;
++}
++
++static int socfpga_mrphy_get_pcs_soft_rx_latency(void *priv, u32 *pcs_rx_lat)
++{
++	struct socfpga_dwmac *dwmac = (struct socfpga_dwmac *)priv;
++	void __iomem *mrphy_base = dwmac->mrphy.mrphy_base;
++
++	if (!mrphy_base)
++		return -ENODEV;
++	if (readw(mrphy_base + MRPHY_DET_LAT_CTRL_REG) & MRPHY_RX_DL_BLOCK_IN_RESET)
++		return -EIO;
++
++	/* Q12.10: 10-bit fraction in lower word, 12-bit integer in upper word. */
++	*pcs_rx_lat = readw(mrphy_base + MRPHY_PCS_SOFT_RX_DELAY_REG) &
++		      MRPHY_PCS_Q_FRAC_MASK;
++	*pcs_rx_lat |= ((u32)readw(mrphy_base + MRPHY_PCS_SOFT_RX_DELAY_REG +
++				   MRPHY_DELAY_HI_WORD_OFF) &
++			MRPHY_PCS_Q_INT_MASK) << MRPHY_PCS_Q_INT_SHIFT;
++	return 0;
++}
++
++static ssize_t eth_tx_latency_store(struct device *dev, struct device_attribute *attr,
++				    const char *buf, size_t len)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct stmmac_priv *priv = netdev_priv(netdev);
++	u64 val = 0;
++
++	if (!netif_running(netdev))
++		return -ENETDOWN;
++	if (kstrtoull(buf, 0, &val))
++		return -EINVAL;
++
++	writeq(val, priv->ioaddr + XGMAC_TS_EGRESS_CORR);
++	return (ssize_t)len;
++}
++
++static ssize_t eth_tx_latency_show(struct device *dev,
++				   struct device_attribute *attr, char *buf)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct stmmac_priv *priv = netdev_priv(netdev);
++	u64 val;
++
++	if (!netif_running(netdev))
++		return sysfs_emit(buf, "N/A\n");
++
++	val = readq(priv->ioaddr + XGMAC_TS_EGRESS_CORR);
++	return sysfs_emit(buf, "%llu\n", val);
++}
++static DEVICE_ATTR_RW(eth_tx_latency);
++
++static ssize_t eth_rx_latency_store(struct device *dev, struct device_attribute *attr,
++				    const char *buf, size_t len)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct stmmac_priv *priv = netdev_priv(netdev);
++	u64 val = 0;
++
++	if (!netif_running(netdev))
++		return -ENETDOWN;
++	if (kstrtoull(buf, 0, &val))
++		return -EINVAL;
++
++	writeq(val, priv->ioaddr + XGMAC_TS_INGRESS_CORR);
++	return (ssize_t)len;
++}
++
++static ssize_t eth_rx_latency_show(struct device *dev,
++				   struct device_attribute *attr, char *buf)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct stmmac_priv *priv = netdev_priv(netdev);
++	u64 val;
++
++	if (!netif_running(netdev))
++		return sysfs_emit(buf, "N/A\n");
++
++	val = readq(priv->ioaddr + XGMAC_TS_INGRESS_CORR);
++	return sysfs_emit(buf, "%llu\n", val);
++}
++static DEVICE_ATTR_RW(eth_rx_latency);
++
++static ssize_t mrphy_efifo_rx_delay_show(struct device *dev,
++					 struct device_attribute *attr, char *buf)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct stmmac_priv *priv = netdev_priv(netdev);
++	u32 rx_lat;
++	int ret;
++
++	if (!netif_running(netdev) || !priv->plat->mrphy_get_efifo_rx_latency)
++		return sysfs_emit(buf, "N/A\n");
++
++	ret = priv->plat->mrphy_get_efifo_rx_latency(priv->plat->bsp_priv, &rx_lat);
++	if (ret)
++		return sysfs_emit(buf, "N/A\n");
++
++	return sysfs_emit(buf, "%u\n", rx_lat);
++}
++static DEVICE_ATTR_RO(mrphy_efifo_rx_delay);
++
++static ssize_t mrphy_efifo_tx_delay_show(struct device *dev,
++					 struct device_attribute *attr, char *buf)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct stmmac_priv *priv = netdev_priv(netdev);
++	u32 tx_lat;
++	int ret;
++
++	if (!netif_running(netdev) || !priv->plat->mrphy_get_efifo_tx_latency)
++		return sysfs_emit(buf, "N/A\n");
++
++	ret = priv->plat->mrphy_get_efifo_tx_latency(priv->plat->bsp_priv, &tx_lat);
++	if (ret)
++		return sysfs_emit(buf, "N/A\n");
++
++	return sysfs_emit(buf, "%u\n", tx_lat);
++}
++static DEVICE_ATTR_RO(mrphy_efifo_tx_delay);
++
++static ssize_t mrphy_pcs_rx_delay_show(struct device *dev,
++				       struct device_attribute *attr, char *buf)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct stmmac_priv *priv = netdev_priv(netdev);
++	u32 rx_lat;
++	int ret;
++
++	if (!netif_running(netdev) || !priv->plat->mrphy_get_pcs_rx_latency)
++		return sysfs_emit(buf, "N/A\n");
++
++	ret = priv->plat->mrphy_get_pcs_rx_latency(priv->plat->bsp_priv, &rx_lat);
++	if (ret)
++		return sysfs_emit(buf, "N/A\n");
++
++	return sysfs_emit(buf, "%u\n", rx_lat);
++}
++static DEVICE_ATTR_RO(mrphy_pcs_rx_delay);
++
++static ssize_t mrphy_pcs_tx_delay_show(struct device *dev,
++				       struct device_attribute *attr, char *buf)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct stmmac_priv *priv = netdev_priv(netdev);
++	u32 tx_lat;
++	int ret;
++
++	if (!netif_running(netdev) || !priv->plat->mrphy_get_pcs_tx_latency)
++		return sysfs_emit(buf, "N/A\n");
++
++	ret = priv->plat->mrphy_get_pcs_tx_latency(priv->plat->bsp_priv, &tx_lat);
++	if (ret)
++		return sysfs_emit(buf, "N/A\n");
++
++	return sysfs_emit(buf, "%u\n", tx_lat);
++}
++static DEVICE_ATTR_RO(mrphy_pcs_tx_delay);
++
++static struct attribute *socfpga_stmmac_attrs[] = {
++	&dev_attr_eth_tx_latency.attr,
++	&dev_attr_eth_rx_latency.attr,
++	&dev_attr_mrphy_efifo_rx_delay.attr,
++	&dev_attr_mrphy_efifo_tx_delay.attr,
++	&dev_attr_mrphy_pcs_rx_delay.attr,
++	&dev_attr_mrphy_pcs_tx_delay.attr,
++	NULL,
++};
++
++static const struct attribute_group socfpga_stmmac_attr_group = {
++	.attrs = socfpga_stmmac_attrs,
++};
++
+ static int socfpga_dwmac_parse_data(struct socfpga_dwmac *dwmac, struct device *dev)
+ {
+ 	struct device_node *np = dev->of_node;
+@@ -711,6 +939,12 @@ static int socfpga_dwmac_probe(struct platform_device *pdev)
+ 		dev_err(dev, "Unable to parse OF data\n");
+ 		return ret;
+ 	}
++	if (dwmac->mrphy.mrphy_base) {
++		plat_dat->mrphy_get_efifo_rx_latency = socfpga_mrphy_get_efifo_rx_latency;
++		plat_dat->mrphy_get_efifo_tx_latency = socfpga_mrphy_get_efifo_tx_latency;
++		plat_dat->mrphy_get_pcs_rx_latency = socfpga_mrphy_get_pcs_soft_rx_latency;
++		plat_dat->mrphy_get_pcs_tx_latency = socfpga_mrphy_get_pcs_soft_tx_latency;
++	}
+ 
+ 	/* The socfpga driver needs to control the stmmac reset to set the phy
+ 	 * mode. Create a copy of the core reset handle so it can be used by
+@@ -732,7 +966,27 @@ static int socfpga_dwmac_probe(struct platform_device *pdev)
+ 
+ 	ops->setup_plat_dat(dwmac);
+ 
+-	return devm_stmmac_pltfr_probe(pdev, plat_dat, &stmmac_res);
++	ret = devm_stmmac_pltfr_probe(pdev, plat_dat, &stmmac_res);
++	if (ret)
++		return ret;
++
++	if (dwmac->mrphy.mrphy_base) {
++		struct net_device *ndev = platform_get_drvdata(pdev);
++
++		if (!ndev) {
++			dev_err(dev, "no netdev after stmmac probe\n");
++			return -ENODEV;
++		}
++		ret = devm_device_add_group(&ndev->dev,
++					    &socfpga_stmmac_attr_group);
++		if (ret) {
++			dev_err(dwmac->dev,
++				"failed to register mrphy sysfs. error: %d\n",
++				ret);
++			return ret;
++		}
++	}
++	return 0;
+ }
+ 
+ static const struct socfpga_dwmac_ops socfpga_gen5_ops = {
+diff --git a/drivers/net/ethernet/stmicro/stmmac/mrphy.h b/drivers/net/ethernet/stmicro/stmmac/mrphy.h
+index 6112cbaadfc5..2eb8e3fe6ae1 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/mrphy.h
++++ b/drivers/net/ethernet/stmicro/stmmac/mrphy.h
+@@ -26,6 +26,24 @@
+ #define MRPHY_EFIFO_RX_DELAY_REG	0x34
+ #define MRPHY_PCS_SOFT_TX_DELAY_REG	0x38
+ #define MRPHY_PCS_SOFT_RX_DELAY_REG	0x3C
++#define MRPHY_DELAY_HI_WORD_OFF		2
++
++/* EFIFO latency: Q13.8 (8-bit fraction, 13-bit integer). */
++#define MRPHY_EFIFO_Q_FRAC_MASK		GENMASK(7, 0)
++#define MRPHY_EFIFO_Q_INT_MASK		GENMASK(12, 0)
++#define MRPHY_EFIFO_Q_INT_SHIFT		8
++
++/* PCS soft latency: Q12.10 (10-bit fraction, 12-bit integer). */
++#define MRPHY_PCS_Q_FRAC_MASK		GENMASK(9, 0)
++#define MRPHY_PCS_Q_INT_MASK		GENMASK(11, 0)
++#define MRPHY_PCS_Q_INT_SHIFT		10
++
++/*
++ * XGMAC PTP timestamp ingress / egress latency correction registers.
++ * 64-bit accesses (readq / writeq).
++ */
++#define XGMAC_TS_INGRESS_CORR		0xd58
++#define XGMAC_TS_EGRESS_CORR		0xd60
+ 
+ struct mr_phy {
+ 	struct device *dev;
+diff --git a/include/linux/stmmac.h b/include/linux/stmmac.h
+index c9b3efef118b..5c178e83de42 100644
+--- a/include/linux/stmmac.h
++++ b/include/linux/stmmac.h
+@@ -268,6 +268,10 @@ struct plat_stmmacenet_data {
+ 	void (*exit)(struct platform_device *pdev, void *priv);
+ 	int (*suspend)(struct device *dev, void *priv);
+ 	int (*resume)(struct device *dev, void *priv);
++	int (*mrphy_get_efifo_rx_latency)(void *priv, u32 *rx_lat);
++	int (*mrphy_get_efifo_tx_latency)(void *priv, u32 *tx_lat);
++	int (*mrphy_get_pcs_rx_latency)(void *priv, u32 *pcs_rx_lat);
++	int (*mrphy_get_pcs_tx_latency)(void *priv, u32 *pcs_tx_lat);
+ 	struct mac_device_info *(*setup)(void *priv);
+ 	int (*clks_config)(void *priv, bool enabled);
+ 	int (*crosststamp)(ktime_t *device, struct system_counterval_t *system,
+-- 
+2.34.1
+

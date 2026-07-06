@@ -1,0 +1,201 @@
+From 3b1f915488475258a9aeb081f73a38228b0e032d Mon Sep 17 00:00:00 2001
+From: Mahesh Vaidya <mahesh.vaidya@altera.com>
+Date: Sun, 24 May 2026 11:56:18 -0700
+Subject: [PATCH] arm64: dts: agilex5: Add TSN config-3 support with Dynamic
+ Reconfiguration
+
+Add socfpga_agilex5_socdk_tsn_cfg3_dr.dts, a device tree for the
+Agilex 5 SoCDK TSN Config-3 design with Multirate PHY Dynamic
+Reconfiguration enabled.
+
+The design exposes three Ethernet ports:
+
+  - eth0  - 88E2110 PHY on MDIO; advertises 1G + 2.5G
+            (altr,min-speed = <1000>)
+  - eth1  - 88E2110 PHY on MDIO; advertises 10M / 100M / 1G / 2.5G
+  - eth2  - SFP cage; fixed-link at 2.5G
+
+Each gmac node references the shared FPGA-fabric blocks:
+
+  - altr,gmii-to-sgmii-converter  - per-port MRPHY soft-PCS window
+  - altr,drphy                    - shared XCVR DR controller (PHY0/1 only)
+  - altr,mrphy-usrspc             - shared user-space reset CSR (PHY0/1 only)
+  - altr,phy-num                  - PHY index (0, 1, or 2)
+  - altr,drphy-profile-1g         - DR profile number for 1G XCVR
+  - altr,drphy-profile-2500       - DR profile number for 2.5G XCVR
+
+PHY0 and PHY1 carry the DR phandles and profile numbers because they
+can switch between 1G/2.5G(PHY0) and between 10M/100M/1G/2.5G(PHY1)
+at runtime. PHY2 (SFP) is fixed at 2.5G and does not invoke DR.
+
+Upstream-Status: Inappropriate (Device tree changes)
+Signed-off-by: Mahesh Vaidya <mahesh.vaidya@altera.com>
+---
+ arch/arm64/boot/dts/intel/Makefile            |   1 +
+ .../socfpga_agilex5_socdk_tsn_cfg3_dr.dts     | 142 ++++++++++++++++++
+ 2 files changed, 143 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/intel/socfpga_agilex5_socdk_tsn_cfg3_dr.dts
+
+diff --git a/arch/arm64/boot/dts/intel/Makefile b/arch/arm64/boot/dts/intel/Makefile
+index dea14e74b13e..1b06db7b3ec6 100644
+--- a/arch/arm64/boot/dts/intel/Makefile
++++ b/arch/arm64/boot/dts/intel/Makefile
+@@ -24,6 +24,7 @@ dtb-$(CONFIG_ARCH_INTEL_SOCFPGA) += socfpga_agilex_n6000.dtb \
+ 				socfpga_agilex5_socdk_sdmmc_atfboot.dtb \
+ 				socfpga_agilex5_socdk_tsn_cfg2_a0.dtb \
+ 				socfpga_agilex5_socdk_tsn_cfg2.dtb \
++				socfpga_agilex5_socdk_tsn_cfg3_dr.dtb \
+ 				socfpga_agilex5_socdk_modular.dtb \
+ 				socfpga_agilex7m_socdk.dtb \
+ 				socfpga_agilex7f_socdk_pcie_root_port.dtb \
+diff --git a/arch/arm64/boot/dts/intel/socfpga_agilex5_socdk_tsn_cfg3_dr.dts b/arch/arm64/boot/dts/intel/socfpga_agilex5_socdk_tsn_cfg3_dr.dts
+new file mode 100644
+index 000000000000..6246e104b04c
+--- /dev/null
++++ b/arch/arm64/boot/dts/intel/socfpga_agilex5_socdk_tsn_cfg3_dr.dts
+@@ -0,0 +1,142 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (c) 2025, Altera Corporation
++ *
++ * Agilex 5 SoCDK TSN Config-3 with Dynamic Reconfiguration:
++ *   - eth0 (gmac0): 1G + 2.5G via Marvell 88E2110, TSN + PTP
++ *   - eth1 (gmac1): 10M/100M/1G/2.5G via Marvell 88E2110, no TSN/PTP
++ *   - eth2 (gmac2): 2.5G SFP cage (fixed-link), TSN + PTP
++ */
++#include "socfpga_agilex5_socdk.dts"
++
++/ {
++	/*
++	 * MRPHY soft-PCS CSR for each port. PHY0 and PHY1 reference
++	 * the shared DR controller and User-Space CSR. PHY2 (SFP) is
++	 * fixed at 2.5G and does not use DR.
++	 */
++	gmii_to_sgmii_converter0: phy@30020100 {
++		compatible = "altr,gmii-to-sgmii-2.0";
++		reg = <0x0 0x30020100 0x0 0x80>;
++		reg-names = "mrphy";
++
++		altr,drphy = <&drphy>;
++		altr,mrphy-usrspc = <&mrphy_usrspc>;
++		altr,phy-num = <0>;
++		altr,drphy-profile-1g = <1>;
++		altr,drphy-profile-2500 = <2>;
++	};
++
++	gmii_to_sgmii_converter1: phy@30020180 {
++		compatible = "altr,gmii-to-sgmii-2.0";
++		reg = <0x0 0x30020180 0x0 0x80>;
++		reg-names = "mrphy";
++
++		altr,drphy = <&drphy>;
++		altr,mrphy-usrspc = <&mrphy_usrspc>;
++		altr,phy-num = <1>;
++		altr,drphy-profile-1g = <3>;
++		altr,drphy-profile-2500 = <4>;
++	};
++
++	gmii_to_sgmii_converter2: phy@30020200 {
++		compatible = "altr,gmii-to-sgmii-2.0";
++		reg = <0x0 0x30020200 0x0 0x80>;
++		reg-names = "mrphy";
++		altr,phy-num = <2>;
++	};
++
++	/* Shared Dynamic Reconfiguration controller (PHY0 + PHY1). */
++	drphy: phy-dr@30020700 {
++		compatible = "altr,xcvr-dr-controller";
++		reg = <0x0 0x30020700 0x0 0x80>;
++	};
++
++	/* MRPHY User-Space CSR: per-port reset, status, delay regs. */
++	mrphy_usrspc: mrphy-usrspc@30020300 {
++		compatible = "altr,mrphy-user-csr";
++		reg = <0x0 0x30020300 0x0 0x50>;
++	};
++
++	mdio: mdio@30020500 {
++		compatible = "altr,altr-mdio";
++		reg = <0x0 0x30020500 0x0 0x100>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		phy_0: ethernet-phy@0 {
++			reg = <0>;
++			compatible = "ethernet-phy-ieee802.3-c45";
++			max-speed = <2500>;
++		};
++
++		phy_1: ethernet-phy@1c {
++			reg = <0x1c>;
++			compatible = "ethernet-phy-ieee802.3-c45";
++			max-speed = <2500>;
++		};
++	};
++
++	i2c5: i2c@30020600 {
++		compatible = "altr,softip-i2c-v1.0";
++		reg = <0x0 0x30020600 0x0 0x100>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-parent = <&intc>;
++		interrupts = <0 0x33 4>;
++		clocks = <&clkmgr AGILEX5_L4_SP_CLK>;
++		fifo-size = <256>;
++		clock-frequency = <400000>;
++	};
++};
++
++&gmac0 {
++	status = "okay";
++	phy-mode = "2500base-x";
++	mac-mode = "gmii";
++	phy-handle = <&phy_0>;
++	max-speed = <2500>;
++	altr,min-speed = <1000>;        /* eth0: advertise 1G + 2.5G only */
++	max-frame-size = <9000>;
++	#address-cells = <1>;
++	#size-cells = <1>;
++	altr,gmii-to-sgmii-converter = <&gmii_to_sgmii_converter0>;
++};
++
++&gmac1 {
++	status = "okay";
++	phy-mode = "2500base-x";
++	mac-mode = "gmii";
++	phy-handle = <&phy_1>;
++	max-speed = <2500>;
++	/* No altr,min-speed; eth1 advertises 10M/100M/1G/2.5G. */
++	max-frame-size = <9000>;
++	#address-cells = <1>;
++	#size-cells = <1>;
++	altr,gmii-to-sgmii-converter = <&gmii_to_sgmii_converter1>;
++};
++
++&gmac2 {
++	status = "okay";
++	phy-mode = "2500base-x";
++	mac-mode = "gmii";
++	max-speed = <2500>;
++	max-frame-size = <9000>;
++	#address-cells = <1>;
++	#size-cells = <1>;
++	altr,gmii-to-sgmii-converter = <&gmii_to_sgmii_converter2>;
++
++	sfp28_cage: sfp {
++		compatible = "sff,sfp";
++		i2c-bus = <&i2c5>;
++	};
++
++	/*
++	 * fixed-link pins eth2 at 2.5G; no PHY-side autoneg, so no
++	 * altr,min-speed is needed.
++	 */
++	fixed-link {
++		speed = <2500>;
++		full-duplex;
++	};
++};
+-- 
+2.34.1
+

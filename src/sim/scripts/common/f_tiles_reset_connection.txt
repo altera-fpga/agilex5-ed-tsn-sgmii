@@ -1,0 +1,3 @@
+//MODIFICATION START
+.sim_emulate(1),
+//MODIFICATION END

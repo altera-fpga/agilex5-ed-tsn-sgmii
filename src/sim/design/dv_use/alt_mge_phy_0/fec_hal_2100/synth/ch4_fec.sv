@@ -1,0 +1,808 @@
+// (C) 2001-2023 Intel Corporation. All rights reserved.
+// Your use of Intel Corporation's design tools, logic functions and other 
+// software and tools, and its AMPP partner logic functions, and any output 
+// files from any of the foregoing (including device programming or simulation 
+// files), and any associated documentation or information are expressly subject 
+// to the terms and conditions of the Intel Program License Subscription 
+// Agreement, Intel FPGA IP License Agreement, or other applicable 
+// license agreement, including, without limitation, that your use is for the 
+// sole purpose of programming logic devices manufactured by Intel and sold by 
+// Intel or its authorized distributors.  Please refer to the applicable 
+// agreement for further details.
+
+
+module ch4_fec #(
+	parameter x_std_sm_hssi_fec_ingress_0__dr_enabled	= "DR_ENABLED_DR_DISABLED",
+	parameter x_std_sm_hssi_fec_ingress_0__duplex_mode	= "DUPLEX_MODE_DUPLEX",
+	parameter x_std_sm_hssi_fec_ingress_0__dyn_tx_mux	= "DYN_TX_MUX_UNUSED",
+	parameter x_std_sm_hssi_fec_ingress_0__fec_error	= "FALSE",
+	parameter x_std_sm_hssi_fec_ingress_0__fec_mode	= "FEC_MODE_RSFEC",
+	parameter x_std_sm_hssi_fec_ingress_0__fec_spec	= "FEC_SPEC_DISABLED",
+	parameter x_std_sm_hssi_fec_ingress_0__fracture	= "FRACTURE_F25G",
+	parameter x_std_sm_hssi_fec_ingress_0__loopback_mode	= "LOOPBACK_MODE_ENABLE",
+	parameter x_std_sm_hssi_fec_ingress_0__pcs_rx_en	= "FALSE",
+	parameter x_std_sm_hssi_fec_ingress_0__pcs_tx_en	= "FALSE",
+	parameter x_std_sm_hssi_fec_ingress_0__rx_en	= "FALSE",
+	parameter x_std_sm_hssi_fec_ingress_0__sim_mode	= "SIM_MODE_ENABLE",
+	parameter x_std_sm_hssi_fec_ingress_0__sup_mode	= "SUP_MODE_USER_MODE",
+	parameter x_std_sm_hssi_fec_ingress_0__tx_en	= "FALSE"
+)
+ (
+	input [11:0] x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap,
+	input [19:0] x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr,
+	input [31:0] x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap,
+	input [31:0] x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata,
+	input [3:0] x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_be,
+	input [42:0] x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data,
+	input [42:0] x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data,
+	input [42:0] x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data,
+	input [42:0] x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap,
+	input [6:0] x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async,
+	input x_std_sm_hssi_fec_egress_0__i_pma_rx_sf,
+	input x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_direct_fec_wrap,
+	input x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_direct,
+	input x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_clk,
+	input x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_valid_fec_wrap,
+	input x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_read,
+	input x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rstn,
+	input x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_waitreq_fec_wrap,
+	input x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_write,
+	input x_std_sm_hssi_fec_ingress_0__i_fec_clk,
+	input x_std_sm_hssi_fec_ingress_0__i_fec_rx_rdy_n_fec_wrap,
+	input x_std_sm_hssi_fec_ingress_0__i_fec_tx_data_mux_sel_fec_wrap,
+	input x_std_sm_hssi_fec_ingress_0__i_rstfec_fec_csr_ret,
+	input x_std_sm_hssi_fec_ingress_0__i_rstfec_fec_rx_rst_n,
+	input x_std_sm_hssi_fec_ingress_0__i_rstfec_fec_tx_rst_n,
+	input x_std_sm_hssi_fec_ingress_0__i_rstfec_rx_fec_sfrz_n,
+	input x_std_sm_hssi_fec_ingress_0__i_rstfec_tx_fec_sfrz_n,
+	output [11:0] x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async,
+	output [19:0] x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap,
+	output [31:0] x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata,
+	output [31:0] x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap,
+	output [3:0] x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_be_fec_wrap,
+	output [42:0] x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data,
+	output [42:0] x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data,
+	output [42:0] x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap,
+	output [42:0] x_std_sm_hssi_fec_ingress_0__o_fec_rx_data,
+	output [6:0] x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap,
+	output x_std_sm_hssi_fec_egress_0__o_pma_rx_sf,
+	output x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_direct,
+	output x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_direct_fec_wrap,
+	output x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_clk_fec_wrap,
+	output x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_valid,
+	output x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_read_fec_wrap,
+	output x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rstn_fec_wrap,
+	output x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_waitreq,
+	output x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_write_fec_wrap,
+	output x_std_sm_hssi_fec_ingress_0__o_fec_rx_rdy_n,
+	output x_std_sm_hssi_fec_ingress_0__o_fec_tx_data_mux_sel,
+	output x_std_sm_hssi_fec_ingress_0__o_rstfec_fec_csr_ret_fec_wrap,
+	output x_std_sm_hssi_fec_ingress_0__o_rstfec_fec_rx_rst_n_fec_wrap,
+	output x_std_sm_hssi_fec_ingress_0__o_rstfec_fec_tx_rst_n_fec_wrap,
+	output x_std_sm_hssi_fec_ingress_0__o_rstfec_rx_fec_sfrz_n_fec_wrap,
+	output x_std_sm_hssi_fec_ingress_0__o_rstfec_tx_fec_sfrz_n_fec_wrap
+);
+	wire [11:0] x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0;
+	wire [11:0] x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0;
+	wire [19:0] x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0;
+	wire [19:0] x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0;
+	wire [31:0] x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0;
+	wire [31:0] x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0;
+	wire [31:0] x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0;
+	wire [31:0] x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0;
+	wire [3:0] x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_be_0;
+	wire [3:0] x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_be_fec_wrap_0;
+	wire [42:0] x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0;
+	wire [42:0] x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0;
+	wire [42:0] x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0;
+	wire [42:0] x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0;
+	wire [42:0] x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0;
+	wire [42:0] x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0;
+	wire [42:0] x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0;
+	wire [42:0] x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0;
+	wire [6:0] x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async_0;
+	wire [6:0] x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap_0;
+	wire o_u3_sm_hssi_quartus_only_connection_link_i_to_e_0;
+	wire x_std_sm_hssi_fec_egress_0__i_pma_rx_sf_1;
+	wire x_std_sm_hssi_fec_egress_0__o_pma_rx_sf_1;
+	wire x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_direct_fec_wrap_1;
+	wire x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_direct_1;
+	wire x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_clk_1;
+	wire x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_valid_fec_wrap_1;
+	wire x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_read_1;
+	wire x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rstn_1;
+	wire x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_waitreq_fec_wrap_1;
+	wire x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_write_1;
+	wire x_std_sm_hssi_fec_ingress_0__i_fec_clk_1;
+	wire x_std_sm_hssi_fec_ingress_0__i_fec_rx_rdy_n_fec_wrap_1;
+	wire x_std_sm_hssi_fec_ingress_0__i_fec_tx_data_mux_sel_fec_wrap_1;
+	wire x_std_sm_hssi_fec_ingress_0__i_rstfec_fec_csr_ret_1;
+	wire x_std_sm_hssi_fec_ingress_0__i_rstfec_fec_rx_rst_n_1;
+	wire x_std_sm_hssi_fec_ingress_0__i_rstfec_fec_tx_rst_n_1;
+	wire x_std_sm_hssi_fec_ingress_0__i_rstfec_rx_fec_sfrz_n_1;
+	wire x_std_sm_hssi_fec_ingress_0__i_rstfec_tx_fec_sfrz_n_1;
+	wire x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_direct_1;
+	wire x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_direct_fec_wrap_1;
+	wire x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_clk_fec_wrap_1;
+	wire x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_valid_1;
+	wire x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_read_fec_wrap_1;
+	wire x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rstn_fec_wrap_1;
+	wire x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_waitreq_1;
+	wire x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_write_fec_wrap_1;
+	wire x_std_sm_hssi_fec_ingress_0__o_fec_rx_rdy_n_1;
+	wire x_std_sm_hssi_fec_ingress_0__o_fec_tx_data_mux_sel_1;
+	wire x_std_sm_hssi_fec_ingress_0__o_rstfec_fec_csr_ret_fec_wrap_1;
+	wire x_std_sm_hssi_fec_ingress_0__o_rstfec_fec_rx_rst_n_fec_wrap_1;
+	wire x_std_sm_hssi_fec_ingress_0__o_rstfec_fec_tx_rst_n_fec_wrap_1;
+	wire x_std_sm_hssi_fec_ingress_0__o_rstfec_rx_fec_sfrz_n_fec_wrap_1;
+	wire x_std_sm_hssi_fec_ingress_0__o_rstfec_tx_fec_sfrz_n_fec_wrap_1;
+	assign x_std_sm_hssi_fec_egress_0__i_pma_rx_sf_1 = x_std_sm_hssi_fec_egress_0__i_pma_rx_sf;
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[0] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[0];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[10] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[10];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[11] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[11];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[12] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[12];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[13] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[13];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[14] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[14];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[15] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[15];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[16] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[16];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[17] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[17];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[18] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[18];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[19] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[19];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[1] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[1];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[20] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[20];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[21] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[21];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[22] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[22];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[23] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[23];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[24] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[24];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[25] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[25];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[26] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[26];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[27] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[27];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[28] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[28];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[29] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[29];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[2] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[2];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[30] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[30];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[31] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[31];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[32] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[32];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[33] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[33];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[34] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[34];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[35] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[35];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[36] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[36];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[37] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[37];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[38] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[38];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[39] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[39];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[3] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[3];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[40] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[40];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[41] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[41];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[42] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[42];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[4] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[4];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[5] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[5];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[6] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[6];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[7] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[7];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[8] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[8];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[9] = x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data[9];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[0] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[0];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[10] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[10];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[11] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[11];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[12] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[12];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[13] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[13];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[14] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[14];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[15] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[15];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[16] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[16];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[17] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[17];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[18] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[18];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[19] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[19];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[1] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[1];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[20] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[20];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[21] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[21];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[22] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[22];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[23] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[23];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[24] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[24];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[25] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[25];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[26] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[26];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[27] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[27];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[28] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[28];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[29] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[29];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[2] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[2];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[30] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[30];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[31] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[31];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[32] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[32];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[33] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[33];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[34] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[34];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[35] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[35];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[36] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[36];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[37] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[37];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[38] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[38];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[39] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[39];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[3] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[3];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[40] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[40];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[41] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[41];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[42] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[42];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[4] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[4];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[5] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[5];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[6] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[6];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[7] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[7];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[8] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[8];
+	assign x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[9] = x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data[9];
+	assign x_std_sm_hssi_fec_egress_0__o_pma_rx_sf = x_std_sm_hssi_fec_egress_0__o_pma_rx_sf_1;
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[0] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[0];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[10] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[10];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[11] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[11];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[12] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[12];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[13] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[13];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[14] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[14];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[15] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[15];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[16] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[16];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[17] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[17];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[18] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[18];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[19] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[19];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[1] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[1];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[20] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[20];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[21] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[21];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[22] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[22];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[23] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[23];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[24] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[24];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[25] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[25];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[26] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[26];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[27] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[27];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[28] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[28];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[29] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[29];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[2] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[2];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[30] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[30];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[31] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[31];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[32] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[32];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[33] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[33];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[34] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[34];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[35] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[35];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[36] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[36];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[37] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[37];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[38] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[38];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[39] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[39];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[3] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[3];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[40] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[40];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[41] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[41];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[42] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[42];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[4] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[4];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[5] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[5];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[6] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[6];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[7] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[7];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[8] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[8];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data[9] = x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[9];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[0] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[0];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[10] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[10];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[11] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[11];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[12] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[12];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[13] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[13];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[14] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[14];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[15] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[15];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[16] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[16];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[17] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[17];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[18] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[18];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[19] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[19];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[1] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[1];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[20] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[20];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[21] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[21];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[22] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[22];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[23] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[23];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[24] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[24];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[25] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[25];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[26] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[26];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[27] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[27];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[28] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[28];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[29] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[29];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[2] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[2];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[30] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[30];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[31] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[31];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[32] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[32];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[33] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[33];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[34] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[34];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[35] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[35];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[36] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[36];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[37] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[37];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[38] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[38];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[39] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[39];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[3] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[3];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[40] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[40];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[41] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[41];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[42] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[42];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[4] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[4];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[5] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[5];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[6] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[6];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[7] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[7];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[8] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[8];
+	assign x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data[9] = x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[9];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[0] = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap[0];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[10] = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap[10];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[11] = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap[11];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[1] = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap[1];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[2] = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap[2];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[3] = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap[3];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[4] = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap[4];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[5] = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap[5];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[6] = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap[6];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[7] = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap[7];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[8] = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap[8];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[9] = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap[9];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_direct_fec_wrap_1 = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_direct_fec_wrap;
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async_0[0] = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async[0];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async_0[1] = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async[1];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async_0[2] = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async[2];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async_0[3] = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async[3];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async_0[4] = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async[4];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async_0[5] = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async[5];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async_0[6] = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async[6];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_direct_1 = x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_direct;
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[0] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[0];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[10] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[10];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[11] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[11];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[12] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[12];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[13] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[13];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[14] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[14];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[15] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[15];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[16] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[16];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[17] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[17];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[18] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[18];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[19] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[19];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[1] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[1];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[2] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[2];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[3] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[3];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[4] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[4];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[5] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[5];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[6] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[6];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[7] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[7];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[8] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[8];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[9] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr[9];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_be_0[0] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_be[0];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_be_0[1] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_be[1];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_be_0[2] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_be[2];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_be_0[3] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_be[3];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_clk_1 = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_clk;
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[0] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[0];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[10] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[10];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[11] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[11];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[12] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[12];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[13] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[13];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[14] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[14];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[15] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[15];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[16] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[16];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[17] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[17];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[18] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[18];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[19] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[19];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[1] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[1];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[20] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[20];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[21] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[21];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[22] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[22];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[23] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[23];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[24] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[24];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[25] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[25];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[26] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[26];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[27] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[27];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[28] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[28];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[29] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[29];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[2] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[2];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[30] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[30];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[31] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[31];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[3] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[3];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[4] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[4];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[5] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[5];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[6] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[6];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[7] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[7];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[8] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[8];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[9] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap[9];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_valid_fec_wrap_1 = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_valid_fec_wrap;
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_read_1 = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_read;
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rstn_1 = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rstn;
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_waitreq_fec_wrap_1 = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_waitreq_fec_wrap;
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[0] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[0];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[10] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[10];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[11] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[11];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[12] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[12];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[13] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[13];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[14] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[14];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[15] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[15];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[16] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[16];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[17] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[17];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[18] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[18];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[19] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[19];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[1] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[1];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[20] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[20];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[21] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[21];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[22] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[22];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[23] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[23];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[24] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[24];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[25] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[25];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[26] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[26];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[27] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[27];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[28] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[28];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[29] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[29];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[2] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[2];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[30] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[30];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[31] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[31];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[3] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[3];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[4] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[4];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[5] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[5];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[6] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[6];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[7] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[7];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[8] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[8];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[9] = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata[9];
+	assign x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_write_1 = x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_write;
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_clk_1 = x_std_sm_hssi_fec_ingress_0__i_fec_clk;
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[0] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[0];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[10] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[10];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[11] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[11];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[12] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[12];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[13] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[13];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[14] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[14];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[15] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[15];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[16] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[16];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[17] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[17];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[18] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[18];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[19] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[19];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[1] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[1];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[20] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[20];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[21] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[21];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[22] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[22];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[23] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[23];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[24] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[24];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[25] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[25];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[26] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[26];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[27] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[27];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[28] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[28];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[29] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[29];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[2] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[2];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[30] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[30];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[31] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[31];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[32] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[32];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[33] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[33];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[34] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[34];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[35] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[35];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[36] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[36];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[37] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[37];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[38] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[38];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[39] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[39];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[3] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[3];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[40] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[40];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[41] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[41];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[42] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[42];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[4] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[4];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[5] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[5];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[6] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[6];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[7] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[7];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[8] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[8];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[9] = x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data[9];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[0] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[0];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[10] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[10];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[11] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[11];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[12] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[12];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[13] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[13];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[14] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[14];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[15] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[15];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[16] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[16];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[17] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[17];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[18] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[18];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[19] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[19];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[1] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[1];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[20] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[20];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[21] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[21];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[22] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[22];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[23] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[23];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[24] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[24];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[25] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[25];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[26] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[26];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[27] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[27];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[28] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[28];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[29] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[29];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[2] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[2];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[30] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[30];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[31] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[31];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[32] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[32];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[33] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[33];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[34] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[34];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[35] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[35];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[36] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[36];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[37] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[37];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[38] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[38];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[39] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[39];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[3] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[3];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[40] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[40];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[41] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[41];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[42] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[42];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[4] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[4];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[5] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[5];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[6] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[6];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[7] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[7];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[8] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[8];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[9] = x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap[9];
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_rx_rdy_n_fec_wrap_1 = x_std_sm_hssi_fec_ingress_0__i_fec_rx_rdy_n_fec_wrap;
+	assign x_std_sm_hssi_fec_ingress_0__i_fec_tx_data_mux_sel_fec_wrap_1 = x_std_sm_hssi_fec_ingress_0__i_fec_tx_data_mux_sel_fec_wrap;
+	assign x_std_sm_hssi_fec_ingress_0__i_rstfec_fec_csr_ret_1 = x_std_sm_hssi_fec_ingress_0__i_rstfec_fec_csr_ret;
+	assign x_std_sm_hssi_fec_ingress_0__i_rstfec_fec_rx_rst_n_1 = x_std_sm_hssi_fec_ingress_0__i_rstfec_fec_rx_rst_n;
+	assign x_std_sm_hssi_fec_ingress_0__i_rstfec_fec_tx_rst_n_1 = x_std_sm_hssi_fec_ingress_0__i_rstfec_fec_tx_rst_n;
+	assign x_std_sm_hssi_fec_ingress_0__i_rstfec_rx_fec_sfrz_n_1 = x_std_sm_hssi_fec_ingress_0__i_rstfec_rx_fec_sfrz_n;
+	assign x_std_sm_hssi_fec_ingress_0__i_rstfec_tx_fec_sfrz_n_1 = x_std_sm_hssi_fec_ingress_0__i_rstfec_tx_fec_sfrz_n;
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async[0] = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[0];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async[10] = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[10];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async[11] = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[11];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async[1] = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[1];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async[2] = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[2];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async[3] = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[3];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async[4] = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[4];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async[5] = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[5];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async[6] = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[6];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async[7] = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[7];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async[8] = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[8];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async[9] = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[9];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_direct = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_direct_1;
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap[0] = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap_0[0];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap[1] = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap_0[1];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap[2] = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap_0[2];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap[3] = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap_0[3];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap[4] = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap_0[4];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap[5] = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap_0[5];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap[6] = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap_0[6];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_direct_fec_wrap = x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_direct_fec_wrap_1;
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[0] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[0];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[10] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[10];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[11] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[11];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[12] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[12];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[13] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[13];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[14] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[14];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[15] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[15];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[16] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[16];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[17] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[17];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[18] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[18];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[19] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[19];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[1] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[1];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[2] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[2];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[3] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[3];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[4] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[4];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[5] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[5];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[6] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[6];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[7] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[7];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[8] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[8];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap[9] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[9];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_be_fec_wrap[0] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_be_fec_wrap_0[0];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_be_fec_wrap[1] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_be_fec_wrap_0[1];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_be_fec_wrap[2] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_be_fec_wrap_0[2];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_be_fec_wrap[3] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_be_fec_wrap_0[3];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_clk_fec_wrap = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_clk_fec_wrap_1;
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[0] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[0];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[10] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[10];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[11] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[11];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[12] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[12];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[13] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[13];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[14] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[14];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[15] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[15];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[16] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[16];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[17] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[17];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[18] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[18];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[19] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[19];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[1] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[1];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[20] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[20];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[21] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[21];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[22] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[22];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[23] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[23];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[24] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[24];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[25] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[25];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[26] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[26];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[27] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[27];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[28] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[28];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[29] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[29];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[2] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[2];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[30] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[30];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[31] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[31];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[3] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[3];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[4] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[4];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[5] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[5];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[6] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[6];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[7] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[7];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[8] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[8];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata[9] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[9];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_valid = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_valid_1;
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_read_fec_wrap = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_read_fec_wrap_1;
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rstn_fec_wrap = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rstn_fec_wrap_1;
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_waitreq = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_waitreq_1;
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[0] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[0];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[10] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[10];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[11] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[11];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[12] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[12];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[13] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[13];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[14] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[14];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[15] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[15];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[16] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[16];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[17] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[17];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[18] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[18];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[19] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[19];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[1] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[1];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[20] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[20];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[21] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[21];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[22] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[22];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[23] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[23];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[24] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[24];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[25] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[25];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[26] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[26];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[27] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[27];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[28] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[28];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[29] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[29];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[2] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[2];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[30] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[30];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[31] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[31];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[3] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[3];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[4] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[4];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[5] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[5];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[6] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[6];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[7] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[7];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[8] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[8];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap[9] = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[9];
+	assign x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_write_fec_wrap = x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_write_fec_wrap_1;
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[0] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[0];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[10] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[10];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[11] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[11];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[12] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[12];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[13] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[13];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[14] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[14];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[15] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[15];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[16] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[16];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[17] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[17];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[18] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[18];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[19] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[19];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[1] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[1];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[20] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[20];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[21] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[21];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[22] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[22];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[23] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[23];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[24] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[24];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[25] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[25];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[26] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[26];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[27] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[27];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[28] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[28];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[29] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[29];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[2] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[2];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[30] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[30];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[31] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[31];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[32] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[32];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[33] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[33];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[34] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[34];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[35] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[35];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[36] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[36];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[37] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[37];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[38] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[38];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[39] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[39];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[3] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[3];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[40] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[40];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[41] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[41];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[42] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[42];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[4] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[4];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[5] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[5];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[6] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[6];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[7] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[7];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[8] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[8];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap[9] = x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[9];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[0] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[0];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[10] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[10];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[11] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[11];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[12] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[12];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[13] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[13];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[14] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[14];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[15] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[15];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[16] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[16];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[17] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[17];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[18] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[18];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[19] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[19];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[1] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[1];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[20] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[20];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[21] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[21];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[22] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[22];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[23] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[23];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[24] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[24];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[25] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[25];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[26] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[26];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[27] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[27];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[28] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[28];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[29] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[29];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[2] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[2];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[30] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[30];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[31] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[31];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[32] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[32];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[33] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[33];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[34] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[34];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[35] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[35];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[36] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[36];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[37] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[37];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[38] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[38];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[39] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[39];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[3] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[3];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[40] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[40];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[41] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[41];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[42] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[42];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[4] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[4];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[5] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[5];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[6] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[6];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[7] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[7];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[8] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[8];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_data[9] = x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[9];
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_rx_rdy_n = x_std_sm_hssi_fec_ingress_0__o_fec_rx_rdy_n_1;
+	assign x_std_sm_hssi_fec_ingress_0__o_fec_tx_data_mux_sel = x_std_sm_hssi_fec_ingress_0__o_fec_tx_data_mux_sel_1;
+	assign x_std_sm_hssi_fec_ingress_0__o_rstfec_fec_csr_ret_fec_wrap = x_std_sm_hssi_fec_ingress_0__o_rstfec_fec_csr_ret_fec_wrap_1;
+	assign x_std_sm_hssi_fec_ingress_0__o_rstfec_fec_rx_rst_n_fec_wrap = x_std_sm_hssi_fec_ingress_0__o_rstfec_fec_rx_rst_n_fec_wrap_1;
+	assign x_std_sm_hssi_fec_ingress_0__o_rstfec_fec_tx_rst_n_fec_wrap = x_std_sm_hssi_fec_ingress_0__o_rstfec_fec_tx_rst_n_fec_wrap_1;
+	assign x_std_sm_hssi_fec_ingress_0__o_rstfec_rx_fec_sfrz_n_fec_wrap = x_std_sm_hssi_fec_ingress_0__o_rstfec_rx_fec_sfrz_n_fec_wrap_1;
+	assign x_std_sm_hssi_fec_ingress_0__o_rstfec_tx_fec_sfrz_n_fec_wrap = x_std_sm_hssi_fec_ingress_0__o_rstfec_tx_fec_sfrz_n_fec_wrap_1;
+
+
+	tennm_sm_hssi_fec_egress x_std_sm_hssi_fec_egress_0 (
+		.i_pma_rx_sf(x_std_sm_hssi_fec_egress_0__i_pma_rx_sf_1),
+		.i_xcvr_rx_data({ x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[42], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[41], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[40], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[39], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[38], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[37], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[36], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[35], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[34], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[33], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[32], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[31], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[30], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[29], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[28], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[27], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[26], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[25], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[24], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[23], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[22], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[21], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[20], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[19], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[18], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[17], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[16], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[15], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[14], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[13], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[12], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[11], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[10], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[9], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[8], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[7], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[6], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[5], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[4], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[3], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[2], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[1], x_std_sm_hssi_fec_egress_0__i_xcvr_rx_data_0[0] }),
+		.i_xcvr_tx_data({ x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[42], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[41], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[40], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[39], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[38], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[37], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[36], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[35], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[34], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[33], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[32], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[31], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[30], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[29], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[28], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[27], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[26], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[25], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[24], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[23], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[22], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[21], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[20], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[19], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[18], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[17], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[16], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[15], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[14], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[13], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[12], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[11], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[10], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[9], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[8], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[7], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[6], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[5], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[4], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[3], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[2], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[1], x_std_sm_hssi_fec_egress_0__i_xcvr_tx_data_0[0] }),
+		.o_pma_rx_sf(x_std_sm_hssi_fec_egress_0__o_pma_rx_sf_1),
+		.o_xcvr_rx_data({ x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[42], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[41], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[40], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[39], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[38], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[37], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[36], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[35], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[34], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[33], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[32], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[31], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[30], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[29], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[28], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[27], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[26], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[25], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[24], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[23], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[22], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[21], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[20], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[19], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[18], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[17], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[16], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[15], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[14], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[13], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[12], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[11], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[10], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[9], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[8], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[7], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[6], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[5], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[4], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[3], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[2], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[1], x_std_sm_hssi_fec_egress_0__o_xcvr_rx_data_0[0] }),
+		.o_xcvr_tx_data({ x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[42], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[41], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[40], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[39], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[38], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[37], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[36], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[35], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[34], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[33], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[32], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[31], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[30], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[29], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[28], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[27], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[26], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[25], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[24], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[23], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[22], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[21], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[20], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[19], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[18], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[17], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[16], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[15], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[14], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[13], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[12], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[11], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[10], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[9], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[8], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[7], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[6], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[5], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[4], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[3], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[2], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[1], x_std_sm_hssi_fec_egress_0__o_xcvr_tx_data_0[0] }),
+		.sm_hssi_quartus_only_connection_link_i_to_e(o_u3_sm_hssi_quartus_only_connection_link_i_to_e_0)
+	);
+
+	tennm_sm_hssi_fec_ingress #(
+		.dr_enabled(x_std_sm_hssi_fec_ingress_0__dr_enabled),
+		.duplex_mode(x_std_sm_hssi_fec_ingress_0__duplex_mode),
+		.dyn_tx_mux(x_std_sm_hssi_fec_ingress_0__dyn_tx_mux),
+		.fec_error(x_std_sm_hssi_fec_ingress_0__fec_error),
+		.fec_mode(x_std_sm_hssi_fec_ingress_0__fec_mode),
+		.fec_spec(x_std_sm_hssi_fec_ingress_0__fec_spec),
+		.fracture(x_std_sm_hssi_fec_ingress_0__fracture),
+		.loopback_mode(x_std_sm_hssi_fec_ingress_0__loopback_mode),
+		.pcs_rx_en(x_std_sm_hssi_fec_ingress_0__pcs_rx_en),
+		.pcs_tx_en(x_std_sm_hssi_fec_ingress_0__pcs_tx_en),
+		.rx_en(x_std_sm_hssi_fec_ingress_0__rx_en),
+		.sim_mode(x_std_sm_hssi_fec_ingress_0__sim_mode),
+		.sup_mode(x_std_sm_hssi_fec_ingress_0__sup_mode),
+		.tx_en(x_std_sm_hssi_fec_ingress_0__tx_en)
+	) x_std_sm_hssi_fec_ingress_0 (
+		.i_ch_eth_fec_rx_async_fec_wrap({ x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[11], x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[10], x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[9], x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[8], x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[7], x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[6], x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[5], x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[4], x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[3], x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[2], x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[1], x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_async_fec_wrap_0[0] }),
+		.i_ch_eth_fec_rx_direct_fec_wrap(x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_rx_direct_fec_wrap_1),
+		.i_ch_eth_fec_tx_async({ x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async_0[6], x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async_0[5], x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async_0[4], x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async_0[3], x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async_0[2], x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async_0[1], x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_async_0[0] }),
+		.i_ch_eth_fec_tx_direct(x_std_sm_hssi_fec_ingress_0__i_ch_eth_fec_tx_direct_1),
+		.i_ch_lavmm_fec_addr({ x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[19], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[18], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[17], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[16], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[15], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[14], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[13], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[12], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[11], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[10], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[9], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[8], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[7], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[6], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[5], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[4], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[3], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[2], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[1], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_addr_0[0] }),
+		.i_ch_lavmm_fec_be({ x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_be_0[3], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_be_0[2], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_be_0[1], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_be_0[0] }),
+		.i_ch_lavmm_fec_clk(x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_clk_1),
+		.i_ch_lavmm_fec_rdata_fec_wrap({ x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[31], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[30], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[29], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[28], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[27], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[26], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[25], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[24], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[23], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[22], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[21], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[20], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[19], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[18], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[17], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[16], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[15], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[14], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[13], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[12], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[11], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[10], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[9], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[8], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[7], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[6], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[5], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[4], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[3], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[2], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[1], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_fec_wrap_0[0] }),
+		.i_ch_lavmm_fec_rdata_valid_fec_wrap(x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rdata_valid_fec_wrap_1),
+		.i_ch_lavmm_fec_read(x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_read_1),
+		.i_ch_lavmm_fec_rstn(x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_rstn_1),
+		.i_ch_lavmm_fec_waitreq_fec_wrap(x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_waitreq_fec_wrap_1),
+		.i_ch_lavmm_fec_wdata({ x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[31], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[30], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[29], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[28], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[27], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[26], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[25], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[24], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[23], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[22], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[21], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[20], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[19], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[18], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[17], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[16], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[15], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[14], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[13], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[12], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[11], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[10], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[9], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[8], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[7], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[6], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[5], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[4], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[3], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[2], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[1], x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_wdata_0[0] }),
+		.i_ch_lavmm_fec_write(x_std_sm_hssi_fec_ingress_0__i_ch_lavmm_fec_write_1),
+		.i_fec_clk(x_std_sm_hssi_fec_ingress_0__i_fec_clk_1),
+		.i_fec_i_tx_mux_data({ x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[42], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[41], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[40], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[39], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[38], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[37], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[36], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[35], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[34], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[33], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[32], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[31], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[30], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[29], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[28], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[27], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[26], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[25], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[24], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[23], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[22], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[21], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[20], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[19], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[18], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[17], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[16], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[15], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[14], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[13], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[12], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[11], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[10], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[9], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[8], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[7], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[6], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[5], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[4], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[3], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[2], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[1], x_std_sm_hssi_fec_ingress_0__i_fec_i_tx_mux_data_0[0] }),
+		.i_fec_rx_data_fec_wrap({ x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[42], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[41], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[40], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[39], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[38], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[37], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[36], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[35], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[34], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[33], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[32], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[31], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[30], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[29], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[28], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[27], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[26], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[25], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[24], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[23], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[22], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[21], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[20], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[19], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[18], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[17], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[16], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[15], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[14], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[13], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[12], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[11], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[10], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[9], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[8], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[7], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[6], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[5], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[4], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[3], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[2], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[1], x_std_sm_hssi_fec_ingress_0__i_fec_rx_data_fec_wrap_0[0] }),
+		.i_fec_rx_rdy_n_fec_wrap(x_std_sm_hssi_fec_ingress_0__i_fec_rx_rdy_n_fec_wrap_1),
+		.i_fec_tx_data_mux_sel_fec_wrap(x_std_sm_hssi_fec_ingress_0__i_fec_tx_data_mux_sel_fec_wrap_1),
+		.i_rstfec_fec_csr_ret(x_std_sm_hssi_fec_ingress_0__i_rstfec_fec_csr_ret_1),
+		.i_rstfec_fec_rx_rst_n(x_std_sm_hssi_fec_ingress_0__i_rstfec_fec_rx_rst_n_1),
+		.i_rstfec_fec_tx_rst_n(x_std_sm_hssi_fec_ingress_0__i_rstfec_fec_tx_rst_n_1),
+		.i_rstfec_rx_fec_sfrz_n(x_std_sm_hssi_fec_ingress_0__i_rstfec_rx_fec_sfrz_n_1),
+		.i_rstfec_tx_fec_sfrz_n(x_std_sm_hssi_fec_ingress_0__i_rstfec_tx_fec_sfrz_n_1),
+		.o_ch_eth_fec_rx_async({ x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[11], x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[10], x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[9], x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[8], x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[7], x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[6], x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[5], x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[4], x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[3], x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[2], x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[1], x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_async_0[0] }),
+		.o_ch_eth_fec_rx_direct(x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_rx_direct_1),
+		.o_ch_eth_fec_tx_async_fec_wrap({ x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap_0[6], x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap_0[5], x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap_0[4], x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap_0[3], x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap_0[2], x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap_0[1], x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_async_fec_wrap_0[0] }),
+		.o_ch_eth_fec_tx_direct_fec_wrap(x_std_sm_hssi_fec_ingress_0__o_ch_eth_fec_tx_direct_fec_wrap_1),
+		.o_ch_lavmm_fec_addr_fec_wrap({ x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[19], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[18], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[17], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[16], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[15], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[14], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[13], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[12], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[11], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[10], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[9], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[8], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[7], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[6], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[5], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[4], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[3], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[2], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[1], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_addr_fec_wrap_0[0] }),
+		.o_ch_lavmm_fec_be_fec_wrap({ x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_be_fec_wrap_0[3], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_be_fec_wrap_0[2], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_be_fec_wrap_0[1], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_be_fec_wrap_0[0] }),
+		.o_ch_lavmm_fec_clk_fec_wrap(x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_clk_fec_wrap_1),
+		.o_ch_lavmm_fec_rdata({ x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[31], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[30], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[29], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[28], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[27], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[26], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[25], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[24], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[23], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[22], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[21], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[20], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[19], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[18], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[17], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[16], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[15], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[14], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[13], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[12], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[11], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[10], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[9], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[8], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[7], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[6], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[5], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[4], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[3], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[2], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[1], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_0[0] }),
+		.o_ch_lavmm_fec_rdata_valid(x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rdata_valid_1),
+		.o_ch_lavmm_fec_read_fec_wrap(x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_read_fec_wrap_1),
+		.o_ch_lavmm_fec_rstn_fec_wrap(x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_rstn_fec_wrap_1),
+		.o_ch_lavmm_fec_waitreq(x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_waitreq_1),
+		.o_ch_lavmm_fec_wdata_fec_wrap({ x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[31], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[30], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[29], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[28], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[27], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[26], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[25], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[24], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[23], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[22], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[21], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[20], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[19], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[18], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[17], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[16], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[15], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[14], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[13], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[12], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[11], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[10], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[9], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[8], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[7], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[6], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[5], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[4], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[3], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[2], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[1], x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_wdata_fec_wrap_0[0] }),
+		.o_ch_lavmm_fec_write_fec_wrap(x_std_sm_hssi_fec_ingress_0__o_ch_lavmm_fec_write_fec_wrap_1),
+		.o_fec_i_tx_mux_data_fec_wrap({ x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[42], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[41], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[40], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[39], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[38], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[37], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[36], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[35], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[34], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[33], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[32], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[31], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[30], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[29], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[28], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[27], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[26], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[25], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[24], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[23], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[22], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[21], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[20], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[19], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[18], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[17], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[16], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[15], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[14], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[13], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[12], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[11], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[10], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[9], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[8], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[7], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[6], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[5], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[4], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[3], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[2], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[1], x_std_sm_hssi_fec_ingress_0__o_fec_i_tx_mux_data_fec_wrap_0[0] }),
+		.o_fec_rx_data({ x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[42], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[41], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[40], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[39], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[38], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[37], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[36], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[35], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[34], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[33], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[32], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[31], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[30], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[29], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[28], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[27], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[26], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[25], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[24], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[23], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[22], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[21], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[20], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[19], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[18], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[17], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[16], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[15], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[14], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[13], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[12], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[11], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[10], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[9], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[8], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[7], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[6], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[5], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[4], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[3], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[2], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[1], x_std_sm_hssi_fec_ingress_0__o_fec_rx_data_0[0] }),
+		.o_fec_rx_rdy_n(x_std_sm_hssi_fec_ingress_0__o_fec_rx_rdy_n_1),
+		.o_fec_tx_data_mux_sel(x_std_sm_hssi_fec_ingress_0__o_fec_tx_data_mux_sel_1),
+		.o_rstfec_fec_csr_ret_fec_wrap(x_std_sm_hssi_fec_ingress_0__o_rstfec_fec_csr_ret_fec_wrap_1),
+		.o_rstfec_fec_rx_rst_n_fec_wrap(x_std_sm_hssi_fec_ingress_0__o_rstfec_fec_rx_rst_n_fec_wrap_1),
+		.o_rstfec_fec_tx_rst_n_fec_wrap(x_std_sm_hssi_fec_ingress_0__o_rstfec_fec_tx_rst_n_fec_wrap_1),
+		.o_rstfec_rx_fec_sfrz_n_fec_wrap(x_std_sm_hssi_fec_ingress_0__o_rstfec_rx_fec_sfrz_n_fec_wrap_1),
+		.o_rstfec_tx_fec_sfrz_n_fec_wrap(x_std_sm_hssi_fec_ingress_0__o_rstfec_tx_fec_sfrz_n_fec_wrap_1),
+		.sm_hssi_quartus_only_connection_link_i_to_e(o_u3_sm_hssi_quartus_only_connection_link_i_to_e_0)
+	);
+
+endmodule

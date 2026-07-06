@@ -1,0 +1,128 @@
+From 6914f2f9ba8fe248bb37e0cffa09c14ef0dace53 Mon Sep 17 00:00:00 2001
+From: Mahesh Vaidya <mahesh.vaidya@altera.com>
+Date: Mon, 25 May 2026 15:56:36 -0700
+Subject: [PATCH] net: stmmac: dwxgmac2: Add 1G CRC workaround for Altera MRPHY
+
+On Altera Agilex 5 boards with the Multirate PHY, the HPS GMII clock
+mux selects a different source at SS_1000_GMII than at SS_2500_GMII.
+Because the HPS PLL and the XCVR reference clock are independent,
+this causes the MAC's GMII clock to drift relative to the link rate
+at 1G, producing TX CRC errors and stalled traffic.
+
+This was confirmed empirically: with the workaround disabled, ping
+fails at 1G while 2.5G / 100M / 10M all continue to work. The other
+speeds are unaffected because:
+
+  - 2.5G uses SS_2500_GMII directly, on the clean clock path.
+  - 100M and 10M run through MRPHY soft-PCS rate adaptation, so the
+    MAC's nominal GMII clock domain is not required to match the
+    link rate exactly.
+
+Force SS_2500_GMII at the MAC even when the negotiated speed is 1G,
+keeping the cleaner clock path. The MRPHY soft-PCS handles the actual
+1G/2.5G byte-rate distinction internally.
+
+The workaround is opt-in via the altr,mrphy-1g-crc-workaround DT
+property on the gmac node; non-MRPHY boards see the upstream default
+of SS_1000_GMII at 1G and are unaffected.
+
+Upstream-Status: Inappropriate (board-specific clock issue)
+Signed-off-by: Mahesh Vaidya <mahesh.vaidya@altera.com>
+---
+ .../intel/socfpga_agilex5_socdk_tsn_cfg3_dr.dts |  3 +++
+ .../net/ethernet/stmicro/stmmac/dwmac-socfpga.c |  9 +++++++++
+ .../net/ethernet/stmicro/stmmac/dwxgmac2_core.c | 17 ++++++++++++++++-
+ include/linux/stmmac.h                          |  1 +
+ 4 files changed, 29 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/intel/socfpga_agilex5_socdk_tsn_cfg3_dr.dts b/arch/arm64/boot/dts/intel/socfpga_agilex5_socdk_tsn_cfg3_dr.dts
+index 6246e104b04c..658d2d6797b7 100644
+--- a/arch/arm64/boot/dts/intel/socfpga_agilex5_socdk_tsn_cfg3_dr.dts
++++ b/arch/arm64/boot/dts/intel/socfpga_agilex5_socdk_tsn_cfg3_dr.dts
+@@ -101,6 +101,7 @@ &gmac0 {
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+ 	altr,gmii-to-sgmii-converter = <&gmii_to_sgmii_converter0>;
++	altr,mrphy-1g-crc-workaround;
+ };
+ 
+ &gmac1 {
+@@ -114,6 +115,7 @@ &gmac1 {
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+ 	altr,gmii-to-sgmii-converter = <&gmii_to_sgmii_converter1>;
++	altr,mrphy-1g-crc-workaround;
+ };
+ 
+ &gmac2 {
+@@ -125,6 +127,7 @@ &gmac2 {
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+ 	altr,gmii-to-sgmii-converter = <&gmii_to_sgmii_converter2>;
++	altr,mrphy-1g-crc-workaround;
+ 
+ 	sfp28_cage: sfp {
+ 		compatible = "sff,sfp";
+diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c
+index 25a02ccc94f1..6bb480498955 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c
++++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c
+@@ -1007,6 +1007,15 @@ static int socfpga_dwmac_probe(struct platform_device *pdev)
+ 		plat_dat->mrphy_get_pcs_tx_latency = socfpga_mrphy_get_pcs_soft_tx_latency;
+ 	}
+ 
++	/*
++	 * Some Agilex 5 boards with the Multirate PHY exhibit TX CRC
++	 * errors at 1G because the HPS GMII clock mux selects a different
++	 * source at SS_1000_GMII than at SS_2500_GMII. The DT property
++	 * gates the workaround so non-MRPHY boards are unaffected.
++	 */
++	plat_dat->mrphy_1g_crc_workaround =
++		of_property_read_bool(dev->of_node, "altr,mrphy-1g-crc-workaround");
++
+ 	/* The socfpga driver needs to control the stmmac reset to set the phy
+ 	 * mode. Create a copy of the core reset handle so it can be used by
+ 	 * the driver later.
+diff --git a/drivers/net/ethernet/stmicro/stmmac/dwxgmac2_core.c b/drivers/net/ethernet/stmicro/stmmac/dwxgmac2_core.c
+index a8540f5c1f12..60caf8c0ae75 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/dwxgmac2_core.c
++++ b/drivers/net/ethernet/stmicro/stmmac/dwxgmac2_core.c
+@@ -1550,7 +1550,22 @@ int dwxgmac2_setup(struct stmmac_priv *priv)
+ 	mac->link.duplex = 0;
+ 	mac->link.speed10 = XGMAC_CONFIG_SS_10_MII;
+ 	mac->link.speed100 = XGMAC_CONFIG_SS_100_MII;
+-	mac->link.speed1000 = XGMAC_CONFIG_SS_1000_GMII;
++
++	/*
++	 * When operated with Altera's Agilex 5 Multirate PHY in GMII mode,
++	 * setting the XGMAC speed-select to SS_1000_GMII at 1G picks a
++	 * different clock-mux source than the other GMII rates. Because
++	 * the HPS PLL and the XCVR refclock are independent, this produces
++	 * TX CRC errors due to PPM drift. Forcing SS_2500_GMII keeps the
++	 * cleaner clock path at 1G as well. The MRPHY's soft-PCS handles
++	 * the actual 1G/2.5G byte-rate distinction.
++	 *
++	 * The workaround is opt-in via DT so non-MRPHY boards are unaffected.
++	 */
++	mac->link.speed1000 = priv->plat->mrphy_1g_crc_workaround ?
++				XGMAC_CONFIG_SS_2500_GMII :
++				XGMAC_CONFIG_SS_1000_GMII;
++
+ 	mac->link.speed2500 = XGMAC_CONFIG_SS_2500_GMII;
+ 	mac->link.xgmii.speed2500 = XGMAC_CONFIG_SS_2500;
+ 	mac->link.xgmii.speed5000 = XGMAC_CONFIG_SS_5000;
+diff --git a/include/linux/stmmac.h b/include/linux/stmmac.h
+index 5c178e83de42..b6d152b35118 100644
+--- a/include/linux/stmmac.h
++++ b/include/linux/stmmac.h
+@@ -272,6 +272,7 @@ struct plat_stmmacenet_data {
+ 	int (*mrphy_get_efifo_tx_latency)(void *priv, u32 *tx_lat);
+ 	int (*mrphy_get_pcs_rx_latency)(void *priv, u32 *pcs_rx_lat);
+ 	int (*mrphy_get_pcs_tx_latency)(void *priv, u32 *pcs_tx_lat);
++	bool mrphy_1g_crc_workaround;
+ 	struct mac_device_info *(*setup)(void *priv);
+ 	int (*clks_config)(void *priv, bool enabled);
+ 	int (*crosststamp)(ktime_t *device, struct system_counterval_t *system,
+-- 
+2.34.1
+

@@ -39,7 +39,7 @@ export $IMAGE
 #------------------------------------------------------------------------------------------#
 # Set Linux Version
 #------------------------------------------------------------------------------------------#
-export LINUX_VER=6.12.19
+export LINUX_VER=6.18.2
 echo "LINUX_VERSION        = $LINUX_VER"
 LINUX_SOCFPGA_BRANCH=socfpga-$LINUX_VER-lts
 echo "LINUX_SOCFPGA_BRANCH = $LINUX_SOCFPGA_BRANCH"
@@ -47,7 +47,7 @@ echo "LINUX_SOCFPGA_BRANCH = $LINUX_SOCFPGA_BRANCH"
 #------------------------------------------------------------------------------------------#
 # Set default U-Boot Version
 #------------------------------------------------------------------------------------------#
-export UBOOT_VER=v2025.04
+export UBOOT_VER=v2026.01
 export UBOOT_REL=
 echo "UBOOT_VERSION        = $UBOOT_VER$UBOOT_REL"
 UBOOT_SOCFPGA_BRANCH=socfpga_$UBOOT_VER$UBOOT_REL
@@ -76,7 +76,7 @@ echo "UBOOT_CONFIG         = $UB_CONFIG"
 #------------------------------------------------------------------------------------------#
 # Set Arm-Trusted-Firmware version
 #------------------------------------------------------------------------------------------#
-export ATF_VER=v2.12.1
+export ATF_VER=v2.14.0
 echo "ATF_VERSION          = $ATF_VER"
 ATF_BRANCH=socfpga_$ATF_VER
 echo "ATF_BRANCH           = $ATF_BRANCH"
@@ -115,7 +115,7 @@ build_setup() {
 		echo -e "\n[INFO] Create build workspace"
 		mkdir -p $WORKSPACE/$MACHINE-$IMAGE-rootfs
 	fi
-	
+
 	if [ ! -d $WORKSPACE/$MACHINE-$IMAGE-images ]; then
 		echo -e "\n[INFO] Create image staging area"
 		mkdir -p $WORKSPACE/$MACHINE-$IMAGE-images
@@ -148,7 +148,7 @@ build_setup() {
 		bitbake-layers add-layer ../meta-openembedded/meta-oe
 		bitbake-layers add-layer ../meta-openembedded/meta-python
 
-		if ! [[ "$MACHINE" == "agilex3" && "$IMAGE" == "qspi" ]]; then
+		if ! [[ ( "$MACHINE" == "agilex3" || "$MACHINE" == "agilex5_dk_a5e013bm16aea" ) && "$IMAGE" == "qspi" ]]; then
 			bitbake-layers add-layer ../meta-openembedded/meta-networking
 			bitbake-layers add-layer ../meta-clang
 		fi
@@ -169,13 +169,13 @@ build_setup() {
 		echo "DL_DIR = \"$WORKSPACE/downloads\"" >> conf/site.conf
 		echo "SSTATE_DIR ?= \"$WORKSPACE/sstate_cache\"" >> conf/site.conf
 		echo "IMAGE_TYPE:${MACHINE} = \"$IMAGE\"" >> conf/site.conf
-		if ! [[ "$MACHINE" == "agilex3" && "$IMAGE" == "qspi" ]]; then
+		if ! [[ ( "$MACHINE" == "agilex3" || "$MACHINE" == "agilex5_dk_a5e013bm16aea" ) && "$IMAGE" == "qspi" ]]; then
 			echo 'DISTRO_FEATURES:append = " systemd usrmerge"' >> conf/site.conf
 			echo 'VIRTUAL-RUNTIME_init_manager = "systemd"' >> conf/site.conf
 		else
 			echo 'IMAGE_FSTYPES:append = " cpio cpio.gz cpio.gz.u-boot ext3 jffs2 tar.gz multiubi"' >> conf/site.conf
 			echo 'CORE_IMAGE_EXTRA_INSTALL += "openssh gdbserver mtd-utils net-tools"' >> conf/site.conf
-			echo 'AGILEX3_QSPI_BUILD = "1"' >> conf/site.conf
+			echo '64MB_QSPI_BUILD = "1"' >> conf/site.conf
 		fi
 		echo "require conf/machine/$MACHINE-gsrd.conf" >> conf/site.conf
 		# Linux
@@ -234,7 +234,7 @@ bitbake_image() {
 		fi
 
 		echo -e "\n[INFO] Start bitbake process for target config.."
-		if [[ "$MACHINE" == "agilex3" && "$IMAGE" == "qspi" ]]; then
+		if [[ ( "$MACHINE" == "agilex3" || "$MACHINE" == "agilex5_dk_a5e013bm16aea" ) && "$IMAGE" == "qspi" ]]; then
 			bitbake core-image-minimal 2>&1
 		else
 			bitbake console-image-minimal gsrd-console-image 2>&1
@@ -398,9 +398,17 @@ package() {
 			for file in *_dk_si_agi027fc*; do
 				mv "$file" "${file/_dk_si_agi027fc/}"
 			done
+		elif [ "$MACHINE" == "agilex7_dk_dev_agm039ea" ]; then
+			for file in *_dk_dev_agm039ea*; do
+				mv "$file" "${file/_dk_dev_agm039ea/}"
+			done
 		elif [ "$MACHINE" == "agilex7_dk_dev_agm039fes" ]; then
 			for file in *_dk_dev_agm039fes*; do
 				mv "$file" "${file/_dk_dev_agm039fes/}"
+			done
+		elif [ "$MACHINE" == "agilex5_dk_a5e013bm16aea" ]; then
+			for file in *_dk_a5e013bm16aea*; do
+				mv "$file" "${file/_dk_a5e013bm16aea/}"
 			done
 		elif [ "$MACHINE" == "agilex5_dk_a5e065bb32aes1" ]; then
 			for file in *_dk_a5e065bb32aes1*; do

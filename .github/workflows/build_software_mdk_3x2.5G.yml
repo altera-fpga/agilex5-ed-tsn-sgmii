@@ -1,0 +1,137 @@
+name: Build Software mdk concurrent 3x2.5G design
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      triggered_by_schedule:
+        type: boolean
+        required: false
+        default: false
+      triggered_by_tag_push:
+        type: boolean
+        required: false
+        default: false
+      release_tag:
+        type: string
+        required: false
+        default: ""
+      triggered_by_quartus_upgrade:
+        type: boolean
+        required: false
+        default: false
+      quartus_upgrade_branch:
+        required: false
+        type: string
+
+jobs:
+  software-build:
+    runs-on: [self-hosted, psgpac]
+    env:
+      WORKDIR: /nfs/site/disks/pac_release_1/github/psgpac/${{ github.repository }}/sw/${{ github.run_id }}.${{ github.run_attempt }}
+      DESTDIR: /nfs/site/disks/pac_release_1/github/psgpac/${{ github.repository }}/${{ github.run_id }}.${{ github.run_attempt }}/src/sw/output_files
+      CONTAINER: /nfs/site/disks/pac_release_1/github/psgpac/${{ github.repository }}/container/ubuntu2204.sif
+      SSTATE_DIR: /nfs/site/disks/pac_release_1/github/psgpac/${{ github.repository }}/sstate_cache/ubuntu2204
+      SED_ARTIFACT_PATH: /nfs/site/disks/pac_release_1/github/psgpac/sed/build
+      SED_TSN_CFG3_SW_PATH: tsn-cfg3/agx5/sm72/mdk/3x2.5g
+      ARTIFACT_NAME_PREFIX: agilex5-sm72-ed-tsn-cfg3-mdk_3x2.5G
+      QUARTUS_UPGRADE_PATH: /nfs/site/disks/pac_release_1/github/psgpac/sed/quartus_upgrade/build
+
+    steps:
+      - name: Capture start time
+        id: start
+        run: echo "start_time=$(date +%s)" >> $GITHUB_OUTPUT
+
+      - name: Create workdir
+        id: workdir
+        run: |
+          mkdir -pv $WORKDIR
+          echo "SED_ARTIFACT_PATH=${{ env.SED_ARTIFACT_PATH }}" >> $GITHUB_ENV
+
+      - name: Get date
+        id: date
+        run: echo "DATE=$(date -u +'%Y%m%d')" >> $GITHUB_ENV
+    
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.quartus_upgrade_branch || github.ref || github.event.repository.default_branch }}
+
+      - name: Copy inputs
+        run: |
+          rsync -rl --exclude=.git "$GITHUB_WORKSPACE"/. "$WORKDIR"
+
+      - name: Create BUILD PATH and BUILD FLAG DIR
+        if: ${{ inputs.triggered_by_schedule || inputs.triggered_by_tag_push || inputs.triggered_by_quartus_upgrade }}
+        run: |
+          if [[ ${{ inputs.triggered_by_schedule }} == "true" ]]; then
+            echo " Scheduled event triggered"
+            echo "ARTIFACT_NAME_PREFIX=${{ env.ARTIFACT_NAME_PREFIX }}-${{ env.DATE }}" >> $GITHUB_ENV
+            echo "FLAG_DIR=${{ env.SED_ARTIFACT_PATH }}/nightly/${{ env.SED_TSN_CFG3_SW_PATH }}/${{ env.DATE }}/build_flags" >> $GITHUB_ENV
+            echo "TIME_DIR=${{ env.SED_ARTIFACT_PATH }}/nightly/${{ env.SED_TSN_CFG3_SW_PATH }}/${{ env.DATE }}/timing" >> $GITHUB_ENV
+            echo "BUILD_PATH=${{ env.SED_ARTIFACT_PATH }}/nightly/${{ env.SED_TSN_CFG3_SW_PATH }}/${{ env.DATE }}" >> $GITHUB_ENV
+          elif [[ ${{ inputs.triggered_by_tag_push }} == "true" ]]; then
+            echo " Push Tag triggered"
+            echo "ARTIFACT_NAME_PREFIX=${{ env.ARTIFACT_NAME_PREFIX }}-${{ inputs.release_tag }}-${{ env.DATE }}" >> $GITHUB_ENV
+            echo "FLAG_DIR=${{ env.SED_ARTIFACT_PATH }}/release/${{ env.SED_TSN_CFG3_SW_PATH }}/${{ inputs.release_tag }}/${{ env.DATE }}/build_flags" >> $GITHUB_ENV
+            echo "TIME_DIR=${{ env.SED_ARTIFACT_PATH }}/release/${{ env.SED_TSN_CFG3_SW_PATH }}/${{ inputs.release_tag }}/${{ env.DATE }}/timing" >> $GITHUB_ENV
+            echo "BUILD_PATH=${{ env.SED_ARTIFACT_PATH }}/release/${{ env.SED_TSN_CFG3_SW_PATH }}/${{ inputs.release_tag }}/${{ env.DATE }}" >> $GITHUB_ENV
+           elif [[ ${{ inputs.triggered_by_quartus_upgrade }} == "true" ]]; then
+            echo "PUll request event triggered"
+            echo "ARTIFACT_NAME_PREFIX=${{ env.ARTIFACT_NAME_PREFIX }}-PR-${{ env.DATE }}" >> $GITHUB_ENV
+            echo "BUILD_PATH=${{ env.QUARTUS_UPGRADE_PATH }}/${{ env.SED_TSN_CFG3_SW_PATH }}/${{ env.DATE }}" >> $GITHUB_ENV
+            echo "TIME_DIR=${{ env.QUARTUS_UPGRADE_PATH }}/${{ env.SED_TSN_CFG3_SW_PATH }}/${{ env.DATE }}/timing" >> $GITHUB_ENV
+            echo "FLAG_DIR=${{ env.QUARTUS_UPGRADE_PATH }}/${{ env.SED_TSN_CFG3_SW_PATH }}/${{ env.DATE }}/build_flags" >> $GITHUB_ENV
+          fi    
+
+      - name: Build Yocto image
+        run: |
+          mkdir -pv ${{ env.BUILD_PATH }}
+          arc submit -I ostype/ubuntu22 ncpus=4 mem=48G priority=99 timeout=4h iwd=$WORKDIR nb_container=$CONTAINER -- env http_proxy=$http_proxy https_proxy=$https_proxy GITHUB_SERVER_URL=$GITHUB_SERVER_URL GITHUB_REPOSITORY=$GITHUB_REPOSITORY GITHUB_REF=$GITHUB_REF SSTATE_DIR=$SSTATE_DIR DESTDIR=$DESTDIR FLAG_DIR=${{ env.FLAG_DIR }} scripts/build-sw.sh
+
+      - name: Copy outputs
+        run: |
+          rsync -ri "$DESTDIR"/. .
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME_PREFIX }}-sw-${{ github.run_id }}
+          if-no-files-found: error
+          path: |
+            gsrd-console-image-agilex5.tar.gz
+            kernel.itb
+            sdimage.tar.gz
+            u-boot-spl-dtb.hex
+      
+      - name: Copy artifacts to psg
+        if: ${{ inputs.triggered_by_schedule || inputs.triggered_by_tag_push || inputs.triggered_by_quartus_upgrade  }}
+        run: |
+            mkdir -pv  ${{ env.BUILD_PATH }}/sw && \
+            cp -rf $DESTDIR/* ${{ env.BUILD_PATH }}/sw && \
+            cd ${{ env.BUILD_PATH }}/sw && \
+            mv gsrd-console-image-agilex5.tar.gz ${{ env.ARTIFACT_NAME_PREFIX }}.gsrd-console-image.tar.gz && \
+            mv kernel.itb ${{ env.ARTIFACT_NAME_PREFIX }}.kernel.itb && \
+            mv sdimage.tar.gz ${{ env.ARTIFACT_NAME_PREFIX }}.sdimage.tar.gz && \
+            cd ${{ env.BUILD_PATH }}/../ && [ -L latest ] && rm -rf latest; ln -s ${{ env.DATE }} latest && \
+            mkdir -pv ${{ env.BUILD_PATH }}/build_flags ${{ env.TIME_DIR }} && \
+            touch ${{ env.BUILD_PATH }}/build_flags/software_done
+        
+      - name: Capture end time and calculate duration
+        if: always() && (inputs.triggered_by_schedule || inputs.triggered_by_tag_push || inputs.triggered_by_quartus_upgrade )
+        run: |
+          start=${{ steps.start.outputs.start_time }}
+          end=$(date +%s)
+          duration=$((end - start))
+          hours=$((duration / 3600))
+          minutes=$(((duration % 3600) / 60))
+          seconds=$((duration % 60))
+          formatted_duration=$(printf "%02d:%02d:%02d" $hours $minutes $seconds)
+          echo "Workflow duration: $formatted_duration "
+          mkdir -pv ${{ env.TIME_DIR }}
+          echo "$formatted_duration" > ${{ env.TIME_DIR }}/sw_time
+          cd ${{ env.BUILD_PATH }}/../ && [ -L latest ] && rm -rf latest;ln -s ${{ env.DATE }} latest
+
+      - name: Purge workdir
+        if: always()
+        run: |
+          rm -rf $WORKDIR

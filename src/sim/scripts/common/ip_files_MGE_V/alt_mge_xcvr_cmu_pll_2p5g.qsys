@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system name="$${FILENAME}">
+ <component
+   name="$${FILENAME}"
+   displayName="$${FILENAME}"
+   version="1.0"
+   description=""
+   tags="INTERNAL_COMPONENT=true"
+   categories="" />
+ <parameter name="bonusData"><![CDATA[bonusData 
+{
+   element $${FILENAME}
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Arria V";
+         type = "String";
+      }
+   }
+   element alt_mge_xcvr_cmu_pll_2p5g_inst
+   {
+   }
+}
+]]></parameter>
+ <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
+ <parameter name="device" value="Unknown" />
+ <parameter name="deviceFamily" value="Arria V" />
+ <parameter name="deviceSpeedGrade" value="Unknown" />
+ <parameter name="fabricMode" value="QSYS" />
+ <parameter name="generateLegacySim" value="false" />
+ <parameter name="generationId" value="0" />
+ <parameter name="globalResetBus" value="false" />
+ <parameter name="hdlLanguage" value="VERILOG" />
+ <parameter name="hideFromIPCatalog" value="true" />
+ <parameter name="maxAdditionalLatency" value="1" />
+ <parameter name="projectName" value="" />
+ <parameter name="sopcBorderPoints" value="false" />
+ <parameter name="systemHash" value="0" />
+ <parameter name="testBenchDutName" value="" />
+ <parameter name="timeStamp" value="0" />
+ <parameter name="useTestBenchNamingPattern" value="false" />
+ <instanceScript></instanceScript>
+ <interface
+   name="fboutclk"
+   internal="alt_mge_xcvr_cmu_pll_2p5g_inst.fboutclk"
+   type="conduit"
+   dir="end">
+  <port name="fboutclk" internal="fboutclk" />
+ </interface>
+ <interface
+   name="hclk"
+   internal="alt_mge_xcvr_cmu_pll_2p5g_inst.hclk"
+   type="conduit"
+   dir="end">
+  <port name="hclk" internal="hclk" />
+ </interface>
+ <interface
+   name="pll_clkout"
+   internal="alt_mge_xcvr_cmu_pll_2p5g_inst.pll_clkout"
+   type="conduit"
+   dir="end">
+  <port name="pll_clkout" internal="pll_clkout" />
+ </interface>
+ <interface
+   name="pll_fbclk"
+   internal="alt_mge_xcvr_cmu_pll_2p5g_inst.pll_fbclk"
+   type="conduit"
+   dir="end">
+  <port name="pll_fbclk" internal="pll_fbclk" />
+ </interface>
+ <interface
+   name="pll_locked"
+   internal="alt_mge_xcvr_cmu_pll_2p5g_inst.pll_locked"
+   type="conduit"
+   dir="end">
+  <port name="pll_locked" internal="pll_locked" />
+ </interface>
+ <interface
+   name="pll_powerdown"
+   internal="alt_mge_xcvr_cmu_pll_2p5g_inst.pll_powerdown"
+   type="conduit"
+   dir="end">
+  <port name="pll_powerdown" internal="pll_powerdown" />
+ </interface>
+ <interface
+   name="pll_refclk"
+   internal="alt_mge_xcvr_cmu_pll_2p5g_inst.pll_refclk"
+   type="conduit"
+   dir="end">
+  <port name="pll_refclk" internal="pll_refclk" />
+ </interface>
+ <interface
+   name="reconfig_from_xcvr"
+   internal="alt_mge_xcvr_cmu_pll_2p5g_inst.reconfig_from_xcvr"
+   type="conduit"
+   dir="end">
+  <port name="reconfig_from_xcvr" internal="reconfig_from_xcvr" />
+ </interface>
+ <interface
+   name="reconfig_to_xcvr"
+   internal="alt_mge_xcvr_cmu_pll_2p5g_inst.reconfig_to_xcvr"
+   type="conduit"
+   dir="end">
+  <port name="reconfig_to_xcvr" internal="reconfig_to_xcvr" />
+ </interface>
+ <module
+   name="alt_mge_xcvr_cmu_pll_2p5g_inst"
+   kind="altera_xcvr_pll_av"
+   version="14.1"
+   enabled="1"
+   autoexport="1">
+  <parameter name="device_family" value="Arria V" />
+  <parameter name="feedback_clk" value="internal" />
+  <parameter name="gui_pll_reconfig_pll0_clk_network" value="x1" />
+  <parameter name="gui_pll_reconfig_pll0_data_rate" value="3125 Mbps" />
+  <parameter name="gui_pll_reconfig_pll0_pll_type" value="CMU" />
+  <parameter name="gui_pll_reconfig_pll0_refclk_freq" value="125.0 MHz" />
+  <parameter name="gui_pll_reconfig_pll0_refclk_sel" value="0" />
+  <parameter name="pll_reconfig" value="0" />
+  <parameter name="refclks" value="1" />
+ </module>
+ <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
+ <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
+</system>

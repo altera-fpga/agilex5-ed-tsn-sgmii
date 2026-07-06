@@ -1,0 +1,65 @@
+name: build container
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/container.yml'
+      - 'container/ubuntu2204.def'
+      - 'scripts/container.sh'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/container.yml'
+      - 'container/ubuntu2204.def'
+      - 'scripts/container.sh'
+jobs:
+  build:
+    runs-on: altera-innersource.prod.amr.dind 
+    container: amr-cache-registry.caas.intel.com/cache/library/alpine:3.21
+    env:
+      SSH_HOST: ascycron2.sc.altera.com
+      SSH_HOST_KEY: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHfGQUE5qmzx8TP3gqlv1KFDi4trlxlziThuHEMVLpvE'
+      WORKDIR: /nfs/site/disks/pac_release_1/github/psgpac/${{ github.repository }}/${{ github.run_id }}.${{ github.run_attempt }}
+      DESTDIR: /nfs/site/disks/pac_release_1/github/psgpac/${{ github.repository }}/container
+    steps:
+      - name: Install packages
+        run: |
+          apk update
+          apk add git openssh-client rsync
+
+      - name: Setup ssh
+        run: |
+          umask 077
+          mkdir -p /root/.ssh
+          echo '${{ secrets.PSGPAC_SSH_KEY }}' > /root/.ssh/id_ed25519
+          echo '${{ env.SSH_HOST }} ${{ env.SSH_HOST_KEY }}' >> /root/.ssh/known_hosts
+          echo ServerAliveInterval 30 >> /root/.ssh/config
+          echo User psgpac >> /root/.ssh/config
+
+      - name: Create workdir
+        id: workdir
+        run: |
+          ssh "$SSH_HOST" "mkdir -pv $WORKDIR"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Copy repository
+        run: |
+          rsync -rl --exclude=.git "$GITHUB_WORKSPACE"/. "$SSH_HOST":"$WORKDIR"
+
+      - name: Build container
+        run: |
+          ssh "$SSH_HOST" "nbjob run --mode interactive --tar altera_sc_normal --qslot /psg/infra/default --class 'SLES15&&1C&&4G' --class-reservation 'disk=20' --isolate-tmp loop --container-platform build $WORKDIR scripts/container.sh container/ubuntu2204.def ubuntu2204.sif"
+
+      - name: Install container
+        if: github.ref == 'refs/heads/main'
+        run: |
+          ssh "$SSH_HOST" "ln -fn $WORKDIR/ubuntu2204.sif $DESTDIR/ubuntu2204.sif"
+
+      - name: Purge workdir
+        run: |
+          ssh "$SSH_HOST" "rm -rf $WORKDIR"

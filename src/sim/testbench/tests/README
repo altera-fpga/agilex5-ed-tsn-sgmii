@@ -1,0 +1,7 @@
+////////////////////////////////////////////////////////////////////////////
+// TODO:
+// By default, the "configuration" of TB is "top".
+// All the tests created for that configuration will be stored in "top".
+// For other TB "configuration", create a directory with the name matches
+// with the "configuration" name, and store the tests into that directory.
+////////////////////////////////////////////////////////////////////////////

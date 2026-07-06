@@ -1,0 +1,118 @@
+name: build hw mdk singly phy design
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+    paths:
+      - '.github/workflows/build-hw.yml'
+      - 'scripts/build-hw.sh'
+      - 'src/hw/mdk_single_phy/**'
+  pull_request:
+    branches:
+      - main
+    tags:
+      - '*'
+    paths:
+      - '.github/workflows/build-hw.yml'
+      - 'scripts/build-hw.sh'
+      - 'src/hw/mdk_single_phy/**'
+  schedule:
+    - cron: '30 07 * * *'
+jobs:
+  build:
+    runs-on: altera-innersource.prod.amr.dind
+    container: cache-registry.altera.com/cache/library/alpine:3.21
+    env:
+      SSH_HOST: ascycron2.sc.altera.com
+      SSH_HOST_KEY: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHfGQUE5qmzx8TP3gqlv1KFDi4trlxlziThuHEMVLpvE'
+      WORKDIR: /nfs/site/disks/pac_release_1/github/psgpac/${{ github.repository }}/${{ github.run_id }}.${{ github.run_attempt }}
+      SED_TSN_CFG3_NIGHTLY_PATH: /nfs/site/disks/pac_release_1/github/psgpac/sed/build/nightly
+      SED_TSN_CFG3_RELEASE_PATH: /nfs/site/disks/pac_release_1/github/psgpac/sed/build/release
+      SED_TSN_CFG3_HW_PATH: tsn-cfg3/agilex5/sm72
+      ARTIFACT_NAME_PREFIX: agilex5-sm72-ed-tsn-cfg3-mdk-single-phy
+
+    steps:
+      - name: Install packages
+        run: |
+          apk update
+          apk add git openssh-client rsync
+
+      - name: Setup ssh
+        run: |
+          umask 077
+          mkdir -p /root/.ssh
+          echo '${{ secrets.PSGPAC_SSH_KEY }}' > /root/.ssh/id_ed25519
+          echo '${{ env.SSH_HOST }} ${{ env.SSH_HOST_KEY }}' >> /root/.ssh/known_hosts
+          echo ServerAliveInterval 30 >> /root/.ssh/config
+          echo User psgpac >> /root/.ssh/config
+
+      - name: Create workdir
+        id: workdir
+        run: |
+          ssh "$SSH_HOST" "mkdir -pv $WORKDIR"
+      
+      - name: Get date
+        id: date
+        run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Copy inputs
+        run: |
+          rsync -rl --exclude=.git "$GITHUB_WORKSPACE"/. "$SSH_HOST":"$WORKDIR"
+
+      - name: Build design
+        run: |
+          ssh "$SSH_HOST" "arc submit --watch ostype/suse15 priority=99 timeout=2h iwd=$WORKDIR -- bash scripts/build-hw.sh"
+
+      - name: Copy outputs
+        run: |
+          rsync -ri "$SSH_HOST":"$WORKDIR"/src/hw/mdk_single_phy/output_files/. .
+
+      - name: Upload design
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME_PREFIX }}-${{ github.run_id }}
+          if-no-files-found: error
+          path: |
+            *.rbf
+            *.sof
+      
+      - name: Copy artifacts to psg 
+        if: github.event_name == 'schedule'
+        run: |
+          ssh "$SSH_HOST" "mkdir -pv  $SED_TSN_CFG3_NIGHTLY_PATH/${{ env.DATE }}/${{ env.SED_TSN_CFG3_HW_PATH }}/hw && \
+          cd $WORKDIR/src/hw/mdk_single_phy/output_files/;cp -rf *.sof *.rbf $SED_TSN_CFG3_NIGHTLY_PATH/${{ env.DATE }}/${{ env.SED_TSN_CFG3_HW_PATH }}/hw && \
+          rm -rf $SED_TSN_CFG3_NIGHTLY_PATH/${{ env.DATE }}/${{ env.SED_TSN_CFG3_HW_PATH }}/hw/*_hps_auto.sof && \
+          cd $SED_TSN_CFG3_NIGHTLY_PATH/${{ env.DATE }}/${{ env.SED_TSN_CFG3_HW_PATH }}/hw/ && \ 
+          mv mdk_single_phy.core.rbf $ARTIFACT_NAME_PREFIX-${{ env.DATE }}.core.rbf && \
+          mv mdk_single_phy.hps.rbf $ARTIFACT_NAME_PREFIX-${{ env.DATE }}.hps.rbf && \
+          mv a5ed065bb32ae6sr0.sof $ARTIFACT_NAME_PREFIX-${{ env.DATE }}.sof && \
+          mv a5ed065bb32ae6sr0_hps.sof $ARTIFACT_NAME_PREFIX-${{ env.DATE }}.hps.sof && \
+          cd $SED_TSN_CFG3_NIGHTLY_PATH && [ -L latest ] && rm -rf latest && ln -s ${{ env.DATE }} latest && \
+          mkdir -pv $SED_TSN_CFG3_NIGHTLY_PATH/${{ env.DATE }}/${{ env.SED_TSN_CFG3_HW_PATH }}/build_flags && \
+          touch $SED_TSN_CFG3_NIGHTLY_PATH/${{ env.DATE }}/${{ env.SED_TSN_CFG3_HW_PATH }}/build_flags/hardware_done"
+
+      - name: Copy artifacts to psg release folder
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          ssh "$SSH_HOST" "mkdir -pv  $SED_TSN_CFG3_RELEASE_PATH/${{ env.SED_TSN_CFG3_HW_PATH }}/${{ github.ref_name }}/${{ env.DATE }}/hw && \
+          cd $WORKDIR/src/hw/mdk_single_phy/output_files/;cp -rf *.sof *.rbf $SED_TSN_CFG3_RELEASE_PATH/${{ env.SED_TSN_CFG3_HW_PATH }}/${{ github.ref_name }}/${{ env.DATE }}/hw && \
+          rm -rf $SED_TSN_CFG3_RELEASE_PATH/${{ env.SED_TSN_CFG3_HW_PATH }}/${{ github.ref_name }}/${{ env.DATE }}/hw/*_hps_auto.sof && \
+          cd $SED_TSN_CFG3_RELEASE_PATH/${{ env.SED_TSN_CFG3_HW_PATH }}/${{ github.ref_name }}/${{ env.DATE }}/hw && \ 
+          mv mdk_single_phy.core.rbf $ARTIFACT_NAME_PREFIX-${{ github.ref_name }}-${{ env.DATE }}.core.rbf && \
+          mv mdk_single_phy.hps.rbf $ARTIFACT_NAME_PREFIX-${{ github.ref_name }}-${{ env.DATE }}.hps.rbf && \
+          mv a5ed065bb32ae6sr0.sof $ARTIFACT_NAME_PREFIX-${{ github.ref_name }}-${{ env.DATE }}.sof && \
+          mv a5ed065bb32ae6sr0_hps.sof $ARTIFACT_NAME_PREFIX-${{ github.ref_name }}-${{ env.DATE }}.hps.sof && \
+          cd $SED_TSN_CFG3_RELEASE_PATH/${{ env.SED_TSN_CFG3_HW_PATH }}/${{ github.ref_name }} && [ -L latest ] && rm -rf latest;ln -s ${{ env.DATE }} latest && \
+          mkdir -pv $SED_TSN_CFG3_RELEASE_PATH/${{ env.SED_TSN_CFG3_HW_PATH }}/${{ github.ref_name }}/${{ env.DATE }}/build_flags && \
+          touch $SED_TSN_CFG3_RELEASE_PATH/${{ env.SED_TSN_CFG3_HW_PATH }}/${{ github.ref_name }}/${{ env.DATE }}/build_flags/hardware_done"
+          
+      - name: Purge workdir
+        if: always()
+        run: |
+          ssh "$SSH_HOST" "rm -rf $WORKDIR"

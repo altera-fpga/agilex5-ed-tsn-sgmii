@@ -1,0 +1,13 @@
+${QUARTUS_ROOTDIR}/libraries/megafunctions/bb_f.v
+${QUARTUS_ROOTDIR}/libraries/megafunctions/f_tile_soft_reset_ctlr_ip_v1/alt_jtagsr_adapt.v 
+${QUARTUS_ROOTDIR}/libraries/megafunctions/f_tile_soft_reset_ctlr_ip_v1/altera_std_synchronizer_nocut.v 
+${QUARTUS_ROOTDIR}/libraries/megafunctions/f_tile_soft_reset_ctlr_ip_v1/ftile_reset.v 
+${QUARTUS_ROOTDIR}/libraries/megafunctions/f_tile_soft_reset_ctlr_ip_v1/intc_dec8_t1.v 
+${QUARTUS_ROOTDIR}/libraries/megafunctions/f_tile_soft_reset_ctlr_ip_v1/intc_gdr_rst.v 
+${QUARTUS_ROOTDIR}/libraries/megafunctions/f_tile_soft_reset_ctlr_ip_v1/intc_gdr_rst_i_synchronizers.v 
+${QUARTUS_ROOTDIR}/libraries/megafunctions/f_tile_soft_reset_ctlr_ip_v1/intc_lut6.v 
+${QUARTUS_ROOTDIR}/libraries/megafunctions/f_tile_soft_reset_ctlr_ip_v1/intc_mlab20_a1r1w1.v 
+${QUARTUS_ROOTDIR}/libraries/megafunctions/f_tile_soft_reset_ctlr_ip_v1/intc_sync20_m.v 
+${QUARTUS_ROOTDIR}/libraries/megafunctions/f_tile_soft_reset_ctlr_ip_v1/nios_jtagsr.v 
+${QUARTUS_ROOTDIR}/libraries/megafunctions/f_tile_soft_reset_ctlr_ip_v1/nios_nios2_smg.v 
+${QUARTUS_ROOTDIR}/libraries/megafunctions/f_tile_soft_reset_ctlr_ip_v1/nios_rst_ctrl.v 

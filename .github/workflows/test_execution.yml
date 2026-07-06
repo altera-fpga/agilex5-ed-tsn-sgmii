@@ -1,0 +1,80 @@
+name: Regression test
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      triggered_by_schedule:
+        type: boolean
+        required: false
+        default: false
+      triggered_by_tag_push:
+        type: boolean
+        required: false
+        default: false
+      release_tag:
+        type: string
+        required: false
+        default: ""
+      triggered_by_pull_request:
+        type: boolean
+        required: false
+        default: false
+  
+jobs:
+  regression_test:
+    runs-on: [self-hosted, psgpac]
+    env:
+      REPO: https://github.com/altera-innersource/applications.fpga.system-example-designs.test-automation.git
+      REPO_PATH: /nfs/site/disks/pac_release_1/github/psgpac/sed/regression_test/repos/applications.fpga.system-example-designs.test-automation
+      REGTEST: /nfs/site/disks/pac_release_1/github/psgpac/sed/regression_test
+      REPORT_PATH: /nfs/site/disks/pac_release_1/github/psgpac/sed/build/nightly/tsn-cfg3/agx5/sm72/mdk/3x2.5g/latest/reports
+      EXEC_SCRIPT_DIR: /nfs/site/disks/pac_release_1/github/psgpac/sed/regression_test/tests/scripts/tsn
+      BRANCH: kamarthx/tsn_new_changes
+      QUARTUS_UPGRADE_PATH: /nfs/site/disks/pac_release_1/github/psgpac/sed/quartus_upgrade/build/tsn-cfg3/agilex5/sm72/mdk_3x2.5G/latest
+
+    steps:
+      - name: setup Test path
+        run: |
+          if [[ ${{ inputs.triggered_by_schedule }} == "true" ]]; then
+            echo " Scheduled event triggered"
+            echo "TEST_PATH=${{ env.REGTEST }}/nightly" >> $GITHUB_ENV
+          fi
+
+      - name: Trigger regression test
+        run: |
+          mkdir -pv ${{ env.TEST_PATH }}/tsn-cfg3/agx5/sm72/mdk/3x2.5g
+          cd ${{ env.TEST_PATH }}/tsn-cfg3/agx5/sm72/mdk/3x2.5g
+          rm -rf automation_repo
+          git clone -b ${{ env.BRANCH }} ${{ env.REPO }} automation_repo
+          cd automation_repo/scripts/tsn-cfg3/agx5/sm72/mdk/3x2.5g
+          if [[ ${{ inputs.triggered_by_schedule }} == "true" ]]; then
+            echo " Nightly testing triggered"
+            bash Top_execution.sh --param_build_type=nightly --param_build_id=latest
+          fi
+
+      # - name: Trigger Regression test
+      #   run: |
+      #     set -x
+      #     cd ${{ env.REPO_PATH }} && git pull && rm -rf ${{ env.REGTEST }}/regtest/tsn-cfg3/agx5/sm72/modular/mdk_3x2.5G/* 
+      #     cp -rf regtest/tsn-cfg3/agx5/sm72/modular/mdk_3x2.5G/* ${{ env.REGTEST }}/regtest/tsn-cfg3/agx5/sm72/modular/mdk_3x2.5G/ && cp -rf scripts/tsn/* ${{ env.EXEC_SCRIPT_DIR }}
+      #     if [[ ${{ inputs.triggered_by_schedule }} == "true" ]]; then
+      #       cd ${{ env.EXEC_SCRIPT_DIR }}
+      #       bash Top_execution.sh
+      #     elif [[ ${{ inputs.triggered_by_pull_request }} == "true" ]]; then
+      #       echo "Triggering regression on quartus upgrade PR and runs with --local option"
+      #       cd ${{ env.REGTEST }}/regtest/tsn-cfg3/agx5/sm72/modular/mdk_3x2.5G
+      #       cp -rf ${{ env.QUARTUS_UPGRADE_PATH }}/sw/* .
+      #       cp -rf ${{ env.QUARTUS_UPGRADE_PATH }}/hw/* .
+      #       bash ${{ env.EXEC_SCRIPT_DIR }}/Top_execution.sh --local
+      #     fi
+
+      - name: check csv 
+        run: |
+          cd ${{ env.REPORT_PATH }}
+          if [ -f *.csv ];then
+              echo "CSV File Generated"
+              cat *.csv
+          else
+              echo "CSV File Not generated"
+              exit 1
+          fi

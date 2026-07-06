@@ -1,0 +1,49 @@
+# ITF describes a high level specification of a regtest using a
+# tree data structure. 
+#
+# Each node in the tree represents a modular test defined by the ITF
+# framework or a specific team. Starting at the "itf" root node, we traverse
+# and execute the children test nodes until all children are executed.
+#
+#
+# Example:
+#                                              rtl_sim_msim_vlg
+#                                            /
+# itf ---- device ---- qsys_script ---- qsys_generate
+#                                            \ 
+#                                              qsyn ---- qfit
+#
+#
+# Tests can be highly configured via hooks and options in itf_regtest_local.pl
+# Limited configuration can be done in flow.txt
+#
+# The order of lines in this file is not important.
+
+#The device that is being tested (Arria 10)
+device=SM7_PART1
+
+#Project name
+project=a5ed065bb32ae6sr0
+
+# These assignments describe the order the subtest will be executed
+add_subtest=itf,device
+add_subtest=device,qsys
+add_subtest=qsys,rtl_sim_compile_only_vcsmx_vlg
+add_subtest=rtl_sim_compile_only_vcsmx_vlg,sequence
+add_subtest=sequence,rtl_sim_simulate_only_vcsmx
+
+add_subtest=qsys,qsyn
+add_subtest=qsyn,qfit
+add_subtest=qfit,qsta
+# add_subtest=qsta,qsta_timing_info
+add_subtest=qsta,qasm
+add_subtest=qasm,ocp
+
+subtest_timeout=5h,rtl_sim_compile_only_vcsmx_vlg
+subtest_timeout=18h,rtl_sim_simulate_only_vcsmx
+
+subtest_cpu_requirement=qsys,8
+
+subtest_memory_requirement=qsys,48000
+subtest_memory_requirement=rtl_sim_compile_only_vcsmx_vlg,48000
+subtest_memory_requirement=rtl_sim_simulate_only_vcsmx,48000

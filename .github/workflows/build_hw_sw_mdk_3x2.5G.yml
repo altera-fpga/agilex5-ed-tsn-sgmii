@@ -1,0 +1,129 @@
+name: Build HW-SW and regression test
+on:
+  workflow_dispatch:
+  push:
+    #branches:
+    # - 'master' 
+    tags:
+      - '*'
+    # paths:
+    #   - '.github/workflows/build_hw_sw.yml'
+
+  schedule:
+    - cron: '00 08 * * *'
+
+jobs:
+  check_changes:
+    runs-on: [self-hosted, psgpac]
+    outputs:
+      changes_detected: ${{ steps.changes_check.outputs.changed }}
+      test_run: ${{ steps.changes_check.outputs.test_run }}
+    env:
+      COMMIT_SHA: /nfs/site/disks/pac_release_1/github/psgpac/util/build/commit_sha
+      FORCE_BUILD_FILE: /nfs/site/disks/pac_release_1/github/psgpac/sed/build/nightly/tsn-cfg3/agx5/sm72/mdk/3x2.5g/.last_forced_build
+      RERUN_BUILD: /nfs/site/disks/pac_release_1/github/psgpac/sed/build/nightly/tsn-cfg3/agx5/sm72/mdk/3x2.5g/latest/reports/re-run
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for changes since last build
+        id: changes_check
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            echo "Tag push detected, forcing build..."
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "test_run=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          # Check for changes in last 24 hrs
+          changed_1d=$(git log --since="1 day ago" --oneline | wc -l)
+          echo "Changed code since 1 day: $changed_1d"
+
+          # Check for changes in last 7 days
+          changed_7d=$(git log --since="7 days ago" --oneline | wc -l)
+          echo "Changed code since 7 days ago: $changed_7d"
+
+          # Decide build flags
+          BUILD=false
+          TEST_RUN=true
+          
+          # check the last build/testing status
+          BUILD=$(if [ -f "${{ env.RERUN_BUILD }}" ]; then rm -f "${{ env.FORCE_BUILD_FILE }}";echo true; else echo false; fi )
+
+          if [ "$BUILD" == true ]; then
+            echo "Last build failed <$BUILD> - Force rerun builds"
+          else
+            echo "Last build passed - No need to rerun builds"
+          fi
+
+          last_forced_ts=$(if [ -f "${{ env.FORCE_BUILD_FILE }}" ]; then date -r "${{ env.FORCE_BUILD_FILE }}" +%s; fi 2>/dev/null)
+          now_ts=$(date +%s)
+
+          # --- Determine if build is needed ---
+          if [ "$changed_1d" -gt 0 ]; then
+              echo " Changes in last 1 day — triggering build."
+              rm -f ${{ env.FORCE_BUILD_FILE }}
+              BUILD=true
+          elif [ "$changed_7d" -eq 0 ]; then
+              if [ -z "$last_forced_ts" ]; then
+                  echo " No record of forced build — forcing first inactivity build."
+                  touch ${{ env.FORCE_BUILD_FILE }}
+                  BUILD=true
+              else
+                  diff_days=$(( (now_ts - last_forced_ts) / 86400 ))
+                  if [ "$diff_days" -ge 7 ]; then
+                      echo " No changes for $diff_days days — forcing recurring inactivity build."
+                      touch ${{ env.FORCE_BUILD_FILE }}
+                      BUILD=true
+                  else
+                      echo " No changes, but only $diff_days days since last forced build — skipping."
+                  fi
+              fi
+          else
+              echo " No changes today, but not 7 days of inactivity — skipping build."
+          fi
+
+          if [ "$BUILD" == false ]; then TEST_RUN=false; fi
+
+          echo "changed=$BUILD" >> $GITHUB_OUTPUT
+          echo "test_run=$TEST_RUN" >> $GITHUB_OUTPUT
+
+
+  build_hardware:
+    if: always() && needs.check_changes.outputs.changes_detected == 'true'
+    needs: check_changes
+    uses: ./.github/workflows/build_hardware_mdk_3x2.5G.yml
+    with:
+       triggered_by_schedule: ${{ github.event_name == 'schedule' }}
+       triggered_by_tag_push: ${{ startsWith(github.ref, 'refs/tags/') }}
+       release_tag: ${{ github.ref_name || '' }}
+
+  build_software:
+    if: always() && needs.check_changes.outputs.changes_detected == 'true'
+    needs: [check_changes, build_hardware]
+    uses: ./.github/workflows/build_software_mdk_3x2.5G.yml
+    with:
+       triggered_by_schedule: ${{ github.event_name == 'schedule' }}
+       triggered_by_tag_push: ${{ startsWith(github.ref, 'refs/tags/') }}
+       release_tag: ${{ github.ref_name || '' }}
+
+  regression_test:
+    if: always() && needs.check_changes.outputs.test_run == 'true'
+    needs: [check_changes, build_hardware, build_software]
+    uses: ./.github/workflows/test_execution.yml
+    with:
+       triggered_by_schedule: ${{ github.event_name == 'schedule' }}
+       triggered_by_tag_push: ${{ startsWith(github.ref, 'refs/tags/') }}
+       release_tag: ${{ github.ref_name || '' }}
+
+  email_reporting:
+    if: always() && needs.check_changes.outputs.test_run == 'true'
+    needs: [check_changes, build_hardware, build_software, regression_test]
+    uses: ./.github/workflows/email_reporting.yml
+    with:
+       triggered_by_schedule: ${{ github.event_name == 'schedule' }}
+       triggered_by_tag_push: ${{ startsWith(github.ref, 'refs/tags/') }}
+       release_tag: ${{ github.ref_name || '' }}

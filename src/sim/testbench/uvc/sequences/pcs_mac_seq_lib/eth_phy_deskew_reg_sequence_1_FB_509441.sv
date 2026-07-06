@@ -1,0 +1,54 @@
+// (C) 2001-2023 Intel Corporation. All rights reserved.
+// Your use of Intel Corporation's design tools, logic functions and other 
+// software and tools, and its AMPP partner logic functions, and any output 
+// files from any of the foregoing (including device programming or simulation 
+// files), and any associated documentation or information are expressly subject 
+// to the terms and conditions of the Intel Program License Subscription 
+// Agreement, Intel FPGA IP License Agreement, or other applicable 
+// license agreement, including, without limitation, that your use is for the 
+// sole purpose of programming logic devices manufactured by Intel and sold by 
+// Intel or its authorized distributors.  Please refer to the applicable 
+// agreement for further details.
+
+
+class eth_phy_deskew_reg_sequence_1_FB_509441 extends eth_base_sequence;
+  uvm_reg_data_t read_data;
+
+  `uvm_object_utils(eth_phy_deskew_reg_sequence_1_FB_509441)
+
+  function new(string name = "eth_phy_deskew_reg_sequence_1_FB_509441");
+    super.new(name);
+	  `ifdef UVM_POST_VERSION_1_1
+     set_automatic_phase_objection(1);
+    `endif
+  endfunction:new
+
+  virtual task body();
+     //disabling register coverage
+     //p_sequencer.env.dis_reg_cov=1; //disabling register coverage
+     p_sequencer.env.apply_reset("hard",0,0,1,11);
+     enable_disable_anlt_reset();
+     wait (p_sequencer.env.master_agent.mast_agt_if.ehip_ready);
+
+     p_sequencer.env.reg_read(`GET_REG_ADDR(ehip_stats_lanes_deskewed_OFFSET_REG,p_sequencer.env.dyn_rcfg_obj_inst.speed),read_data,1);
+     
+     p_sequencer.env.wait_for_linkup(.tx_sync(0),.rx_sync(0),.ip_sync(1));
+
+     p_sequencer.env.reg_read(`GET_REG_ADDR(ehip_stats_lanes_deskewed_OFFSET_REG,p_sequencer.env.dyn_rcfg_obj_inst.speed),read_data,1);
+    //changed the value from 'h1 to 'h3 -->HSD:1607575739
+     if(read_data != 'h3) `uvm_error("eth_phy_deskew_reg_sequence_1_FB_509441", $sformatf("REGISTERS_LANE_DESKEWED_OFFSET_REG value is not correct"));
+
+    p_sequencer.env.reg_read(`GET_REG_ADDR(ehip_cfg_phy_ehip_pcs_modes_OFFSET_REG,p_sequencer.env.dyn_rcfg_obj_inst.speed),read_data); //sclr_frame_err bit found in this GDR register bit:12
+    p_sequencer.env.reg_write(`GET_REG_ADDR(ehip_cfg_phy_ehip_pcs_modes_OFFSET_REG,p_sequencer.env.dyn_rcfg_obj_inst.speed),{read_data[31:13],1'b1,read_data[11:0]});
+
+     p_sequencer.env.reg_read(`GET_REG_ADDR(ehip_stats_lanes_deskewed_OFFSET_REG,p_sequencer.env.dyn_rcfg_obj_inst.speed),read_data,1);
+     if(read_data != 'h1) `uvm_error("eth_phy_deskew_reg_sequence_1_FB_509441", $sformatf("REGISTERS_LANE_DESKEWED_OFFSET_REG value is not correct"));
+
+    p_sequencer.env.reg_read(`GET_REG_ADDR(ehip_cfg_phy_ehip_pcs_modes_OFFSET_REG,p_sequencer.env.dyn_rcfg_obj_inst.speed),read_data); //sclr_frame_err bit found in this GDR register bit:12
+    p_sequencer.env.reg_write(`GET_REG_ADDR(ehip_cfg_phy_ehip_pcs_modes_OFFSET_REG,p_sequencer.env.dyn_rcfg_obj_inst.speed),{read_data[31:13],1'b0,read_data[11:0]});
+
+     p_sequencer.env.reg_read(`GET_REG_ADDR(ehip_stats_lanes_deskewed_OFFSET_REG,p_sequencer.env.dyn_rcfg_obj_inst.speed),read_data,1);
+     if(read_data != 'h1) `uvm_error("eth_phy_deskew_reg_sequence_1_FB_509441", $sformatf("REGISTERS_LANE_DESKEWED_OFFSET_REG value is not correct"));
+
+  endtask
+endclass

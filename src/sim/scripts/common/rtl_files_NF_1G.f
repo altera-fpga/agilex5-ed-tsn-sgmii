@@ -1,0 +1,1 @@
+${REG_LOCAL_ROOT_DIR_PATH}/ip/ethernet/alt_ethernet_crete_ll10g/qhip/scripts/funct_deterministic/common/rtl_files_NF_10G/altera_swip_eth_1g_wrapper.sv

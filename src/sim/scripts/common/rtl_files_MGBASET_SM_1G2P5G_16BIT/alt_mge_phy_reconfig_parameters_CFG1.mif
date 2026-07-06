@@ -1,0 +1,15 @@
+DEPTH = 8;
+WIDTH = 27;
+ADDRESS_RADIX = HEX;
+DATA_RADIX = HEX;
+CONTENT
+BEGIN
+000 : 0010C0704; -- [26:16]-DPRIO address=0x10C; [15:8]-bit mask=0x07; [2:0]-pma_tx_buf_slew_rate_ctrl=slew_r4(3'h4);
+001 : 001350F0F; -- [26:16]-DPRIO address=0x135; [15:8]-bit mask=0x0F; [3:2]-cdr_pll_lf_resistor_pd=lf_pd_setting3(2'h3); [1:0]-cdr_pll_lf_resistor_pfd=lf_pfd_setting3(2'h3);
+002 : 001360F08; -- [26:16]-DPRIO address=0x136; [15:8]-bit mask=0x0F; [3:0]-cdr_pll_set_cdr_vco_speed_fix=56(4'h8);
+003 : 001390701; -- [26:16]-DPRIO address=0x139; [15:8]-bit mask=0x07; [2:0]-cdr_pll_chgpmp_current_pfd=cp_current_pfd_setting1(3'h1);
+004 : 0013A3F23; -- [26:16]-DPRIO address=0x13A; [15:8]-bit mask=0x3F; [5:3]-cdr_pll_pd_l_counter=4(3'h4); [2:0]-cdr_pll_pfd_l_counter=2(3'h3);
+005 : 0013BFF19; -- [26:16]-DPRIO address=0x13B; [15:8]-bit mask=0xFF; [7:0]-cdr_pll_mcnt_div=25(8'h19);
+006 : 001790202; -- [26:16]-DPRIO address=0x179; [15:8]-bit mask=0x02; [1:1]-pma_rx_odi_xrx_path_x119_rx_path_rstn_overrideb=use_sequencer(1'h1);
+007 : 007FFFFFF; -- End of data
+END;

@@ -1,0 +1,415 @@
+// (C) 2001-2023 Intel Corporation. All rights reserved.
+// Your use of Intel Corporation's design tools, logic functions and other 
+// software and tools, and its AMPP partner logic functions, and any output 
+// files from any of the foregoing (including device programming or simulation 
+// files), and any associated documentation or information are expressly subject 
+// to the terms and conditions of the Intel Program License Subscription 
+// Agreement, Intel FPGA IP License Agreement, or other applicable 
+// license agreement, including, without limitation, that your use is for the 
+// sole purpose of programming logic devices manufactured by Intel and sold by 
+// Intel or its authorized distributors.  Please refer to the applicable 
+// agreement for further details.
+
+
+// (C) 2001-2023 Intel Corporation. All rights reserved.
+// Your use of Intel Corporation's design tools, logic functions and other 
+// software and tools, and its AMPP partner logic functions, and any output 
+// files from any of the foregoing (including device programming or simulation 
+// files), and any associated documentation or information are expressly subject 
+// to the terms and conditions of the Intel Program License Subscription 
+// Agreement, Intel FPGA IP License Agreement, or other applicable 
+// license agreement, including, without limitation, that your use is for the 
+// sole purpose of programming logic devices manufactured by Intel and sold by 
+// Intel or its authorized distributors.  Please refer to the applicable 
+// agreement for further details.
+
+
+ `define logical_channel_number_OFFSET_REG 16'h0111
+ `define control_OFFSET_REG 16'h6000
+ `define status_OFFSET_REG 16'h6001
+
+`define mac_cfg_txmac_saddrl_OFFSET_REG 16'h0010
+`define mac_cfg_txmac_saddrh_OFFSET_REG 16'h0011
+`define mac_reset_control_OFFSET_REG 16'h001F
+`define tx_packet_control_OFFSET_REG 16'h0020
+`define tx_transfer_status_OFFSET_REG 16'h0022
+`define tx_pad_control_OFFSET_REG 16'h0024
+`define tx_crc_control_OFFSET_REG 16'h0026
+`define tx_preamble_control_OFFSET_REG 16'h0028
+`define tx_src_addr_override_OFFSET_REG 16'h002A
+`define mac_cfg_max_tx_size_config_OFFSET_REG 16'h002C
+`define tx_vlan_detection_OFFSET_REG 16'h002D
+`define tx_ipg_10g_OFFSET_REG 16'h002E
+`define tx_ipg_10M_100M_1G_OFFSET_REG 16'h002F
+`define tx_underflow_counter0_OFFSET_REG 16'h003E
+`define tx_underflow_counter1_OFFSET_REG 16'h003F
+`define tx_pauseframe_control_OFFSET_REG 16'h0040
+`define mac_cfg_tx_pause_quanta_OFFSET_REG 16'h0042
+`define mac_cfg_retransmit_xoff_holdoff_quanta_OFFSET_REG 16'h0043
+`define tx_pauseframe_enable_OFFSET_REG 16'h0044
+`define tx_pfc_priority_enable_OFFSET_REG 16'h0046
+`define mac_cfg_pfc_pause_quanta_0_OFFSET_REG 16'h0048
+`define mac_cfg_pfc_pause_quanta_1_OFFSET_REG 16'h0049
+`define mac_cfg_pfc_pause_quanta_2_OFFSET_REG 16'h004A
+`define mac_cfg_pfc_pause_quanta_3_OFFSET_REG 16'h004B
+`define mac_cfg_pfc_pause_quanta_4_OFFSET_REG 16'h004C
+`define mac_cfg_pfc_pause_quanta_5_OFFSET_REG 16'h004D
+`define mac_cfg_pfc_pause_quanta_6_OFFSET_REG 16'h004E
+`define mac_cfg_pfc_pause_quanta_7_OFFSET_REG 16'h004F
+`define mac_cfg_pfc_holdoff_quanta_0_OFFSET_REG 16'h0058
+`define mac_cfg_pfc_holdoff_quanta_1_OFFSET_REG 16'h0059
+`define mac_cfg_pfc_holdoff_quanta_2_OFFSET_REG 16'h005A
+`define mac_cfg_pfc_holdoff_quanta_3_OFFSET_REG 16'h005B
+`define mac_cfg_pfc_holdoff_quanta_4_OFFSET_REG 16'h005C
+`define mac_cfg_pfc_holdoff_quanta_5_OFFSET_REG 16'h005D
+`define mac_cfg_pfc_holdoff_quanta_6_OFFSET_REG 16'h005E
+`define mac_cfg_pfc_holdoff_quanta_7_OFFSET_REG 16'h005F
+`define tx_unidir_control_OFFSET_REG 16'h0070
+`define rx_transfer_control_OFFSET_REG 16'h00A0
+`define rx_transfer_status_OFFSET_REG 16'h00A2
+`define rx_padcrc_control_OFFSET_REG 16'h00A4
+`define rx_crccheck_control_OFFSET_REG 16'h00A6
+`define rx_custom_preamble_forward_OFFSET_REG 16'h00A8
+`define rx_preamble_control_OFFSET_REG 16'h00AA
+`define rx_frame_control_OFFSET_REG 16'h00AC
+`define mac_cfg_max_rx_size_config_OFFSET_REG 16'h00AE
+`define rx_vlan_detection_OFFSET_REG 16'h00AF
+`define rx_frame_spaddr0_0_OFFSET_REG 16'h00B0
+`define rx_frame_spaddr0_1_OFFSET_REG 16'h00B1
+`define rx_frame_spaddr1_0_OFFSET_REG 16'h00B2
+`define rx_frame_spaddr1_1_OFFSET_REG 16'h00B3
+`define rx_frame_spaddr2_0_OFFSET_REG 16'h00B4
+`define rx_frame_spaddr2_1_OFFSET_REG 16'h00B5
+`define rx_frame_spaddr3_0_OFFSET_REG 16'h00B6
+`define rx_frame_spaddr3_1_OFFSET_REG 16'h00B7
+`define rx_pfc_control_OFFSET_REG 16'h00C0
+`define rx_pktovrflow_error0_OFFSET_REG 16'h00FC
+`define rx_pktovrflow_error1_OFFSET_REG 16'h00FD
+`define rx_pktovrflow_etherStatsDropEvents0_OFFSET_REG 16'h00FE
+`define rx_pktovrflow_etherStatsDropEvents1_OFFSET_REG 16'h00FF
+`define tx_stats_clr_OFFSET_REG 16'h0140
+`define rx_stats_clr_OFFSET_REG 16'h01C0
+`define tx_stats_framesOK0_OFFSET_REG 16'h0142
+`define tx_stats_framesOK1_OFFSET_REG 16'h0143
+`define rx_stats_framesOK0_OFFSET_REG 16'h01C2
+`define rx_stats_framesOK1_OFFSET_REG 16'h01C3
+`define tx_stats_framesErr0_OFFSET_REG 16'h0144
+`define tx_stats_framesErr1_OFFSET_REG 16'h0145
+`define rx_stats_framesErr0_OFFSET_REG 16'h01C4
+`define rx_stats_framesErr1_OFFSET_REG 16'h01C5
+`define mac_stats_cntr_rx_fcs_lo_OFFSET_REG 16'h01C6
+`define mac_stats_cntr_rx_fcs_hi_OFFSET_REG 16'h01C7
+`define mac_stats_cntr_tx_payloadoctetsok_lo_OFFSET_REG 16'h0148
+`define mac_stats_cntr_tx_payloadoctetsok_hi_OFFSET_REG 16'h0149
+`define mac_stats_cntr_rx_payloadoctetsok_lo_OFFSET_REG 16'h01C8
+`define mac_stats_cntr_rx_payloadoctetsok_hi_OFFSET_REG 16'h01C9
+`define mac_stats_cntr_tx_pause_lo_OFFSET_REG 16'h014A
+`define mac_stats_cntr_tx_pause_hi_OFFSET_REG 16'h014B
+`define mac_stats_cntr_rx_pause_lo_OFFSET_REG 16'h01CA
+`define mac_stats_cntr_rx_pause_hi_OFFSET_REG 16'h01CB
+`define tx_stats_ifErrors0_OFFSET_REG 16'h014C
+`define tx_stats_ifErrors1_OFFSET_REG 16'h014D
+`define rx_stats_ifErrors0_OFFSET_REG 16'h01CC
+`define rx_stats_ifErrors1_OFFSET_REG 16'h01CD
+`define mac_stats_cntr_tx_ucast_data_ok_lo_OFFSET_REG 16'h014E
+`define mac_stats_cntr_tx_ucast_data_ok_hi_OFFSET_REG 16'h014F
+`define mac_stats_cntr_rx_ucast_data_ok_lo_OFFSET_REG 16'h01CE
+`define mac_stats_cntr_rx_ucast_data_ok_hi_OFFSET_REG 16'h01CF
+`define mac_stats_cntr_tx_utcast_data_err_lo_OFFSET_REG 16'h0150
+`define mac_stats_cntr_tx_utcast_data_err_hi_OFFSET_REG 16'h0151
+`define mac_stats_cntr_rx_ucast_data_err_lo_OFFSET_REG 16'h01D0
+`define mac_stats_cntr_rx_ucast_data_err_hi_OFFSET_REG 16'h01D1
+`define mac_stats_cntr_tx_mcast_data_ok_lo_OFFSET_REG 16'h0152
+`define mac_stats_cntr_tx_mcast_data_ok_hi_OFFSET_REG 16'h0153
+`define mac_stats_cntr_rx_mcast_data_ok_lo_OFFSET_REG 16'h01D2
+`define mac_stats_cntr_rx_mcast_data_ok_hi_OFFSET_REG 16'h01D3
+`define mac_stats_cntr_tx_mcast_data_err_lo_OFFSET_REG 16'h0154
+`define mac_stats_cntr_tx_mcast_data_err_hi_OFFSET_REG 16'h0155
+`define mac_stats_cntr_rx_mcast_data_err_lo_OFFSET_REG 16'h01D4
+`define mac_stats_cntr_rx_mcast_data_err_hi_OFFSET_REG 16'h01D5
+`define mac_stats_cntr_tx_bcast_data_ok_lo_OFFSET_REG 16'h0156
+`define mac_stats_cntr_tx_bcast_data_ok_hi_OFFSET_REG 16'h0157
+`define mac_stats_cntr_rx_bcast_data_ok_lo_OFFSET_REG 16'h01D6
+`define mac_stats_cntr_rx_bcast_data_ok_hi_OFFSET_REG 16'h01D7
+`define mac_stats_cntr_tx_bcast_data_err_lo_OFFSET_REG 16'h0158
+`define mac_stats_cntr_tx_bcast_data_err_hi_OFFSET_REG 16'h0159
+`define mac_stats_cntr_rx_bcast_data_err_lo_OFFSET_REG 16'h01D8
+`define mac_stats_cntr_rx_bcast_data_err_hi_OFFSET_REG 16'h01D9
+`define mac_stats_cntr_tx_octetsok_lo_OFFSET_REG 16'h015A
+`define mac_stats_cntr_tx_octetsok_hi_OFFSET_REG 16'h015B
+`define mac_stats_cntr_rx_octetsok_lo_OFFSET_REG 16'h01DA
+`define mac_stats_cntr_rx_octetsok_hi_OFFSET_REG 16'h01DB
+`define mac_stats_cntr_tx_st_lo_OFFSET_REG 16'h015C
+`define mac_stats_cntr_tx_st_hi_OFFSET_REG 16'h015D
+`define mac_stats_cntr_rx_st_lo_OFFSET_REG 16'h01DC
+`define mac_stats_cntr_rx_st_hi_OFFSET_REG 16'h01DD
+`define mac_stats_cntr_tx_runt_lo_OFFSET_REG 16'h015E
+`define mac_stats_cntr_tx_runt_hi_OFFSET_REG 16'h015F
+`define mac_stats_cntr_rx_runt_lo_OFFSET_REG 16'h01DE
+`define mac_stats_cntr_rx_runt_hi_OFFSET_REG 16'h01DF
+`define mac_stats_cntr_tx_oversize_lo_OFFSET_REG 16'h0160
+`define mac_stats_cntr_tx_oversize_hi_OFFSET_REG 16'h0161
+`define mac_stats_cntr_rx_oversize_lo_OFFSET_REG 16'h01E0
+`define mac_stats_cntr_rx_oversize_hi_OFFSET_REG 16'h01E1
+`define mac_stats_cntr_tx_64b_lo_OFFSET_REG 16'h0162
+`define mac_stats_cntr_tx_64b_hi_OFFSET_REG 16'h0163
+`define mac_stats_cntr_rx_64b_lo_OFFSET_REG 16'h01E2
+`define mac_stats_cntr_rx_64b_hi_OFFSET_REG 16'h01E3
+`define mac_stats_cntr_tx_65to127b_lo_OFFSET_REG 16'h0164
+`define mac_stats_cntr_tx_65to127b_hi_OFFSET_REG 16'h0165
+`define mac_stats_cntr_rx_65to127b_lo_OFFSET_REG 16'h01E4
+`define mac_stats_cntr_rx_65to127b_hi_OFFSET_REG 16'h01E5
+`define mac_stats_cntr_tx_128to255b_lo_OFFSET_REG 16'h0166
+`define mac_stats_cntr_tx_128to255b_hi_OFFSET_REG 16'h0167
+`define mac_stats_cntr_rx_128to255b_lo_OFFSET_REG 16'h01E6
+`define mac_stats_cntr_rx_128to255b_hi_OFFSET_REG 16'h01E7
+`define mac_stats_cntr_tx_256to511b_lo_OFFSET_REG 16'h0168
+`define mac_stats_cntr_tx_256to511b_hi_OFFSET_REG 16'h0169
+`define mac_stats_cntr_rx_256to511b_lo_OFFSET_REG 16'h01E8
+`define mac_stats_cntr_rx_256to511b_hi_OFFSET_REG 16'h01E9
+`define mac_stats_cntr_tx_512to1023b_lo_OFFSET_REG 16'h016A
+`define mac_stats_cntr_tx_512to1023b_hi_OFFSET_REG 16'h016B
+`define mac_stats_cntr_rx_512to1023b_lo_OFFSET_REG 16'h01EA
+`define mac_stats_cntr_rx_512to1023b_hi_OFFSET_REG 16'h01EB
+`define mac_stats_cntr_tx_1024to1518b_lo_OFFSET_REG 16'h016C
+`define mac_stats_cntr_tx_1024to1518b_hi_OFFSET_REG 16'h016D
+`define mac_stats_cntr_rx_1024to1518b_lo_OFFSET_REG 16'h01EC
+`define mac_stats_cntr_rx_1024to1518b_hi_OFFSET_REG 16'h01ED
+`define mac_stats_cntr_tx_1519tomaxb_lo_OFFSET_REG 16'h016E
+`define mac_stats_cntr_tx_1519tomaxb_hi_OFFSET_REG 16'h016F
+`define mac_stats_cntr_rx_1519tomaxb_lo_OFFSET_REG 16'h01EE
+`define mac_stats_cntr_rx_1519tomaxb_hi_OFFSET_REG 16'h01EF
+`define mac_stats_cntr_rx_fragments_lo_OFFSET_REG 16'h01F0
+`define mac_stats_cntr_rx_fragments_hi_OFFSET_REG 16'h01F1
+`define mac_stats_cntr_rx_jabbers_lo_OFFSET_REG 16'h01F2
+`define mac_stats_cntr_rx_jabbers_hi_OFFSET_REG 16'h01F3
+`define mac_stats_cntr_rx_fcs_err_okpkt_lo_OFFSET_REG 16'h01F4
+`define mac_stats_cntr_rx_fcs_err_okpkt_hi_OFFSET_REG 16'h01F5
+`define mac_stats_cntr_tx_ucast_ctrl_lo_OFFSET_REG 16'h0176
+`define mac_stats_cntr_tx_ucast_ctrl_hi_OFFSET_REG 16'h0177
+`define mac_stats_cntr_rx_ucast_ctrl_lo_OFFSET_REG 16'h01F6
+`define mac_stats_cntr_rx_ucast_ctrl_hi_OFFSET_REG 16'h01F7
+`define mac_stats_cntr_tx_mcast_ctrl_lo_OFFSET_REG 16'h0178
+`define mac_stats_cntr_tx_mcast_ctrl_hi_OFFSET_REG 16'h0179
+`define mac_stats_cntr_rx_mcast_ctrl_lo_OFFSET_REG 16'h01F8
+`define mac_stats_cntr_rx_mcast_ctrl_hi_OFFSET_REG 16'h01F9
+`define mac_stats_cntr_tx_bcast_ctrl_lo_OFFSET_REG 16'h017A
+`define mac_stats_cntr_tx_bcast_ctrl_hi_OFFSET_REG 16'h017B
+`define mac_stats_cntr_rx_bcast_ctrl_lo_OFFSET_REG 16'h01FA
+`define mac_stats_cntr_rx_bcast_ctrl_hi_OFFSET_REG 16'h01FB
+`define mac_stats_cntr_tx_pfc_lo_OFFSET_REG 16'h017C
+`define mac_stats_cntr_tx_pfc_hi_OFFSET_REG 16'h017D
+`define mac_stats_cntr_rx_pfc_lo_OFFSET_REG 16'h01FC
+`define mac_stats_cntr_rx_pfc_hi_OFFSET_REG 16'h01FD
+
+ `define sgmii_control_OFFSET_REG 16'h6000
+ `define sgmii_status_OFFSET_REG 16'h6001
+ `define phy_id_reg0_OFFSET_REG 16'h6002
+ `define phy_id_reg1_OFFSET_REG 16'h6003
+ `define sgmii_dev_ability_OFFSET_REG 16'h6004
+ `define sgmii_partner_ability_OFFSET_REG 16'h6005
+ `define an_expansion_OFFSET_REG 16'h6006
+ `define device_nxt_page_OFFSET_REG 16'h6007
+ `define partner_nxt_page_OFFSET_REG 16'h6008
+ `define pcs_scratch_OFFSET_REG 16'h6010
+ `define an_link_timer0_lo_OFFSET_REG 16'h6012
+ `define an_link_timer0_hi_OFFSET_REG 16'h6013
+ `define if_mode_OFFSET_REG 16'h6014
+
+//RESET_REG_VALUE 
+ `define logical_channel_number_RESET_VALUE_REG 32'h0
+`ifdef ETH_MGE 
+ `define control_RESET_VALUE_REG 32'h0
+`else
+ `define control_RESET_VALUE_REG 32'h140
+`endif
+ 
+`define status_RESET_VALUE_REG 32'h9
+`define mac_cfg_txmac_saddrl_RESET_VALUE_REG 32'h0
+`define mac_cfg_txmac_saddrh_RESET_VALUE_REG 32'h0	
+`define mac_reset_control_RESET_VALUE_REG 32'h0
+`define tx_packet_control_RESET_VALUE_REG 32'h0
+`define tx_transfer_status_RESET_VALUE_REG 32'h0
+`define tx_pad_control_RESET_VALUE_REG 32'h1
+`define tx_crc_control_RESET_VALUE_REG 32'h3
+`define tx_preamble_control_RESET_VALUE_REG 32'h0
+`define tx_src_addr_override_RESET_VALUE_REG 32'h0
+`define mac_cfg_max_tx_size_config_RESET_VALUE_REG 32'h5EE
+`define tx_vlan_detection_RESET_VALUE_REG 32'h0
+`define tx_ipg_10g_RESET_VALUE_REG 32'h1
+`define tx_ipg_10M_100M_1G_RESET_VALUE_REG 32'hc
+`define tx_underflow_counter0_RESET_VALUE_REG 32'h0
+`define tx_underflow_counter1_RESET_VALUE_REG 32'h0
+`define tx_pauseframe_control_RESET_VALUE_REG 32'h0
+`define mac_cfg_tx_pause_quanta_RESET_VALUE_REG 32'h0
+`define mac_cfg_retransmit_xoff_holdoff_quanta_RESET_VALUE_REG 32'h1
+`define tx_pauseframe_enable_RESET_VALUE_REG 32'h1
+`define tx_pfc_priority_enable_RESET_VALUE_REG 32'h0
+`define mac_cfg_pfc_pause_quanta_0_RESET_VALUE_REG 32'h0
+`define mac_cfg_pfc_pause_quanta_1_RESET_VALUE_REG 32'h0
+`define mac_cfg_pfc_pause_quanta_2_RESET_VALUE_REG 32'h0
+`define mac_cfg_pfc_pause_quanta_3_RESET_VALUE_REG 32'h0
+`define mac_cfg_pfc_pause_quanta_4_RESET_VALUE_REG 32'h0
+`define mac_cfg_pfc_pause_quanta_5_RESET_VALUE_REG 32'h0
+`define mac_cfg_pfc_pause_quanta_6_RESET_VALUE_REG 32'h0
+`define mac_cfg_pfc_pause_quanta_7_RESET_VALUE_REG 32'h0
+`define mac_cfg_pfc_holdoff_quanta_0_RESET_VALUE_REG 32'h1
+`define mac_cfg_pfc_holdoff_quanta_1_RESET_VALUE_REG 32'h1
+`define mac_cfg_pfc_holdoff_quanta_2_RESET_VALUE_REG 32'h1
+`define mac_cfg_pfc_holdoff_quanta_3_RESET_VALUE_REG 32'h1
+`define mac_cfg_pfc_holdoff_quanta_4_RESET_VALUE_REG 32'h1
+`define mac_cfg_pfc_holdoff_quanta_5_RESET_VALUE_REG 32'h1
+`define mac_cfg_pfc_holdoff_quanta_6_RESET_VALUE_REG 32'h1
+`define mac_cfg_pfc_holdoff_quanta_7_RESET_VALUE_REG 32'h1
+`define tx_unidir_control_RESET_VALUE_REG 32'h0
+`define rx_transfer_control_RESET_VALUE_REG 32'h0
+`define rx_transfer_status_RESET_VALUE_REG 32'h0
+
+`define rx_padcrc_control_RESET_VALUE_REG 32'h1
+
+`define rx_crccheck_control_RESET_VALUE_REG 32'h2
+`define rx_custom_preamble_forward_RESET_VALUE_REG 32'h0
+`define rx_preamble_control_RESET_VALUE_REG 32'h0
+`define rx_frame_control_RESET_VALUE_REG 32'h3
+`define mac_cfg_max_rx_size_config_RESET_VALUE_REG 32'h5EE
+`define rx_vlan_detection_RESET_VALUE_REG 32'h0
+`define rx_frame_spaddr0_0_RESET_VALUE_REG 32'h0
+`define rx_frame_spaddr0_1_RESET_VALUE_REG 32'h0
+`define rx_frame_spaddr1_0_RESET_VALUE_REG 32'h0
+`define rx_frame_spaddr1_1_RESET_VALUE_REG 32'h0
+`define rx_frame_spaddr2_0_RESET_VALUE_REG 32'h0
+`define rx_frame_spaddr2_1_RESET_VALUE_REG 32'h0
+`define rx_frame_spaddr3_0_RESET_VALUE_REG 32'h0
+`define rx_frame_spaddr3_1_RESET_VALUE_REG 32'h0
+`define rx_pfc_control_RESET_VALUE_REG 32'hFF
+`define rx_pktovrflow_error0_RESET_VALUE_REG 32'h0
+`define rx_pktovrflow_error1_RESET_VALUE_REG 32'h0
+`define rx_pktovrflow_etherStatsDropEvents0_RESET_VALUE_REG 32'h0
+`define rx_pktovrflow_etherStatsDropEvents1_RESET_VALUE_REG 32'h0
+`define tx_stats_clr_RESET_VALUE_REG 32'h0
+`define rx_stats_clr_RESET_VALUE_REG 32'h0
+`define tx_stats_framesOK0_RESET_VALUE_REG 32'h0
+`define tx_stats_framesOK1_RESET_VALUE_REG 32'h0
+`define rx_stats_framesOK0_RESET_VALUE_REG 32'h0
+`define rx_stats_framesOK1_RESET_VALUE_REG 32'h0
+`define tx_stats_framesErr0_RESET_VALUE_REG 32'h0
+`define tx_stats_framesErr1_RESET_VALUE_REG 32'h0
+`define rx_stats_framesErr0_RESET_VALUE_REG 32'h0
+`define rx_stats_framesErr1_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_fcs_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_fcs_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_payloadoctetsok_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_payloadoctetsok_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_payloadoctetsok_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_payloadoctetsok_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_pause_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_pause_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_pause_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_pause_hi_RESET_VALUE_REG 32'h0
+`define tx_stats_ifErrors0_RESET_VALUE_REG 32'h0
+`define tx_stats_ifErrors1_RESET_VALUE_REG 32'h0
+`define rx_stats_ifErrors0_RESET_VALUE_REG 32'h0
+`define rx_stats_ifErrors1_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_ucast_data_ok_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_ucast_data_ok_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_ucast_data_ok_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_ucast_data_ok_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_utcast_data_err_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_utcast_data_err_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_ucast_data_err_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_ucast_data_err_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_mcast_data_ok_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_mcast_data_ok_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_mcast_data_ok_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_mcast_data_ok_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_mcast_data_err_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_mcast_data_err_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_mcast_data_err_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_mcast_data_err_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_bcast_data_ok_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_bcast_data_ok_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_bcast_data_ok_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_bcast_data_ok_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_bcast_data_err_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_bcast_data_err_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_bcast_data_err_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_bcast_data_err_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_octetsok_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_octetsok_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_octetsok_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_octetsok_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_st_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_st_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_st_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_st_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_runt_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_runt_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_runt_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_runt_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_oversize_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_oversize_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_oversize_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_oversize_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_64b_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_64b_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_64b_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_64b_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_65to127b_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_65to127b_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_65to127b_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_65to127b_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_128to255b_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_128to255b_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_128to255b_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_128to255b_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_256to511b_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_256to511b_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_256to511b_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_256to511b_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_512to1023b_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_512to1023b_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_512to1023b_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_512to1023b_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_1024to1518b_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_1024to1518b_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_1024to1518b_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_1024to1518b_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_1519tomaxb_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_1519tomaxb_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_1519tomaxb_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_1519tomaxb_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_fragments_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_fragments_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_jabbers_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_jabbers_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_fcs_err_okpkt_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_fcs_err_okpkt_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_ucast_ctrl_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_ucast_ctrl_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_ucast_ctrl_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_ucast_ctrl_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_mcast_ctrl_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_mcast_ctrl_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_mcast_ctrl_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_mcast_ctrl_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_bcast_ctrl_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_bcast_ctrl_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_bcast_ctrl_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_bcast_ctrl_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_pfc_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_tx_pfc_hi_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_pfc_lo_RESET_VALUE_REG 32'h0
+`define mac_stats_cntr_rx_pfc_hi_RESET_VALUE_REG 32'h0
+ `define sgmii_control_RESET_VALUE_REG 32'h0140
+ `define sgmii_status_RESET_VALUE_REG 32'h9
+ `define phy_id_reg0_RESET_VALUE_REG 32'h101
+ `define phy_id_reg1_RESET_VALUE_REG 32'h101
+ `define sgmii_dev_ability_RESET_VALUE_REG 32'h1A0
+ `define sgmii_partner_ability_RESET_VALUE_REG 32'h0
+ `define an_expansion_RESET_VALUE_REG 32'h0
+ `define device_nxt_page_RESET_VALUE_REG 32'h0
+ `define partner_nxt_page_RESET_VALUE_REG 32'h0
+ `define pcs_scratch_RESET_VALUE_REG 32'h0
+ `define an_link_timer0_lo_RESET_VALUE_REG 32'h8A00
+ `define an_link_timer0_hi_RESET_VALUE_REG 32'h9
+ `define if_mode_RESET_VALUE_REG 32'h0

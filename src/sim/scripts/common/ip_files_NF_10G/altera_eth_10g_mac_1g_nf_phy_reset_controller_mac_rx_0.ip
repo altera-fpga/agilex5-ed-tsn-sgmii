@@ -1,0 +1,527 @@
+<?xml version="1.0" ?>
+<spirit:component xmlns:altera="http://www.altera.com/XMLSchema/IPXact/extensions" xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
+  <spirit:vendor>Intel Corporation</spirit:vendor>
+  <spirit:library>altera_eth_10g_mac_1g_nf_phy_reset_controller_mac_rx_0</spirit:library>
+  <spirit:name>reset_controller_mac_rx_0</spirit:name>
+  <spirit:version>18.0</spirit:version>
+  <spirit:busInterfaces>
+    <spirit:busInterface>
+      <spirit:name>clk</spirit:name>
+      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="clock" spirit:version="18.0"></spirit:busType>
+      <spirit:slave></spirit:slave>
+      <spirit:portMaps>
+        <spirit:portMap>
+          <spirit:logicalPort>
+            <spirit:name>clk</spirit:name>
+          </spirit:logicalPort>
+          <spirit:physicalPort>
+            <spirit:name>clk</spirit:name>
+          </spirit:physicalPort>
+        </spirit:portMap>
+      </spirit:portMaps>
+      <spirit:parameters>
+        <spirit:parameter>
+          <spirit:name>clockRate</spirit:name>
+          <spirit:displayName>Clock rate</spirit:displayName>
+          <spirit:value spirit:format="string" spirit:id="clockRate">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>externallyDriven</spirit:name>
+          <spirit:displayName>Externally driven</spirit:displayName>
+          <spirit:value spirit:format="bool" spirit:id="externallyDriven">false</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>ptfSchematicName</spirit:name>
+          <spirit:displayName>PTF schematic name</spirit:displayName>
+          <spirit:value spirit:format="string" spirit:id="ptfSchematicName"></spirit:value>
+        </spirit:parameter>
+      </spirit:parameters>
+    </spirit:busInterface>
+    <spirit:busInterface>
+      <spirit:name>reset_in0</spirit:name>
+      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="reset" spirit:version="18.0"></spirit:busType>
+      <spirit:slave></spirit:slave>
+      <spirit:portMaps>
+        <spirit:portMap>
+          <spirit:logicalPort>
+            <spirit:name>reset</spirit:name>
+          </spirit:logicalPort>
+          <spirit:physicalPort>
+            <spirit:name>reset_in0</spirit:name>
+          </spirit:physicalPort>
+        </spirit:portMap>
+      </spirit:portMaps>
+      <spirit:parameters>
+        <spirit:parameter>
+          <spirit:name>associatedClock</spirit:name>
+          <spirit:displayName>Associated clock</spirit:displayName>
+          <spirit:value spirit:format="string" spirit:id="associatedClock"></spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>synchronousEdges</spirit:name>
+          <spirit:displayName>Synchronous edges</spirit:displayName>
+          <spirit:value spirit:format="string" spirit:id="synchronousEdges">NONE</spirit:value>
+        </spirit:parameter>
+      </spirit:parameters>
+    </spirit:busInterface>
+    <spirit:busInterface>
+      <spirit:name>reset_in1</spirit:name>
+      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="reset" spirit:version="18.0"></spirit:busType>
+      <spirit:slave></spirit:slave>
+      <spirit:portMaps>
+        <spirit:portMap>
+          <spirit:logicalPort>
+            <spirit:name>reset</spirit:name>
+          </spirit:logicalPort>
+          <spirit:physicalPort>
+            <spirit:name>reset_in1</spirit:name>
+          </spirit:physicalPort>
+        </spirit:portMap>
+      </spirit:portMaps>
+      <spirit:parameters>
+        <spirit:parameter>
+          <spirit:name>associatedClock</spirit:name>
+          <spirit:displayName>Associated clock</spirit:displayName>
+          <spirit:value spirit:format="string" spirit:id="associatedClock"></spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>synchronousEdges</spirit:name>
+          <spirit:displayName>Synchronous edges</spirit:displayName>
+          <spirit:value spirit:format="string" spirit:id="synchronousEdges">NONE</spirit:value>
+        </spirit:parameter>
+      </spirit:parameters>
+    </spirit:busInterface>
+    <spirit:busInterface>
+      <spirit:name>reset_out</spirit:name>
+      <spirit:busType spirit:vendor="altera" spirit:library="altera" spirit:name="reset" spirit:version="18.0"></spirit:busType>
+      <spirit:master></spirit:master>
+      <spirit:portMaps>
+        <spirit:portMap>
+          <spirit:logicalPort>
+            <spirit:name>reset</spirit:name>
+          </spirit:logicalPort>
+          <spirit:physicalPort>
+            <spirit:name>reset_out</spirit:name>
+          </spirit:physicalPort>
+        </spirit:portMap>
+      </spirit:portMaps>
+      <spirit:parameters>
+        <spirit:parameter>
+          <spirit:name>associatedClock</spirit:name>
+          <spirit:displayName>Associated clock</spirit:displayName>
+          <spirit:value spirit:format="string" spirit:id="associatedClock">clk</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>associatedDirectReset</spirit:name>
+          <spirit:displayName>Associated direct reset</spirit:displayName>
+          <spirit:value spirit:format="string" spirit:id="associatedDirectReset"></spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>associatedResetSinks</spirit:name>
+          <spirit:displayName>Associated reset sinks</spirit:displayName>
+          <spirit:value spirit:format="string" spirit:id="associatedResetSinks">reset_in0,reset_in1</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>synchronousEdges</spirit:name>
+          <spirit:displayName>Synchronous edges</spirit:displayName>
+          <spirit:value spirit:format="string" spirit:id="synchronousEdges">DEASSERT</spirit:value>
+        </spirit:parameter>
+      </spirit:parameters>
+    </spirit:busInterface>
+  </spirit:busInterfaces>
+  <spirit:model>
+    <spirit:views>
+      <spirit:view>
+        <spirit:name>QUARTUS_SYNTH</spirit:name>
+        <spirit:envIdentifier>:quartus.altera.com:</spirit:envIdentifier>
+        <spirit:modelName>altera_reset_controller</spirit:modelName>
+        <spirit:fileSetRef>
+          <spirit:localName>QUARTUS_SYNTH</spirit:localName>
+        </spirit:fileSetRef>
+      </spirit:view>
+    </spirit:views>
+    <spirit:ports>
+      <spirit:port>
+        <spirit:name>reset_in0</spirit:name>
+        <spirit:wire>
+          <spirit:direction>in</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
+              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>reset_in1</spirit:name>
+        <spirit:wire>
+          <spirit:direction>in</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
+              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>clk</spirit:name>
+        <spirit:wire>
+          <spirit:direction>in</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
+              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>reset_out</spirit:name>
+        <spirit:wire>
+          <spirit:direction>out</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>STD_LOGIC</spirit:typeName>
+              <spirit:viewNameRef>QUARTUS_SYNTH</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+    </spirit:ports>
+  </spirit:model>
+  <spirit:vendorExtensions>
+    <altera:entity_info>
+      <spirit:vendor>Intel Corporation</spirit:vendor>
+      <spirit:library>altera_eth_10g_mac_1g_nf_phy_reset_controller_mac_rx_0</spirit:library>
+      <spirit:name>altera_reset_controller</spirit:name>
+      <spirit:version>18.0</spirit:version>
+    </altera:entity_info>
+    <altera:altera_module_parameters>
+      <spirit:parameters>
+        <spirit:parameter>
+          <spirit:name>NUM_RESET_INPUTS</spirit:name>
+          <spirit:displayName>Number of inputs</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="NUM_RESET_INPUTS">2</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>OUTPUT_RESET_SYNC_EDGES</spirit:name>
+          <spirit:displayName>Output Reset Synchronous Edges</spirit:displayName>
+          <spirit:value spirit:format="string" spirit:id="OUTPUT_RESET_SYNC_EDGES">deassert</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>SYNC_DEPTH</spirit:name>
+          <spirit:displayName>Synchronizer depth</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="SYNC_DEPTH">2</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>RESET_REQUEST_PRESENT</spirit:name>
+          <spirit:displayName>Reset request logic enable</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="RESET_REQUEST_PRESENT">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>RESET_REQ_WAIT_TIME</spirit:name>
+          <spirit:displayName>Reset request wait time</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="RESET_REQ_WAIT_TIME">1</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>MIN_RST_ASSERTION_TIME</spirit:name>
+          <spirit:displayName>Minimum reset assertion time</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="MIN_RST_ASSERTION_TIME">3</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>RESET_REQ_EARLY_DSRT_TIME</spirit:name>
+          <spirit:displayName>Reset request deassert timing</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="RESET_REQ_EARLY_DSRT_TIME">1</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>USE_RESET_REQUEST_IN0</spirit:name>
+          <spirit:displayName>Enable reset_req for port reset_in0</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="USE_RESET_REQUEST_IN0">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>USE_RESET_REQUEST_IN1</spirit:name>
+          <spirit:displayName>Enable reset_req for port reset_in1</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="USE_RESET_REQUEST_IN1">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>USE_RESET_REQUEST_IN2</spirit:name>
+          <spirit:displayName>Enable reset_req for port reset_in2</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="USE_RESET_REQUEST_IN2">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>USE_RESET_REQUEST_IN3</spirit:name>
+          <spirit:displayName>Enable reset_req for port reset_in3</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="USE_RESET_REQUEST_IN3">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>USE_RESET_REQUEST_IN4</spirit:name>
+          <spirit:displayName>Enable reset_req for port reset_in4</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="USE_RESET_REQUEST_IN4">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>USE_RESET_REQUEST_IN5</spirit:name>
+          <spirit:displayName>Enable reset_req for port reset_in5</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="USE_RESET_REQUEST_IN5">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>USE_RESET_REQUEST_IN6</spirit:name>
+          <spirit:displayName>Enable reset_req for port reset_in6</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="USE_RESET_REQUEST_IN6">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>USE_RESET_REQUEST_IN7</spirit:name>
+          <spirit:displayName>Enable reset_req for port reset_in7</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="USE_RESET_REQUEST_IN7">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>USE_RESET_REQUEST_IN8</spirit:name>
+          <spirit:displayName>Enable reset_req for port reset_in8</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="USE_RESET_REQUEST_IN8">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>USE_RESET_REQUEST_IN9</spirit:name>
+          <spirit:displayName>Enable reset_req for port reset_in9</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="USE_RESET_REQUEST_IN9">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>USE_RESET_REQUEST_IN10</spirit:name>
+          <spirit:displayName>Enable reset_req for port reset_in10</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="USE_RESET_REQUEST_IN10">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>USE_RESET_REQUEST_IN11</spirit:name>
+          <spirit:displayName>Enable reset_req for port reset_in11</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="USE_RESET_REQUEST_IN11">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>USE_RESET_REQUEST_IN12</spirit:name>
+          <spirit:displayName>Enable reset_req for port reset_in12</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="USE_RESET_REQUEST_IN12">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>USE_RESET_REQUEST_IN13</spirit:name>
+          <spirit:displayName>Enable reset_req for port reset_in13</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="USE_RESET_REQUEST_IN13">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>USE_RESET_REQUEST_IN14</spirit:name>
+          <spirit:displayName>Enable reset_req for port reset_in14</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="USE_RESET_REQUEST_IN14">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>USE_RESET_REQUEST_IN15</spirit:name>
+          <spirit:displayName>Enable reset_req for port reset_in15</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="USE_RESET_REQUEST_IN15">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>USE_RESET_REQUEST_INPUT</spirit:name>
+          <spirit:displayName>Enable reset_req for reset_inputs</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="USE_RESET_REQUEST_INPUT">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>ADAPT_RESET_REQUEST</spirit:name>
+          <spirit:displayName>Only adapt only reset request</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="ADAPT_RESET_REQUEST">0</spirit:value>
+        </spirit:parameter>
+      </spirit:parameters>
+    </altera:altera_module_parameters>
+    <altera:altera_system_parameters>
+      <spirit:parameters>
+        <spirit:parameter>
+          <spirit:name>device</spirit:name>
+          <spirit:displayName>Device</spirit:displayName>
+          <spirit:value spirit:format="string" spirit:id="device">10AX115S4F45I3SG</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>deviceFamily</spirit:name>
+          <spirit:displayName>Device family</spirit:displayName>
+          <spirit:value spirit:format="string" spirit:id="deviceFamily">Arria 10</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>deviceSpeedGrade</spirit:name>
+          <spirit:displayName>Device Speed Grade</spirit:displayName>
+          <spirit:value spirit:format="string" spirit:id="deviceSpeedGrade">3</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>generationId</spirit:name>
+          <spirit:displayName>Generation Id</spirit:displayName>
+          <spirit:value spirit:format="long" spirit:id="generationId">0</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>bonusData</spirit:name>
+          <spirit:displayName>bonusData</spirit:displayName>
+          <spirit:value spirit:format="string" spirit:id="bonusData">bonusData 
+{
+}
+</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>hideFromIPCatalog</spirit:name>
+          <spirit:displayName>Hide from IP Catalog</spirit:displayName>
+          <spirit:value spirit:format="bool" spirit:id="hideFromIPCatalog">false</spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>lockedInterfaceDefinition</spirit:name>
+          <spirit:displayName>lockedInterfaceDefinition</spirit:displayName>
+          <spirit:value spirit:format="string" spirit:id="lockedInterfaceDefinition"><![CDATA[<boundaryDefinition>
+    <interfaces>
+        <interface>
+            <name>clk</name>
+            <type>clock</type>
+            <isStart>false</isStart>
+            <ports>
+                <port>
+                    <name>clk</name>
+                    <role>clk</role>
+                    <direction>Input</direction>
+                    <width>1</width>
+                    <lowerBound>0</lowerBound>
+                    <vhdlType>STD_LOGIC</vhdlType>
+                </port>
+            </ports>
+            <assignments>
+                <assignmentValueMap/>
+            </assignments>
+            <parameters>
+                <parameterValueMap>
+                    <entry>
+                        <key>clockRate</key>
+                        <value>0</value>
+                    </entry>
+                    <entry>
+                        <key>externallyDriven</key>
+                        <value>false</value>
+                    </entry>
+                    <entry>
+                        <key>ptfSchematicName</key>
+                    </entry>
+                </parameterValueMap>
+            </parameters>
+        </interface>
+        <interface>
+            <name>reset_in0</name>
+            <type>reset</type>
+            <isStart>false</isStart>
+            <ports>
+                <port>
+                    <name>reset_in0</name>
+                    <role>reset</role>
+                    <direction>Input</direction>
+                    <width>1</width>
+                    <lowerBound>0</lowerBound>
+                    <vhdlType>STD_LOGIC</vhdlType>
+                </port>
+            </ports>
+            <assignments>
+                <assignmentValueMap/>
+            </assignments>
+            <parameters>
+                <parameterValueMap>
+                    <entry>
+                        <key>associatedClock</key>
+                    </entry>
+                    <entry>
+                        <key>synchronousEdges</key>
+                        <value>NONE</value>
+                    </entry>
+                </parameterValueMap>
+            </parameters>
+        </interface>
+        <interface>
+            <name>reset_in1</name>
+            <type>reset</type>
+            <isStart>false</isStart>
+            <ports>
+                <port>
+                    <name>reset_in1</name>
+                    <role>reset</role>
+                    <direction>Input</direction>
+                    <width>1</width>
+                    <lowerBound>0</lowerBound>
+                    <vhdlType>STD_LOGIC</vhdlType>
+                </port>
+            </ports>
+            <assignments>
+                <assignmentValueMap/>
+            </assignments>
+            <parameters>
+                <parameterValueMap>
+                    <entry>
+                        <key>associatedClock</key>
+                    </entry>
+                    <entry>
+                        <key>synchronousEdges</key>
+                        <value>NONE</value>
+                    </entry>
+                </parameterValueMap>
+            </parameters>
+        </interface>
+        <interface>
+            <name>reset_out</name>
+            <type>reset</type>
+            <isStart>true</isStart>
+            <ports>
+                <port>
+                    <name>reset_out</name>
+                    <role>reset</role>
+                    <direction>Output</direction>
+                    <width>1</width>
+                    <lowerBound>0</lowerBound>
+                    <vhdlType>STD_LOGIC</vhdlType>
+                </port>
+            </ports>
+            <assignments>
+                <assignmentValueMap/>
+            </assignments>
+            <parameters>
+                <parameterValueMap>
+                    <entry>
+                        <key>associatedClock</key>
+                        <value>clk</value>
+                    </entry>
+                    <entry>
+                        <key>associatedDirectReset</key>
+                    </entry>
+                    <entry>
+                        <key>associatedResetSinks</key>
+                        <value>reset_in0,reset_in1</value>
+                    </entry>
+                    <entry>
+                        <key>synchronousEdges</key>
+                        <value>DEASSERT</value>
+                    </entry>
+                </parameterValueMap>
+            </parameters>
+        </interface>
+    </interfaces>
+</boundaryDefinition>]]></spirit:value>
+        </spirit:parameter>
+        <spirit:parameter>
+          <spirit:name>systemInfos</spirit:name>
+          <spirit:displayName>systemInfos</spirit:displayName>
+          <spirit:value spirit:format="string" spirit:id="systemInfos"><![CDATA[<systemInfosDefinition>
+    <connPtSystemInfos/>
+</systemInfosDefinition>]]></spirit:value>
+        </spirit:parameter>
+      </spirit:parameters>
+    </altera:altera_system_parameters>
+    <altera:altera_interface_boundary>
+      <altera:interface_mapping altera:name="clk" altera:internal="reset_controller_mac_rx_0.clk" altera:type="clock" altera:dir="end">
+        <altera:port_mapping altera:name="clk" altera:internal="clk"></altera:port_mapping>
+      </altera:interface_mapping>
+      <altera:interface_mapping altera:name="reset_in0" altera:internal="reset_controller_mac_rx_0.reset_in0" altera:type="reset" altera:dir="end">
+        <altera:port_mapping altera:name="reset_in0" altera:internal="reset_in0"></altera:port_mapping>
+      </altera:interface_mapping>
+      <altera:interface_mapping altera:name="reset_in1" altera:internal="reset_controller_mac_rx_0.reset_in1" altera:type="reset" altera:dir="end">
+        <altera:port_mapping altera:name="reset_in1" altera:internal="reset_in1"></altera:port_mapping>
+      </altera:interface_mapping>
+      <altera:interface_mapping altera:name="reset_out" altera:internal="reset_controller_mac_rx_0.reset_out" altera:type="reset" altera:dir="start">
+        <altera:port_mapping altera:name="reset_out" altera:internal="reset_out"></altera:port_mapping>
+      </altera:interface_mapping>
+    </altera:altera_interface_boundary>
+    <altera:altera_has_warnings>false</altera:altera_has_warnings>
+    <altera:altera_has_errors>false</altera:altera_has_errors>
+  </spirit:vendorExtensions>
+</spirit:component>

@@ -1,0 +1,264 @@
+
+namespace eval alt_mge_phy_0 {
+  proc get_design_libraries {} {
+    set libraries [dict create]
+    dict set libraries altera_common_sv_packages   1
+    dict set libraries intel_mge_phy_pcs_100       1
+    dict set libraries intel_mge_phy_xcvr_term_100 1
+    dict set libraries intel_adme_gts_100          1
+    dict set libraries intel_directphy_gts_200     1
+    dict set libraries pcs_hal_2100                1
+    dict set libraries one_lane_hal_2100           1
+    dict set libraries fec_hal_2100                1
+    dict set libraries pldif_hal_2100              1
+    dict set libraries phy_hal_2100                1
+    dict set libraries hal_top_2100                1
+    dict set libraries n_channel_superset_2100     1
+    dict set libraries altera_iopll_1931           1
+    dict set libraries intel_mge_phy_100           1
+    dict set libraries alt_mge_phy_0               1
+    return $libraries
+  }
+  
+  proc get_memory_files {QSYS_SIMDIR} {
+    set memory_files [list]
+    lappend memory_files "$QSYS_SIMDIR/../n_channel_superset_2100/sim/SM_SRC_VLIW_MIF.mif"
+    return $memory_files
+  }
+  
+  proc get_common_design_files {USER_DEFINED_COMPILE_OPTIONS USER_DEFINED_VERILOG_COMPILE_OPTIONS USER_DEFINED_VHDL_COMPILE_OPTIONS QSYS_SIMDIR} {
+    set design_files [dict create]
+    dict set design_files "altera_common_sv_packages::alt_mge_phy_f_ptp_package" "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/alt_mge_phy_f_ptp_package.sv\"  -work altera_common_sv_packages"
+    return $design_files
+  }
+  
+  proc get_design_files {USER_DEFINED_COMPILE_OPTIONS USER_DEFINED_VERILOG_COMPILE_OPTIONS USER_DEFINED_VHDL_COMPILE_OPTIONS QSYS_SIMDIR} {
+    set design_files [list]
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_async_fifo_fpga.sv\"  -work intel_mge_phy_pcs_100"                     
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_bitsync.v\"  -work intel_mge_phy_pcs_100"                                        
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_mbow_clock_crosser.v\"  -work intel_mge_phy_pcs_100"                             
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_pcs_csr_top.v\"  -work intel_mge_phy_pcs_100"                                    
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_pipeline_base.v\"  -work intel_mge_phy_pcs_100"                                  
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_std_synchronizer_bundle.v\"  -work intel_mge_phy_pcs_100"                        
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_usxg32_an_top.v\"  -work intel_mge_phy_pcs_100"                                  
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_usxg32_creg_map.v\"  -work intel_mge_phy_pcs_100"                                
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_usxg32_creg_top.v\"  -work intel_mge_phy_pcs_100"                                
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_usxg32_f_ptp_latency_measure_top.v\"  -work intel_mge_phy_pcs_100"               
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_usxg32_incr_cnt.v\"  -work intel_mge_phy_pcs_100"                                
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_usxg32_pcs.v\"  -work intel_mge_phy_pcs_100"                                     
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_usxg32_rx_64_to_32_wadpt.v\"  -work intel_mge_phy_pcs_100"                       
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_usxg32_rx_clockcomp_fifo.v\"  -work intel_mge_phy_pcs_100"                       
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_usxg32_rx_data_derep.v\"  -work intel_mge_phy_pcs_100"                           
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_usxg32_rx_rm_fifo.v\"  -work intel_mge_phy_pcs_100"                              
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_usxg32_rx_rm_fifo_top.v\"  -work intel_mge_phy_pcs_100"                          
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_usxg32_rx_top.v\"  -work intel_mge_phy_pcs_100"                                  
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_usxg32_tx_32_to_64_wadpt.v\"  -work intel_mge_phy_pcs_100"                       
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_usxg32_tx_clockcomp_fifo.v\"  -work intel_mge_phy_pcs_100"                       
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_usxg32_tx_data_mux.v\"  -work intel_mge_phy_pcs_100"                             
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_usxg32_tx_data_rep.v\"  -work intel_mge_phy_pcs_100"                             
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_usxg32_tx_top.v\"  -work intel_mge_phy_pcs_100"                                  
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_usxg32_umii_fault.v\"  -work intel_mge_phy_pcs_100"                              
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_xgmii_1588_latency.sv\"  -work intel_mge_phy_pcs_100"                  
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_xgmii_1588_ppm_counter.sv\"  -work intel_mge_phy_pcs_100"              
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_xgmii_clockcomp.sv\"  -work intel_mge_phy_pcs_100"                     
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_xgmii_pcs.v\"  -work intel_mge_phy_pcs_100"                                      
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_xgmii_rx_fifo.sv\"  -work intel_mge_phy_pcs_100"                       
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_xgmii_soft_fifo.v\"  -work intel_mge_phy_pcs_100"                                
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_1588_ppm_counter.v\"  -work intel_mge_phy_pcs_100"                             
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_a_fifo_24.v\"  -work intel_mge_phy_pcs_100"                                    
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_carrier_sense.v\"  -work intel_mge_phy_pcs_100"                                
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_clock_crosser.v\"  -work intel_mge_phy_pcs_100"                                
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_colision_detect.v\"  -work intel_mge_phy_pcs_100"                              
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_gray_cnt.v\"  -work intel_mge_phy_pcs_100"                                     
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_gxb_aligned_rxsync.v\"  -work intel_mge_phy_pcs_100"                           
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_host_control.v\"  -work intel_mge_phy_pcs_100"                                 
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_mii_rx_if_pcs.v\"  -work intel_mge_phy_pcs_100"                                
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_mii_tx_if_pcs.v\"  -work intel_mge_phy_pcs_100"                                
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_ph_calculator.sv\"  -work intel_mge_phy_pcs_100"                     
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_reset_synchronizer.v\"  -work intel_mge_phy_pcs_100"                           
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_rx_converter.v\"  -work intel_mge_phy_pcs_100"                                 
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_rx_encapsulation_strx_gx.v\"  -work intel_mge_phy_pcs_100"                     
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_rx_fifo_rd.v\"  -work intel_mge_phy_pcs_100"                                   
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_sdpm_altsyncram.v\"  -work intel_mge_phy_pcs_100"                              
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_std_synchronizer.v\"  -work intel_mge_phy_pcs_100"                             
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_top_autoneg.v\"  -work intel_mge_phy_pcs_100"                                  
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_top_pcs_strx_gx.v\"  -work intel_mge_phy_pcs_100"                              
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_top_rx_converter.v\"  -work intel_mge_phy_pcs_100"                             
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_top_tx_converter.v\"  -work intel_mge_phy_pcs_100"                             
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_tx_converter.v\"  -work intel_mge_phy_pcs_100"                                 
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_tx_encapsulation.v\"  -work intel_mge_phy_pcs_100"                             
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_xcvr_resync.v\"  -work intel_mge_phy_pcs_100"                                  
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_xcvr_latency_pulse_measurement.v\"  -work intel_mge_phy_pcs_100"                     
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/latency_pulse_measurement.v\"  -work intel_mge_phy_pcs_100"                                  
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_sgmii_8_to_16_converter.v\"  -work intel_mge_phy_pcs_100"                      
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_sgmii_16_to_8_converter.v\"  -work intel_mge_phy_pcs_100"                      
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_usxgmii_1588_latency.sv\"  -work intel_mge_phy_pcs_100"                
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_f_ptp_async_pulse_gen.v\"  -work intel_mge_phy_pcs_100"                          
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_f_ptp_calc_delay.v\"  -work intel_mge_phy_pcs_100"                               
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_f_ptp_latency_count_async.v\"  -work intel_mge_phy_pcs_100"                      
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_f_ptp_latency_count_rxsync.sv\"  -work intel_mge_phy_pcs_100"          
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_f_ptp_latency_count_txsync.v\"  -work intel_mge_phy_pcs_100"                     
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_f_ptp_latency_measure.sv\"  -work intel_mge_phy_pcs_100"               
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_f_ptp_rx_am_muxsel_gen.v\"  -work intel_mge_phy_pcs_100"                         
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_f_ptp_tx_am_muxsel_gen.v\"  -work intel_mge_phy_pcs_100"                         
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_sgmii_clk_enable.v\"  -work intel_mge_phy_pcs_100"                             
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_carrier_detect.v\"  -work intel_mge_phy_pcs_100"                                     
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_encoder_8b10b.v\"  -work intel_mge_phy_pcs_100"                                      
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_wordalign20.v\"  -work intel_mge_phy_pcs_100"                                        
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_x2_decoder_8b10b.v\"  -work intel_mge_phy_pcs_100"                                   
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_x2_rx_sync.v\"  -work intel_mge_phy_pcs_100"                                         
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_decoder_8b10b.v\"  -work intel_mge_phy_pcs_100"                                      
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_pcs20.v\"  -work intel_mge_phy_pcs_100"                                              
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_x2_carrier_detect.v\"  -work intel_mge_phy_pcs_100"                                  
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_x2_encoder_8b10b.v\"  -work intel_mge_phy_pcs_100"                                   
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_tse16_16_to_8_gmii_conversion.v\"  -work intel_mge_phy_pcs_100"                          
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_tse16_8_to_16_gmii_conversion.v\"  -work intel_mge_phy_pcs_100"                          
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_tse16_gmii16b_conv.v\"  -work intel_mge_phy_pcs_100"                                     
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_tse16_pcs_sgmii_clk_enable.v\"  -work intel_mge_phy_pcs_100"                             
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_pma.v\"  -work intel_mge_phy_pcs_100"                                          
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_pma_gige.v\"  -work intel_mge_phy_pcs_100"                                     
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_top_1000_base_x_strx_gx.v\"  -work intel_mge_phy_pcs_100"                      
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_top_sgmii_strx_gx.v\"  -work intel_mge_phy_pcs_100"                            
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_pcs.v\"  -work intel_mge_phy_pcs_100"                                            
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_mdio_reg.v\"  -work intel_mge_phy_pcs_100"                                     
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge_phy_pcs_rst_sync.v\"  -work intel_mge_phy_pcs_100"                                   
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/hps_mge_bin_gray.v\"  -work intel_mge_phy_pcs_100"                                           
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/hps_mge_csr.v\"  -work intel_mge_phy_pcs_100"                                                
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/hps_mge_data_packer.v\"  -work intel_mge_phy_pcs_100"                                        
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/hps_mge_data_unpacker.v\"  -work intel_mge_phy_pcs_100"                                      
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/hps_mge_elasticbuffer.v\"  -work intel_mge_phy_pcs_100"                                      
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/hps_mge_fifomem.v\"  -work intel_mge_phy_pcs_100"                                            
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/hps_mge_gray_bin.v\"  -work intel_mge_phy_pcs_100"                                           
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/hps_mge_reset_synchronizer.v\"  -work intel_mge_phy_pcs_100"                                 
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/hps_mge_synchronizer_bundle.v\"  -work intel_mge_phy_pcs_100"                                
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/hps_to_mge_clk_mux_macspeed.v\"  -work intel_mge_phy_pcs_100"                                
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/hps_to_mge_clk_mux_physpeed.v\"  -work intel_mge_phy_pcs_100"                                
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/hps_to_mge_gmii_adapter_core.v\"  -work intel_mge_phy_pcs_100"                               
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/synopsys/alt_mge16_pcs_control.v\"  -work intel_mge_phy_pcs_100"                                      
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/altera_std_synchronizer_nocut.v\"  -work intel_mge_phy_pcs_100"                                       
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_pcs_100/sim/alt_xcvr_resync_std.sv\"  -work intel_mge_phy_pcs_100"                                      
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_xcvr_term_100/sim/synopsys/alt_mge_phy_gf_clock_mux.v\"  -work intel_mge_phy_xcvr_term_100"                       
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_xcvr_term_100/sim/synopsys/alt_mge16_phy_xcvr_term.v\"  -work intel_mge_phy_xcvr_term_100"                        
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_xcvr_term_100/sim/synopsys/alt_xcvr_resync_std.sv\"  -work intel_mge_phy_xcvr_term_100"                           
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_xcvr_term_100/sim/synopsys/altera_std_synchronizer_nocut.v\"  -work intel_mge_phy_xcvr_term_100"                  
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_xcvr_term_100/sim/synopsys/ftile_efifo_async_fifo.sv\"  -work intel_mge_phy_xcvr_term_100"                        
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_xcvr_term_100/sim/synopsys/ftile_efifo_ccc.v\"  -work intel_mge_phy_xcvr_term_100"                                
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_xcvr_term_100/sim/synopsys/ftile_efifo_wrapper_top.sv\"  -work intel_mge_phy_xcvr_term_100"                       
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_xcvr_term_100/sim/synopsys/tse_ftile_efifo_rd_en_toggle.sv\"  -work intel_mge_phy_xcvr_term_100"                  
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_xcvr_term_100/sim/synopsys/tse_ftile_efifo_wr_en_toggle.sv\"  -work intel_mge_phy_xcvr_term_100"                  
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_xcvr_term_100/sim/synopsys/tse_ftile_eq_5_ena.v\"  -work intel_mge_phy_xcvr_term_100"                             
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_xcvr_term_100/sim/synopsys/tse_ftile_gray_cntr_5_sl.v\"  -work intel_mge_phy_xcvr_term_100"                       
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_xcvr_term_100/sim/synopsys/tse_ftile_gray_to_bin_5.v\"  -work intel_mge_phy_xcvr_term_100"                        
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_xcvr_term_100/sim/synopsys/tse_ftile_lut6.v\"  -work intel_mge_phy_xcvr_term_100"                                 
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_xcvr_term_100/sim/synopsys/tse_ftile_mlab.v\"  -work intel_mge_phy_xcvr_term_100"                                 
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_xcvr_term_100/sim/synopsys/tse_ftile_neq_5_ena.v\"  -work intel_mge_phy_xcvr_term_100"                            
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_xcvr_term_100/sim/synopsys/tse_ftile_sync_regs_aclr_m2.v\"  -work intel_mge_phy_xcvr_term_100"                    
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_adme_gts_100/sim/alt_mge_phy_0_intel_adme_gts_100_m3ka7xa.sv\"  -work intel_adme_gts_100"                       
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_adme_gts_100/sim/alt_xcvr_avmm_arb.sv\"  -work intel_adme_gts_100"                                              
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_adme_gts_100/sim/alt_xcvr_arbiter.sv\"  -work intel_adme_gts_100"                                               
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/alt_mge_phy_0_intel_directphy_gts_intel_adme_gts_200_fmptqqy.v\"  -work intel_directphy_gts_200"    
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../pcs_hal_2100/sim/alt_mge_phy_0_pcs_hal_2100_iateojy.sv\"  -work pcs_hal_2100"                                         
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../pcs_hal_2100/sim/ch4_pcs.sv\"  -work pcs_hal_2100"                                                                    
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../pcs_hal_2100/sim/pcs_hal_coreip.sv\"  -work pcs_hal_2100"                                                             
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../one_lane_hal_2100/sim/alt_mge_phy_0_one_lane_hal_pcs_hal_2100_msmb2ci.v\"  -work one_lane_hal_2100"                             
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../fec_hal_2100/sim/alt_mge_phy_0_fec_hal_2100_tq72q4i.sv\"  -work fec_hal_2100"                                         
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../fec_hal_2100/sim/ch4_fec.sv\"  -work fec_hal_2100"                                                                    
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../fec_hal_2100/sim/fec_hal_coreip.sv\"  -work fec_hal_2100"                                                             
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../one_lane_hal_2100/sim/alt_mge_phy_0_one_lane_hal_fec_hal_2100_gsknnly.v\"  -work one_lane_hal_2100"                             
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../pldif_hal_2100/sim/alt_mge_phy_0_pldif_hal_2100_4ge3b5q.sv\"  -work pldif_hal_2100"                                   
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../pldif_hal_2100/sim/ch4_pldif.sv\"  -work pldif_hal_2100"                                                              
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../pldif_hal_2100/sim/ch4_pldif_no_deskew.sv\"  -work pldif_hal_2100"                                                    
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../pldif_hal_2100/sim/pldif_hal_coreip.sv\"  -work pldif_hal_2100"                                                       
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../pldif_hal_2100/sim/pldif_staticmux.sv\"  -work pldif_hal_2100"                                                        
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../one_lane_hal_2100/sim/alt_mge_phy_0_one_lane_hal_pldif_hal_2100_g7omyzi.v\"  -work one_lane_hal_2100"                           
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../phy_hal_2100/sim/alt_mge_phy_0_phy_hal_2100_jc3ca3q.sv\"  -work phy_hal_2100"                                         
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../phy_hal_2100/sim/ch4_phy.sv\"  -work phy_hal_2100"                                                                    
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../phy_hal_2100/sim/phy_hal_coreip.sv\"  -work phy_hal_2100"                                                             
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../phy_hal_2100/sim/phy_staticmux.sv\"  -work phy_hal_2100"                                                              
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../one_lane_hal_2100/sim/alt_mge_phy_0_one_lane_hal_phy_hal_2100_hfv7ity.v\"  -work one_lane_hal_2100"                             
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../one_lane_hal_2100/sim/alt_mge_phy_0_one_lane_hal_2100_qsx6jsi.sv\"  -work one_lane_hal_2100"                          
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../hal_top_2100/sim/alt_mge_phy_0_hal_top_one_lane_hal_2100_n3mbdsq.v\"  -work hal_top_2100"                                       
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../hal_top_2100/sim/alt_mge_phy_0_hal_top_2100_smtnyja.sv\"  -work hal_top_2100"                                         
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../hal_top_2100/sim/hip_sip_boundary_smtnyja.sv\"  -work hal_top_2100"                                                   
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../hal_top_2100/sim/chptp.sv\"  -work hal_top_2100"                                                                      
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../hal_top_2100/sim/mc.sv\"  -work hal_top_2100"                                                                         
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../hal_top_2100/sim/shared_hal_coreip.v\"  -work hal_top_2100"                                                                     
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../hal_top_2100/sim/shared_ptp.v\"  -work hal_top_2100"                                                                            
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../n_channel_superset_2100/sim/alt_mge_phy_0_n_channel_superset_hal_top_2100_ckyu45q.v\"  -work n_channel_superset_2100"           
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../n_channel_superset_2100/sim/alt_mge_phy_0_n_channel_superset_2100_7mcaoay.sv\"  -work n_channel_superset_2100"        
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../n_channel_superset_2100/sim/intelfpga/tennm_sm_hssi_pld_chnl_dp_sip_atom.sv\"  -work n_channel_superset_2100"         
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../n_channel_superset_2100/sim/intelfpga/ncss_avmm_decoder.sv\"  -work n_channel_superset_2100"                          
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../n_channel_superset_2100/sim/intelfpga/ncss_common_ptp_top.sv\"  -work n_channel_superset_2100"                        
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../n_channel_superset_2100/sim/intelfpga/intel_src_addr_gen.sv\"  -work n_channel_superset_2100"                         
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../n_channel_superset_2100/sim/intelfpga/intel_src_lane.sv\"  -work n_channel_superset_2100"                             
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../n_channel_superset_2100/sim/intelfpga/intel_src_lane2lane.sv\"  -work n_channel_superset_2100"                        
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../n_channel_superset_2100/sim/intelfpga/intel_src_lane_rst_sequence_fsm.sv\"  -work n_channel_superset_2100"            
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../n_channel_superset_2100/sim/intelfpga/intel_src_lane_wrapper.sv\"  -work n_channel_superset_2100"                     
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../n_channel_superset_2100/sim/intelfpga/intel_src_monitor.sv\"  -work n_channel_superset_2100"                          
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../n_channel_superset_2100/sim/intelfpga/intel_src_stagger_block.sv\"  -work n_channel_superset_2100"                    
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../n_channel_superset_2100/sim/intelfpga/intel_src_synchronizers.sv\"  -work n_channel_superset_2100"                    
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../n_channel_superset_2100/sim/intelfpga/sopc_synchronizer.v\"  -work n_channel_superset_2100"                                     
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../n_channel_superset_2100/sim/intelfpga/intel_src_csr.sv\"  -work n_channel_superset_2100"                              
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../n_channel_superset_2100/sim/intelfpga/intel_src_flow_ctrl.sv\"  -work n_channel_superset_2100"                        
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/alt_mge_phy_0_intel_directphy_gts_n_channel_superset_200_vtl75gi.v\"  -work intel_directphy_gts_200"
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/sip_async_mapping.sv\"  -work intel_directphy_gts_200"                                    
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/intel_directphy_avmm.sv\"  -work intel_directphy_gts_200"                                 
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/intel_directphy_csr_wrap.v\"  -work intel_directphy_gts_200"                                        
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/dphy_ccg.v\"  -work intel_directphy_gts_200"                                                        
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/directphy_gray_cntr_3.v\"  -work intel_directphy_gts_200"                                           
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/directphy_gray_cntr_5_sl.v\"  -work intel_directphy_gts_200"                                        
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/directphy_eq_5_ena.v\"  -work intel_directphy_gts_200"                                              
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/directphy_neq_5_ena.v\"  -work intel_directphy_gts_200"                                             
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/directphy_wys_lut.v\"  -work intel_directphy_gts_200"                                               
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/intel_directphy_sip_csr.v\"  -work intel_directphy_gts_200"                                         
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/dphy_tx_dsk_gen.sv\"  -work intel_directphy_gts_200"                                      
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/directphy_rx_deskew.sv\"  -work intel_directphy_gts_200"                                  
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/directphy_word_delay.v\"  -work intel_directphy_gts_200"                                            
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/directphy_mlab.v\"  -work intel_directphy_gts_200"                                        
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/alt_xcvr_resync_etile.sv\"  -work intel_directphy_gts_200"                                
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/altera_std_synchronizer_nocut_etile.v\"  -work intel_directphy_gts_200"                   
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/alt_mge_phy_0_intel_directphy_gts_200_twelxbq.sv\"  -work intel_directphy_gts_200"        
+    lappend design_files "vlogan +v2k -sverilog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_directphy_gts_200/sim/intel_directphy_gts_sip_200_twelxbq.sv\"  -work intel_directphy_gts_200"                  
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../altera_iopll_1931/sim/alt_mge_phy_0_altera_iopll_1931_tktuxka.vo\"  -work altera_iopll_1931"                                    
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/../intel_mge_phy_100/sim/alt_mge_phy_0_intel_mge_phy_100_mdesbaq.v\"  -work intel_mge_phy_100"                                     
+    lappend design_files "vlogan +v2k $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"$QSYS_SIMDIR/alt_mge_phy_0.v\"  -work alt_mge_phy_0"                                                                                            
+    return $design_files
+  }
+  
+  proc get_elab_options {SIMULATOR_TOOL_BITNESS} {
+    set ELAB_OPTIONS ""
+    if ![ string match "bit_64" $SIMULATOR_TOOL_BITNESS ] {
+    } else {
+      append ELAB_OPTIONS { $QUARTUS_INSTALL_DIR/eda/sim_lib/quartus_dpi.c -debug_access+f}
+    }
+    return $ELAB_OPTIONS
+  }
+  
+  
+  proc get_sim_options {SIMULATOR_TOOL_BITNESS} {
+    set SIM_OPTIONS ""
+    if ![ string match "bit_64" $SIMULATOR_TOOL_BITNESS ] {
+    } else {
+    }
+    return $SIM_OPTIONS
+  }
+  
+  
+  proc get_env_variables {SIMULATOR_TOOL_BITNESS} {
+    set ENV_VARIABLES [dict create]
+    set LD_LIBRARY_PATH [dict create]
+    dict set ENV_VARIABLES "LD_LIBRARY_PATH" $LD_LIBRARY_PATH
+    if ![ string match "bit_64" $SIMULATOR_TOOL_BITNESS ] {
+    } else {
+    }
+    return $ENV_VARIABLES
+  }
+  
+  
+  proc get_dpi_libraries {QSYS_SIMDIR} {
+    set libraries [dict create]
+    
+    return $libraries
+  }
+  
+}

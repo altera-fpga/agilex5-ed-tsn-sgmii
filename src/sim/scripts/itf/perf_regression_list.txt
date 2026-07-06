@@ -1,0 +1,3 @@
+testname=eth_gdr_base_test --sequence=tsn_perf_mix_pktsize_seq --perf_en=1 
+testname=eth_gdr_base_test --sequence=tsn_perf_test_seq --perf_en=1 
+testname=eth_gdr_base_test --sequence=tsn_perf_large_pktsize_seq --perf_en=1 

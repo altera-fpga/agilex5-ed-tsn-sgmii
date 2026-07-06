@@ -1,0 +1,651 @@
+From 853666000894d4ce7fa4b2f95a924f33a5141798 Mon Sep 17 00:00:00 2001
+From: Mahesh Vaidya <mahesh.vaidya@altera.com>
+Date: Sun, 24 May 2026 12:00:00 +0530
+Subject: [PATCH] net: stmmac: socfpga: Add MRPHY Dynamic Reconfiguration
+ support
+
+Add runtime Dynamic Reconfiguration (DR) of the MRPHY XCVR profile
+on Altera Agilex 5. DR allows a single SGMII port to negotiate any
+speed in {10M, 100M, 1G, 2.5G} by switching the XCVR between a 1G
+profile (1.25 Gbps line rate) and a 2.5G profile (3.125 Gbps line
+rate) at runtime.
+
+The DR controller and the MRPHY User-Space CSR are single hardware
+blocks shared across all MRPHY instances. They are described in the
+device tree as separate nodes and referenced from each
+gmii-to-sgmii-converter node via altr,drphy and altr,mrphy-usrspc
+phandles. Each converter node also carries:
+
+  altr,phy-num             - 0, 1 or 2; selects the per-port reset
+                             bit mask in the user-space CSR.
+  altr,drphy-profile-1g    - DR profile number for 1G mode.
+  altr,drphy-profile-2500  - DR profile number for 2.5G mode.
+
+DR is only triggered when the speed change crosses the 1G/2.5G
+boundary. Transitions among 10M / 100M / 1G keep the XCVR in the 1G
+profile and use the MRPHY soft-PCS sub-rate adaptation added in an
+earlier commit. The DR sequence holds the MAC TX/RX paths for the
+affected port in reset, polls the controller with
+readl_poll_timeout(), and serializes PHY0 vs PHY1 with a mutex. The
+same mutex protects the shared-base init helpers against concurrent
+probes that could otherwise leak an of_iomap mapping.
+
+Also add a per-port altr,min-speed device-tree property that masks
+MAC capability bits below the configured minimum. The mask is
+applied to priv->hw->link.caps (not phylink_config.mac_capabilities)
+because stmmac's mac_get_caps() callback overwrites
+mac_capabilities from priv->hw->link.caps on every phylink
+validation cycle. For example, an eth0 with altr,min-speed = <1000>
+will not advertise 10M or 100M during autoneg.
+
+Upstream-Status: Pending
+Signed-off-by: Mahesh Vaidya <mahesh.vaidya@altera.com>
+---
+ .../ethernet/stmicro/stmmac/dwmac-socfpga.c   |  95 +++++
+ drivers/net/ethernet/stmicro/stmmac/mrphy.c   | 338 +++++++++++++++++-
+ drivers/net/ethernet/stmicro/stmmac/mrphy.h   |  56 +++
+ 3 files changed, 477 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c
+index f88f989ca1b1..25a02ccc94f1 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c
++++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c
+@@ -76,6 +76,7 @@ struct socfpga_dwmac {
+ 	const struct socfpga_dwmac_ops *ops;
+ 	struct mdio_device *pcs_mdiodev;
+ 	struct mr_phy  mrphy;
++	u32 min_speed;
+ 	struct tse_pcs pcs;
+ };
+ 
+@@ -386,6 +387,8 @@ static int socfpga_dwmac_parse_data(struct socfpga_dwmac *dwmac, struct device *
+ 	struct resource res_tse_pcs;
+ 	struct resource res_sgmii_adapter;
+ 	struct resource res_mrphy;
++	struct device_node *drphy_np;
++	struct device_node *usrspc_np;
+ 
+ 	sys_mgr_base_addr =
+ 		altr_sysmgr_regmap_lookup_by_phandle(np, "altr,sysmgr-syscon");
+@@ -424,6 +427,9 @@ static int socfpga_dwmac_parse_data(struct socfpga_dwmac *dwmac, struct device *
+ 		}
+ 	}
+ 
++	/* Optional per-port minimum-speed restriction (in Mbps). */
++	of_property_read_u32(np, "altr,min-speed", &dwmac->min_speed);
++
+ 	np_sgmii_adapter = of_parse_phandle(np,
+ 					    "altr,gmii-to-sgmii-converter", 0);
+ 	if (np_sgmii_adapter) {
+@@ -522,6 +528,61 @@ static int socfpga_dwmac_parse_data(struct socfpga_dwmac *dwmac, struct device *
+ 			}
+ 
+ 			dwmac->mrphy.dev = dev;
++
++			/*
++			 * Optional: Dynamic Reconfiguration.
++			 *
++			 * Ports that have an altr,drphy phandle can switch
++			 * the XCVR profile at runtime to support speeds
++			 * across the 1G/2.5G boundary. Ports without the
++			 * phandle run at a single static rate.
++			 */
++			drphy_np = of_parse_phandle(np_sgmii_adapter,
++						    "altr,drphy", 0);
++			if (drphy_np) {
++				ret = mrphy_drphy_init(drphy_np);
++				of_node_put(drphy_np);
++				if (ret) {
++					dev_err(dev,
++						"failed to map DR controller: %d\n",
++						ret);
++					goto err_node_put;
++				}
++
++				usrspc_np = of_parse_phandle(np_sgmii_adapter,
++							     "altr,mrphy-usrspc",
++							     0);
++				if (!usrspc_np) {
++					dev_err(dev,
++						"altr,mrphy-usrspc is required when altr,drphy is set\n");
++					ret = -EINVAL;
++					goto err_node_put;
++				}
++				ret = mrphy_usrspc_init(usrspc_np);
++				of_node_put(usrspc_np);
++				if (ret) {
++					dev_err(dev,
++						"failed to map user-space CSR: %d\n",
++						ret);
++					goto err_node_put;
++				}
++
++				dwmac->mrphy.has_dr = true;
++
++				of_property_read_u32(np_sgmii_adapter,
++						     "altr,drphy-profile-2500",
++						     &dwmac->mrphy.profile_2500);
++				of_property_read_u32(np_sgmii_adapter,
++						     "altr,drphy-profile-1g",
++						     &dwmac->mrphy.profile_1g);
++			}
++
++			of_property_read_u32(np_sgmii_adapter,
++					     "altr,phy-num",
++					     &dwmac->mrphy.phy_num);
++
++			/* Initial XCVR profile after FPGA boot is 2.5G. */
++			dwmac->mrphy.last_speed = 2500;
+ 		}
+ 	}
+ 	dwmac->reg_offset = reg_offset;
+@@ -970,6 +1031,40 @@ static int socfpga_dwmac_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
++	/*
++	 * Apply per-port minimum-speed restriction.
++	 *
++	 * stmmac's mac_get_caps() callback overwrites
++	 * config->mac_capabilities from priv->hw->link.caps on every
++	 * phylink validation cycle, so masking config->mac_capabilities
++	 * directly is ineffective. Mask the source instead.
++	 */
++	if (dwmac->min_speed) {
++		struct net_device *ndev = platform_get_drvdata(pdev);
++
++		if (ndev) {
++			struct stmmac_priv *stpriv = netdev_priv(ndev);
++
++			/*
++			 * Clear MAC capability bits for any speed strictly
++			 * below dwmac->min_speed. The comparison is strict
++			 * (not >=) so the minimum speed itself is preserved:
++			 * min_speed = 1000 keeps 1G but clears 10M / 100M.
++			 */
++			if (dwmac->min_speed > 10)
++				stpriv->hw->link.caps &=
++					~(MAC_10HD | MAC_10FD);
++			if (dwmac->min_speed > 100)
++				stpriv->hw->link.caps &=
++					~(MAC_100HD | MAC_100FD);
++			if (dwmac->min_speed > 1000)
++				stpriv->hw->link.caps &=
++					~(MAC_1000HD | MAC_1000FD);
++			if (dwmac->min_speed > 2500)
++				stpriv->hw->link.caps &= ~MAC_2500FD;
++		}
++	}
++
+ 	if (dwmac->mrphy.mrphy_base) {
+ 		struct net_device *ndev = platform_get_drvdata(pdev);
+ 
+diff --git a/drivers/net/ethernet/stmicro/stmmac/mrphy.c b/drivers/net/ethernet/stmicro/stmmac/mrphy.c
+index 561f94d9af98..4bb206a8443e 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/mrphy.c
++++ b/drivers/net/ethernet/stmicro/stmmac/mrphy.c
+@@ -6,6 +6,9 @@
+ 
+ #include <linux/io.h>
+ #include <linux/iopoll.h>
++#include <linux/mutex.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
+ #include <linux/phy.h>
+ 
+ #include "mrphy.h"
+@@ -28,6 +31,85 @@
+ #define MRPHY_SW_RESET_TIMEOUT_US		100
+ #define AUTONEGO_LINK_TIMER_MS			20
+ 
++/*Dynamic reconfiguration definitions*/
++#define DRPHY_PROFILE_CTRL_REG			0x00
++#define DRPHY_PROFILE_CTRL_REG2			0x04
++#define DRPHY_TRIGGER_REG			0x50
++#define DRPHY_STATUS_REG			0x70
++#define DRPHY_ERR_STAT_REG			0x74
++#define DRPHY_ERR_STAT2_REG			0x7C
++
++#define DRPHY_TRIGGER_BIT			BIT(0)
++#define DRPHY_TRIGGER_CLR_MASK			(BIT(3) | BIT(4))
++#define DRPHY_READY_BIT				BIT(0)
++#define DRPHY_OP_IN_PROGRESS_BIT		BIT(0)
++
++#define DRPHY_PROFILE_CHANGE_REQ		BIT(31)
++#define DRPHY_PROFILE_SRC_SHIFT			16
++
++#define DRPHY_PROFILE_CHANGE_VAL(src, dst)		\
++	(DRPHY_PROFILE_CHANGE_REQ |			\
++	 ((u32)(src) << DRPHY_PROFILE_SRC_SHIFT) |	\
++	 (u32)(dst))
++
++#define DRPHY_POLL_SLEEP_US			5
++#define DRPHY_POLL_TIMEOUT_US			100000
++
++/*
++ * User-Space CSR: Multirate Ethernet PHY Reset Control Register.
++ *
++ * For each PHY n (0..2), three bits control resets (all active low):
++ *   bit 3n+0 = i_rst_n        (global PHY reset)
++ *   bit 3n+1 = i_tx_rst_n     (TX path reset)
++ *   bit 3n+2 = i_rx_rst_n     (RX path reset)
++ *
++ * The DR sequence holds TX/RX in reset across the XCVR transition.
++ */
++#define USRSPC_RST_CTRL_REG			0x4
++#define USRSPC_PHY_TX_RX_RST_MASK(n)		(0x6U << ((n) * 3))
++
++/*
++ * Shared base mappings and serialization.
++ *
++ * The DR controller and user-space CSR are single hardware instances
++ * shared by all MRPHYs. They are mapped once on the first call to
++ * the init helpers; subsequent calls are no-ops. The same mutex
++ * protects the init path (against concurrent probes that could leak
++ * an of_iomap mapping) and serializes the runtime DR sequence between
++ * PHY0 and PHY1.
++ */
++static void __iomem *altr_drphy_base;
++static void __iomem *altr_usrspc_base;
++static DEFINE_MUTEX(altr_drphy_lock);
++
++int mrphy_drphy_init(struct device_node *drphy_np)
++{
++	int ret = 0;
++
++	mutex_lock(&altr_drphy_lock);
++	if (!altr_drphy_base) {
++		altr_drphy_base = of_iomap(drphy_np, 0);
++		if (!altr_drphy_base)
++			ret = -ENOMEM;
++	}
++	mutex_unlock(&altr_drphy_lock);
++	return ret;
++}
++
++int mrphy_usrspc_init(struct device_node *usrspc_np)
++{
++	int ret = 0;
++
++	mutex_lock(&altr_drphy_lock);
++	if (!altr_usrspc_base) {
++		altr_usrspc_base = of_iomap(usrspc_np, 0);
++		if (!altr_usrspc_base)
++			ret = -ENOMEM;
++	}
++	mutex_unlock(&altr_drphy_lock);
++	return ret;
++}
++
+ static int mrphy_reset(struct mr_phy *mrphy)
+ {
+ 	void __iomem *base = mrphy->mrphy_base;
+@@ -58,6 +140,16 @@ static void mrphy_enable_tx(struct mr_phy *mrphy)
+ 	writew(val & ~1, base + MRPHY_GMII8_ADAPTER_REG);
+ }
+ 
++/* Hold the MRPHY GMII8 TX path. Idempotent. */
++static void mrphy_disable_tx(struct mr_phy *mrphy)
++{
++	void __iomem *base = mrphy->mrphy_base;
++	u16 val;
++
++	val = readw(base + MRPHY_GMII8_ADAPTER_REG);
++	writew(val | 1, base + MRPHY_GMII8_ADAPTER_REG);
++}
++
+ static void mrphy_link_timer_callback(struct mr_phy *mrphy)
+ {
+ 	u16 val = readw(mrphy->mrphy_base + MRPHY_STATUS_REG);
+@@ -122,6 +214,187 @@ static void mrphy_program_2500(struct mr_phy *mrphy)
+ 	writew(val, base + MRPHY_IF_MODE_REG);
+ }
+ 
++/* Encode the new speed into the USRSPC op_speed field value. */
++static int mrphy_speed_to_op(unsigned int speed, u32 *op)
++{
++	switch (speed) {
++	case 10:	*op = USRSPC_OP_SPEED_10;	return 0;
++	case 100:	*op = USRSPC_OP_SPEED_100;	return 0;
++	case 1000:	*op = USRSPC_OP_SPEED_1G;	return 0;
++	case 2500:	*op = USRSPC_OP_SPEED_2500;	return 0;
++	}
++	return -EINVAL;
++}
++
++/*
++ * Execute one Dynamic Reconfiguration profile change.
++ *
++ * The DR controller is shared between PHY0 and PHY1, so access is
++ * serialized via altr_drphy_lock. The MAC TX and RX paths for the
++ * affected port are held in reset across the XCVR transition so the
++ * MAC does not see transient or invalid data.
++ */
++static int drphy_change_profile(struct mr_phy *mrphy, u8 src, u8 dst,
++				unsigned int new_speed)
++{
++	u32 reset_mask = USRSPC_PHY_TX_RX_RST_MASK(mrphy->phy_num);
++	u32 ready_mask = USRSPC_PHY_READY_MASK(mrphy->phy_num);
++	u32 op_mask = USRSPC_PHY_OP_SPEED_MASK(mrphy->phy_num);
++	u32 op_shift = USRSPC_PHY_OP_SPEED_SHIFT(mrphy->phy_num);
++	u32 expected_op;
++	u32 val;
++	int ret;
++
++	ret = mrphy_speed_to_op(new_speed, &expected_op);
++	if (ret) {
++		dev_err(mrphy->dev,
++			"unsupported speed %u for DR\n", new_speed);
++		return ret;
++	}
++
++	mutex_lock(&altr_drphy_lock);
++
++	/*
++	 * Step 2: assert TX/RX reset to the MRPHY protocol IP.
++	 * Note: PHY i_rst_n is not connected; only TX/RX path resets
++	 * are driven.
++	 */
++	val = readl(altr_usrspc_base + USRSPC_RST_CTRL_REG);
++	writel(val & ~reset_mask, altr_usrspc_base + USRSPC_RST_CTRL_REG);
++
++	/*
++	 * Step 3: wait for the DR controller to be ready
++	 * (stat.ready bit 0 = 1).
++	 */
++	ret = readl_poll_timeout(altr_drphy_base + DRPHY_STATUS_REG, val,
++				 val & DRPHY_READY_BIT,
++				 DRPHY_POLL_SLEEP_US,
++				 DRPHY_POLL_TIMEOUT_US);
++	if (ret) {
++		dev_err(mrphy->dev,
++			"DR not ready before trigger (status=0x%x)\n", val);
++		goto out_release_reset;
++	}
++
++	/*
++	 * Step 4: MRPHY soft reset.
++	 *
++	 */
++	ret = mrphy_reset(mrphy);
++	if (ret) {
++		dev_err(mrphy->dev, "MRPHY soft reset failed \n");
++		goto out_release_reset;
++	}
++
++	/*
++	 * Step 5: configure current and target profile IDs.
++	 *
++	 * Word at drphy 0x00:
++	 *   [14:0]  current profile  (next_id_lo)
++	 *   [15]    0 - neutral      (next_id_lo_act)
++	 *   [30:16] target profile   (next_id_hi)
++	 *   [31]    1 - active       (next_id_hi_act)
++	 *
++	 * Word at drphy 0x04 = 0 (end of ID list).
++	 */
++	writel(DRPHY_PROFILE_CHANGE_VAL(src, dst),
++	       altr_drphy_base + DRPHY_PROFILE_CTRL_REG);
++	writel(0, altr_drphy_base + DRPHY_PROFILE_CTRL_REG2);
++
++	/*
++	 * Step 6: select mode = 0 (bits [4:3]) and assert trigger (bit 0).
++	 * Re-read between the two writes because the controller updates
++	 * other bits asynchronously between accesses.
++	 */
++	writel(readl(altr_drphy_base + DRPHY_TRIGGER_REG) & ~DRPHY_TRIGGER_CLR_MASK,
++	       altr_drphy_base + DRPHY_TRIGGER_REG);
++	writel(readl(altr_drphy_base + DRPHY_TRIGGER_REG) | DRPHY_TRIGGER_BIT,
++	       altr_drphy_base + DRPHY_TRIGGER_REG);
++
++	/* Step 7: wait for trigger self-clear (DR ack). */
++	ret = readl_poll_timeout(altr_drphy_base + DRPHY_TRIGGER_REG, val,
++				 !(val & DRPHY_OP_IN_PROGRESS_BIT),
++				 DRPHY_POLL_SLEEP_US,
++				 DRPHY_POLL_TIMEOUT_US);
++	if (ret) {
++		dev_err(mrphy->dev,
++			"DR trigger did not complete (val=0x%x)\n", val);
++		goto out_release_reset;
++	}
++
++	/* Step 8: wait for DR completion and check error status. */
++	ret = readl_poll_timeout(altr_drphy_base + DRPHY_STATUS_REG, val,
++				 val & DRPHY_READY_BIT,
++				 DRPHY_POLL_SLEEP_US,
++				 DRPHY_POLL_TIMEOUT_US);
++	if (ret) {
++		dev_err(mrphy->dev,
++			"DR not ready after change (status=0x%x)\n", val);
++		goto out_release_reset;
++	}
++
++	val = readl(altr_drphy_base + DRPHY_ERR_STAT_REG);
++	if (val)
++		dev_warn(mrphy->dev,
++			 "DR completed with err_stat=0x%x (err2=0x%x)\n", val,
++			 readl(altr_drphy_base + DRPHY_ERR_STAT2_REG));
++
++	/*
++	 * Step 9: program the MRPHY soft CSRs (IF_MODE) for the new
++	 * speed, while the protocol IP is still in reset.
++	 */
++	if (new_speed <= 1000) {
++		ret = mrphy_program_sub_2500(mrphy, new_speed);
++		if (ret)
++			goto out_release_reset;
++	} else {
++		mrphy_program_2500(mrphy);
++	}
++
++out_release_reset:
++	/*
++	 * Step 10: de-assert TX/RX reset to the MRPHY protocol IP.
++	 */
++	val = readl(altr_usrspc_base + USRSPC_RST_CTRL_REG);
++	writel(val | reset_mask, altr_usrspc_base + USRSPC_RST_CTRL_REG);
++	usleep_range(15000, 20000);
++
++	if (ret)
++		goto out_unlock;
++
++	/*
++	 * Step 11: wait for the MRPHY to report ready. All four bits
++	 * for the port (pll_lock, rx_ready, tx_ready, rx_block_lock)
++	 * must be set.
++	 */
++	ret = readl_poll_timeout(altr_usrspc_base + USRSPC_STATUS_REG, val,
++				 (val & ready_mask) == ready_mask,
++				 MRPHY_READY_POLL_SLEEP_US,
++				 MRPHY_READY_POLL_TIMEOUT_US);
++	if (ret) {
++		dev_err(mrphy->dev,
++			"MRPHY not ready after DR (status=0x%x, expected mask=0x%x)\n",
++			val, ready_mask);
++		goto out_unlock;
++	}
++
++	/*
++	 * Step 12: verify the reported operating speed matches the
++	 * speed we just programmed.
++	 */
++	val = readl(altr_usrspc_base + USRSPC_STATUS_REG);
++	if (((val & op_mask) >> op_shift) != expected_op) {
++		dev_warn(mrphy->dev,
++			 "MRPHY op_speed mismatch: got 0x%x, expected 0x%x (status=0x%x)\n",
++			 (val & op_mask) >> op_shift, expected_op, val);
++		/* not fatal — log and continue */
++	}
++
++out_unlock:
++	mutex_unlock(&altr_drphy_lock);
++	return ret;
++}
++
+ /*
+  * One-time per-port initialization. Sets up the link polling timer
+  * and enables the GMII8 TX path.
+@@ -136,27 +409,68 @@ int mrphy_init(void __iomem *base, struct mr_phy *mrphy)
+ void mrphy_fix_mac_speed(struct mr_phy *mrphy, struct phy_device *phy_dev,
+ 			 unsigned int speed)
+ {
++	unsigned int last_speed = mrphy->last_speed;
++	bool need_dr = false;
+ 	int ret;
+ 
+-	/* Reset MRPHY soft-PCS before reprogramming. */
+-	ret = mrphy_reset(mrphy);
+-	if (ret)
+-		return;
++	if (mrphy->has_dr) {
++		bool was_2500 = (last_speed > 1000);
++		bool want_2500 = (speed > 1000);
++
++		need_dr = (was_2500 != want_2500);
++	}
+ 
+-	/* Program MRPHY soft-PCS IF_MODE for the new speed. */
+-	if (speed <= 1000) {
+-		if (mrphy_program_sub_2500(mrphy, speed))
++	/*
++	 * Disable MRPHY TX before reconfiguring. Stays disabled until
++	 * the bottom of the function, after all configuration is done.
++	 */
++	mrphy_disable_tx(mrphy);
++
++	if (need_dr) {
++		/*
++		 * Cross-profile transition (sub-1G <-> 2.5G).
++		 * drphy_change_profile() handles the full sequence
++		 * including TX disable/enable, reset assert/release,
++		 * DR steps 3-8, IF_MODE programming (step 9), and the
++		 * post-DR ready and op_speed checks (steps 11-12).
++		 */
++		u8 src = (last_speed > 1000) ?
++			 mrphy->profile_2500 : mrphy->profile_1g;
++		u8 dst = (speed > 1000) ?
++			 mrphy->profile_2500 : mrphy->profile_1g;
++
++		ret = drphy_change_profile(mrphy, src, dst, speed);
++		if (ret) {
++			dev_err(mrphy->dev,
++				"DR profile change %u->%u failed: %d\n",
++				src, dst, ret);
+ 			return;
+-	} else if (speed == 2500) {
+-		mrphy_program_2500(mrphy);
++		}
+ 	} else {
+-		dev_err(mrphy->dev, "unsupported speed %u\n", speed);
+-		return;
++		/*
++		 * Same-profile transition (sub-1G <-> sub-1G, or
++		 * re-applying the same speed). No DR needed; just
++		 * reset the soft-PCS and reprogram IF_MODE.
++		 */
++		ret = mrphy_reset(mrphy);
++		if (ret)
++			return;
++
++		if (speed <= 1000) {
++			if (mrphy_program_sub_2500(mrphy, speed))
++				return;
++		} else if (speed == 2500) {
++			mrphy_program_2500(mrphy);
++		} else {
++			dev_err(mrphy->dev, "unsupported speed %u\n", speed);
++			return;
++		}
+ 	}
+ 
+-	/* Re-arm the link polling timer. */
+ 	mod_timer(&mrphy->aneg_link_timer,
+ 		  jiffies + msecs_to_jiffies(AUTONEGO_LINK_TIMER_MS));
+ 
++	mrphy->last_speed = speed;
++
+ 	mrphy_enable_tx(mrphy);
+ }
+diff --git a/drivers/net/ethernet/stmicro/stmmac/mrphy.h b/drivers/net/ethernet/stmicro/stmmac/mrphy.h
+index 2eb8e3fe6ae1..ac780fe42ce6 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/mrphy.h
++++ b/drivers/net/ethernet/stmicro/stmmac/mrphy.h
+@@ -7,6 +7,7 @@
+ #ifndef __MRPHY_H__
+ #define __MRPHY_H__
+ 
++#include <linux/of.h>
+ #include <linux/phy.h>
+ #include <linux/timer.h>
+ 
+@@ -45,12 +46,67 @@
+ #define XGMAC_TS_INGRESS_CORR		0xd58
+ #define XGMAC_TS_EGRESS_CORR		0xd60
+ 
++/* USRSPC status register (offset 0x00 from usrspc base). */
++#define USRSPC_STATUS_REG		0x0
++
++/*
++ * Per-PHY ready bits in USRSPC_STATUS_REG. 4 bits per PHY:
++ *   bit 0 = mrphy_pll_lock
++ *   bit 1 = rx_ready
++ *   bit 2 = tx_ready
++ *   bit 3 = rx_block_lock
++ * Layout: PHY0=[3:0], PHY1=[10:7], PHY2=[17:14].
++ */
++#define USRSPC_PHY_READY_MASK(n)	(0xFU << ((n) * 7))
++
++/*
++ * Per-PHY operating-speed bits in USRSPC_STATUS_REG (3 bits per PHY):
++ *   PHY0=[6:4], PHY1=[13:11], PHY2=[20:18].
++ */
++#define USRSPC_PHY_OP_SPEED_MASK(n)	(0x7U << (4 + (n) * 7))
++#define USRSPC_PHY_OP_SPEED_SHIFT(n)	(4 + (n) * 7)
++
++#define USRSPC_OP_SPEED_10		0x3
++#define USRSPC_OP_SPEED_100		0x2
++#define USRSPC_OP_SPEED_1G		0x1
++#define USRSPC_OP_SPEED_2500		0x4
++
++/* MRPHY ready poll bounds. */
++#define MRPHY_READY_POLL_SLEEP_US	5
++#define MRPHY_READY_POLL_TIMEOUT_US	100000
++
++/*
++ * Per-MRPHY-instance state.
++ *
++ * has_dr, profile_2500 and profile_1g are populated from the device
++ * tree when the gmii-to-sgmii-converter node has altr,drphy.
++ * phy_num is populated for all ports (used for the per-port reset
++ * bit mask in the user-space CSR).
++ * last_speed is initialized at probe and updated on each successful
++ * speed transition; it lets fix_mac_speed detect 1G/2.5G boundary
++ * crossings that require a DR profile change.
++ */
+ struct mr_phy {
+ 	struct device *dev;
+ 	void __iomem *mrphy_base;
++
++	/* Dynamic Reconfiguration */
++	bool has_dr;
++	u32 phy_num;
++	u32 profile_2500;
++	u32 profile_1g;
++
++	unsigned int last_speed;
+ 	struct timer_list aneg_link_timer;
+ };
+ 
++/*
++ * Map the shared DR controller / user-space CSR exactly once.
++ * Safe against concurrent probes.
++ */
++int mrphy_drphy_init(struct device_node *drphy_np);
++int mrphy_usrspc_init(struct device_node *usrspc_np);
++
+ int mrphy_init(void __iomem *base, struct mr_phy *mrphy);
+ void mrphy_fix_mac_speed(struct mr_phy *mrphy,
+ 			 struct phy_device *phy_dev,
+-- 
+2.34.1
+

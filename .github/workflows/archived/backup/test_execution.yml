@@ -1,0 +1,80 @@
+name: Regression test
+on:
+  workflow_dispatch:
+    #  push:
+    #    branches:
+    #      - kamarthx/regression
+  
+  workflow_call:
+    secrets:
+        PSGPAC_SSH_KEY:
+          required: true
+        SSH_HOST_KEY:
+          required: true
+    inputs:
+      triggered_by_schedule:
+        type: boolean
+        required: false
+        default: false
+      triggered_by_tag_push:
+        type: boolean
+        required: false
+        default: false
+      release_tag:
+        type: string
+        required: false
+        default: ""
+  
+jobs:
+  regression_test:
+    # runs-on: altera-innersource.prod.amr.dind
+    # container: cache-registry.altera.com/cache/library/alpine:3.21
+    runs-on: self-hosted
+    env:
+      SSH_HOST: psgpac@ascycron2.sc.altera.com
+      COMMIT_SHA: /nfs/site/disks/pac_release_1/github/psgpac/util/build/commit_sha
+      REPO_PATH: /nfs/site/disks/pac_release_1/github/psgpac/sed/regression_test/repos/applications.fpga.system-example-designs.test-automation
+      REGTEST: /nfs/site/disks/pac_release_1/github/psgpac/sed/regression_test/tests/
+      REPORT_PATH: /nfs/site/disks/pac_release_1/github/psgpac/sed/build/tsn-cfg3/agilex5/sm72/mdk_3x2.5G/latest/reports
+      EXEC_SCRIPT_DIR: /nfs/site/disks/pac_release_1/github/psgpac/sed/regression_test/tests/scripts/tsn
+
+    steps:
+      # - name: Install packages
+      #   run: |
+      #     apk update
+      #     apk add git openssh-client rsync
+
+      # - name: Setup ssh
+      #   run: |
+      #     umask 077
+      #     mkdir -p /root/.ssh
+      #     echo '${{ secrets.PSGPAC_SSH_KEY }}' > /root/.ssh/id_ed25519
+      #     echo '${{ env.SSH_HOST }} ${{ secrets.SSH_HOST_KEY }}' >> /root/.ssh/known_hosts
+      #     echo ServerAliveInterval 30 >> /root/.ssh/config
+      #     echo User psgpac >> /root/.ssh/config
+          
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get date
+        run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+
+      - name: Trigger Regression test
+        run: |
+          ssh "$SSH_HOST" "cd ${{ env.REPO_PATH }} && git pull && rm -rf ${{ env.REGTEST }}/regtest/tsn-cfg3/agx5/sm72/modular/mdk_3x2.5G/* && \ 
+          cp -rf regtest/tsn-cfg3/agx5/sm72/modular/mdk_3x2.5G/* ${{ env.REGTEST }}/regtest/tsn-cfg3/agx5/sm72/modular/mdk_3x2.5G/ && cp -rf scripts/tsn/* ${{ env.EXEC_SCRIPT_DIR }} && \
+          cd ${{ env.EXEC_SCRIPT_DIR }} && \
+          bash Top_execution.sh"
+
+      - name: check csv 
+        run: |
+          ssh -t "$SSH_HOST" << 'EOF'
+          cd ${{ env.REPORT_PATH }}
+          if [ -f *.csv ];then
+              echo "CSV File Generated"
+              cat *.csv
+          else
+              echo "CSV File Not generated"
+              exit 1
+          fi
+          EOF

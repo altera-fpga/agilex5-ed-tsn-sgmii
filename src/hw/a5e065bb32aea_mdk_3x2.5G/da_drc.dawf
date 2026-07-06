@@ -1,0 +1,152 @@
+
+::drc::add_waiver \
+	-description {Waiving mdio input pin delay} \
+	-rule_id {TMC-20011} \
+	-query_string {Port == 'c3_emac0_mdio_mdio'} \
+	-stages {{Timing Signoff}} \
+	-tag {TMC-20011_mmallika} \
+	-timestamp {2025-10-23*12:11:40} \
+	-owner {mmallika} \
+	-no_warn
+
+::drc::add_waiver \
+	-description {Waiving  sfp input delay pins} \
+	-rule_id {TMC-20011} \
+	-query_string {Port =~ 'sfp28'} \
+	-stages {{Timing Signoff}} \
+	-tag {TMC-20011_sfp} \
+	-timestamp {2025-10-23*12:14:57} \
+	-owner {mmallika} \
+	-no_warn
+
+::drc::add_waiver \
+	-description {Waiving outpur delay mdio pins} \
+	-rule_id {TMC-20012} \
+	-query_string {Port =~ 'c3'} \
+	-stages {{Timing Signoff}} \
+	-tag {TMC-20012-mdio} \
+	-timestamp {2025-10-23*12:16:04} \
+	-owner {mmallika} \
+	-no_warn
+
+::drc::add_waiver \
+	-description {Waiving fpga led pio pins} \
+	-rule_id {TMC-20012} \
+	-query_string {Port == 'fpga_led_pio'} \
+	-stages {{Timing Signoff}} \
+	-tag {TMC-20012-fpgaled} \
+	-timestamp {2025-10-23*12:16:48} \
+	-owner {mmallika} \
+	-no_warn
+
+::drc::add_waiver \
+	-description {Waiving sfp tx_disable output pin} \
+	-rule_id {TMC-20012} \
+	-query_string {Port == 'sfp28_tx_disable'} \
+	-stages {{Timing Signoff}} \
+	-tag {TMC-20012-sfp-tx_disable} \
+	-timestamp {2025-10-23*12:17:38} \
+	-owner {mmallika} \
+	-no_warn
+
+
+
+::drc::add_waiver \
+	-description {Any paths involving one_hot_sel are OK and can be waived/suppressed (quasi-static). Waivuing as per DR example design} \
+	-rule_id {CDC-50001} \
+	-query_string {To =~ 'std_sync_no_cut'} \
+	-stages {{Timing Signoff}} \
+	-tag {} \
+	-timestamp {2025-11-14*09:45:51} \
+	-owner {mmallika} \
+	-no_warn
+
+::drc::add_waiver \
+	-description {Waiving as per example design. Any paths involving one_hot_sel are OK and can be waived/suppressed (quasi-static)} \
+	-rule_id {CDC-50011} \
+	-query_string {To =~ 'synchronizer_nocut'} \
+	-stages {{Timing Signoff}} \
+	-tag {} \
+	-timestamp {2025-11-14*09:49:38} \
+	-owner {mmallika} \
+	-no_warn
+
+::drc::add_waiver \
+	-description {Any paths involving one_hot_sel are OK and can be waived/suppressed (quasi-static)} \
+	-rule_id {CDC-50011} \
+	-query_string {To =~ 'std_sync_no_cut'} \
+	-stages {{Timing Signoff}} \
+	-tag {} \
+	-timestamp {2025-11-14*09:50:40} \
+	-owner {mmallika} \
+	-no_warn
+
+::drc::add_waiver \
+	-description {Any paths involving one_hot_sel are OK and can be waived/suppressed (quasi-static)} \
+	-rule_id {CDC-50011} \
+	-query_string {To =~ 'tx_pll_locked_sync_rst_inst'} \
+	-stages {{Timing Signoff}} \
+	-tag {} \
+	-timestamp {2025-11-14*13:16:27} \
+	-owner {mmallika} \
+	-no_warn
+
+::drc::add_waiver \
+	-description {Any paths involving one_hot_sel are OK and can be waived/suppressed (quasi-static)} \
+	-rule_id {CDC-50011} \
+	-query_string {To =~ 'sync_rx_block_lock_csr_clk'} \
+	-stages {{Timing Signoff}} \
+	-tag {} \
+	-timestamp {2025-11-14*13:18:11} \
+	-owner {mmallika} \
+	-no_warn
+
+::drc::add_waiver \
+	-description {Waiving as per example design} \
+	-rule_id {CDC-50006} \
+	-query_string {"Synchronization Nodes" =~ 'synch_flp'} \
+	-stages {{Timing Signoff}} \
+	-tag {} \
+	-timestamp {2025-11-14*14:32:45} \
+	-owner {mmallika} \
+	-no_warn
+
+::drc::add_waiver \
+	-description {Waiving as per example design} \
+	-rule_id {CDC-50006} \
+	-query_string {"Source Nodes" =~ 'synch_flp'} \
+	-stages {{Timing Signoff}} \
+	-tag {} \
+	-timestamp {2025-11-14*14:33:55} \
+	-owner {mmallika} \
+	-no_warn
+
+::drc::add_waiver \
+	-description {Waiving as per example design} \
+	-rule_id {CDC-50006} \
+	-query_string {"Source Nodes" =~ 'rd_gray_ptr'} \
+	-stages {{Timing Signoff}} \
+	-tag {} \
+	-timestamp {2025-11-14*14:47:36} \
+	-owner {mmallika} \
+	-no_warn
+
+::drc::add_waiver \
+	-description {Waiving as per example design} \
+	-rule_id {CDC-50006} \
+	-query_string {"Source Nodes" =~ 'wr_gray_ptr'} \
+	-stages {{Timing Signoff}} \
+	-tag {} \
+	-timestamp {2025-11-14*14:48:28} \
+	-owner {mmallika} \
+	-no_warn
+
+::drc::add_waiver \
+	-description {Waiving as per example design} \
+	-rule_id {CDC-50007} \
+	-query_string {"Synchronization Nodes" =~ 'synch_flp'} \
+	-stages {{Timing Signoff}} \
+	-tag {} \
+	-timestamp {2025-11-14*14:49:34} \
+	-owner {mmallika} \
+	-no_warn

@@ -1,0 +1,14 @@
+vcs-vcsmx-lic/vrtn-dev
+synopsys_dc/R-2020.09-SP3
+acdskit-rtl/25.1.1
+avalon_vip/13.1/1
+synopsys_vip_common/vip_R-2021.03B
+p4/psgeng
+perl/5.8.8
+testutils/23.4/79
+regutils/23.4/5
+itf/23.4/79
+altuvm/0.9p8
+synopsys_verdi/U-2023.03-1
+vcs/U-2023.03-1
+flow/nb/norm-acds-pipe-dv-rgr

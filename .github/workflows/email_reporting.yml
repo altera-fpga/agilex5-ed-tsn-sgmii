@@ -1,0 +1,59 @@
+name: Email report
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      triggered_by_schedule:
+        type: boolean
+        required: false
+        default: false
+      triggered_by_tag_push:
+        type: boolean
+        required: false
+        default: false
+      release_tag:
+        type: string
+        required: false
+        default: ""
+      triggered_by_quartus_upgrade:
+        type: boolean
+        required: false
+        default: false
+      quartus_version:
+        required: false
+        type: string
+  
+jobs:
+  reporting:
+    runs-on: [self-hosted, psgpac]
+    env:
+      WORKDIR: /nfs/site/disks/pac_release_1/github/psgpac/${{ github.repository }}/${{ github.run_id }}.${{ github.run_attempt }}
+      REPO: https://github.com/altera-innersource/applications.fpga.system-example-designs.test-automation.git
+      SED_REGRESSION_PATH: /nfs/site/disks/pac_release_1/github/psgpac/sed/regression_test/tests/scripts/tsn
+    steps:
+      - name: Create workdir
+        run: |
+          mkdir -pv $WORKDIR;cd $WORKDIR
+          git clone ${{ env.REPO }} automation_repo
+
+      # - name: sending reports
+      #   # if: ${{ inputs.triggered_by_schedule || inputs.triggered_by_tag_push }}
+      #   run: |
+      #     cd ${{env.SED_REGRESSION_PATH}} && \
+      #     python3 sed_tsn_cfg3_concurrent_3x2_5g_agx5_sm72_mdk_report.py
+
+      - name: sending reports of quartus_upgrade/Nightly/release
+        run: |
+          cd ${{env.WORKDIR}}/automation_repo/scripts/report 
+          if [[ ${{ inputs.triggered_by_schedule }} == "true" ]]; then
+            python3 sed_test_report.py --param-sed-design=tsn-cfg3 --param-sed-devkit=agx5-sm72-mdk  --param-sed-config=3x2.5g --param-build-type=nightly --param-build-id=latest
+          elif [[ ${{ inputs.triggered_by_tag_push }} == "true" ]]; then
+            python3 sed_test_report.py --param-sed-design=tsn-cfg3 --param-sed-devkit=agx5-sm72-mdk  --param-sed-config=3x2.5g --param-build-type=release --param-build-id=${{ inputs.release_tag }}
+          elif [[ ${{ inputs.triggered_by_quartus_upgrade }} == "true" ]]; then
+           python3 sed_test_report.py --param-sed-design=tsn-cfg3 --param-sed-devkit=agx5-sm72-mdk  --param-sed-config=3x2.5g --param-build-type=quartus --param-build-id=latest --param-quart-ver=${{ inputs.quartus_version }}
+          fi
+
+      - name: Purge workdir
+        if: always()
+        run: |
+          rm -rf $WORKDIR

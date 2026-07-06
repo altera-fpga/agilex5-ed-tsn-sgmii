@@ -1,0 +1,6 @@
+Email: evan.loe@intel.com
+Official: false
+Platform: LINUX
+Timeout: 3h
+Description: Compilation tests
+ReturnFiles: *.rpt,*.summary,*report.txt,*.log

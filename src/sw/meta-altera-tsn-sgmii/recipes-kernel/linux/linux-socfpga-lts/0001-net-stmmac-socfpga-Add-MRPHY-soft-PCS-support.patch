@@ -1,0 +1,364 @@
+From 15a2cbc3a0496cee9faa67926fcb06ca5979a24f Mon Sep 17 00:00:00 2001
+From: Mahesh Vaidya <mahesh.vaidya@altera.com>
+Date: Sun, 24 May 2026 12:00:00 +0530
+Subject: [PATCH] net: stmmac: socfpga: Add MRPHY soft-PCS support
+
+Add support for the Altera Agilex 5 Multirate Ethernet PHY (MRPHY)
+soft-PCS, an FPGA-fabric block that sits between the stmmac
+controller and the on-chip XCVR. The soft-PCS provides SGMII rate
+adaptation between 10M, 100M and 1G on a fixed 1G XCVR profile, and
+pass-through operation at 2500BASE-X.
+
+Each gmac can reference an optional gmii-to-sgmii-converter node in
+the device tree. When the converter node carries a "mrphy" reg-name
+entry, the driver maps the MRPHY soft-PCS register window and hooks
+the existing fix_mac_speed callback to reprogram the IF_MODE register
+on each speed change. A per-port link-state polling timer is armed
+once in mrphy_init() and re-armed on each speed change via
+mod_timer().
+
+Hardware ordering requirement: the IF_MODE register must be
+programmed with two separate writes for sub-2500 speeds. The first
+write clears the SGMII autonegotiation bit; the second write sets
+the speed bits and the SGMII enable bit. Collapsing these into a
+single write leaves the soft-PCS wedged after a speed change.
+
+This commit handles only the static-rate case: a port using the
+MRPHY is expected to run at a single XCVR profile chosen at FPGA
+configuration time. Runtime Dynamic Reconfiguration of the XCVR
+profile across the 1G/2.5G boundary is added in a later commit.
+
+Upstream-Status: Pending
+Signed-off-by: Mahesh Vaidya <mahesh.vaidya@altera.com>
+---
+ drivers/net/ethernet/stmicro/stmmac/Makefile  |   2 +-
+ .../ethernet/stmicro/stmmac/dwmac-socfpga.c   |  37 ++++
+ drivers/net/ethernet/stmicro/stmmac/mrphy.c   | 162 ++++++++++++++++++
+ drivers/net/ethernet/stmicro/stmmac/mrphy.h   |  41 +++++
+ 4 files changed, 241 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/net/ethernet/stmicro/stmmac/mrphy.c
+ create mode 100644 drivers/net/ethernet/stmicro/stmmac/mrphy.h
+
+diff --git a/drivers/net/ethernet/stmicro/stmmac/Makefile b/drivers/net/ethernet/stmicro/stmmac/Makefile
+index 68f50e6b9984..1c80838d3817 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/Makefile
++++ b/drivers/net/ethernet/stmicro/stmmac/Makefile
+@@ -41,7 +41,7 @@ obj-$(CONFIG_DWMAC_IMX8)	+= dwmac-imx.o
+ obj-$(CONFIG_DWMAC_TEGRA)	+= dwmac-tegra.o
+ obj-$(CONFIG_DWMAC_VISCONTI)	+= dwmac-visconti.o
+ stmmac-platform-objs:= stmmac_platform.o
+-dwmac-altr-socfpga-objs := altr_tse_pcs.o dwmac-socfpga.o
++dwmac-altr-socfpga-objs := mrphy.o altr_tse_pcs.o dwmac-socfpga.o
+ 
+ obj-$(CONFIG_STMMAC_PCI)	+= stmmac-pci.o
+ obj-$(CONFIG_DWMAC_INTEL)	+= dwmac-intel.o
+diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c
+index 467135344c7d..35d820f79c3b 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c
++++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-socfpga.c
+@@ -22,6 +22,7 @@
+ #include "stmmac_ptp.h"
+ 
+ #include "altr_tse_pcs.h"
++#include "mrphy.h"
+ 
+ #define SYSMGR_EMACGRP_CTRL_PHYSEL_ENUM_GMII_MII 0x0
+ #define SYSMGR_EMACGRP_CTRL_PHYSEL_ENUM_RGMII 0x1
+@@ -74,6 +75,7 @@ struct socfpga_dwmac {
+ 	phy_interface_t mac_interface;
+ 	const struct socfpga_dwmac_ops *ops;
+ 	struct mdio_device *pcs_mdiodev;
++	struct mr_phy  mrphy;
+ 	struct tse_pcs pcs;
+ };
+ 
+@@ -102,6 +104,7 @@ static void socfpga_dwmac_fix_mac_speed(void *bsp_priv, int speed,
+ 	void __iomem *splitter_base = dwmac->splitter_base;
+ 	void __iomem *tse_pcs_base = dwmac->pcs.tse_pcs_base;
+ 	void __iomem *sgmii_adapter_base = dwmac->pcs.sgmii_adapter_base;
++	void __iomem *mrphy_base = dwmac->mrphy.mrphy_base;
+ 	struct device *dev = dwmac->dev;
+ 	struct net_device *ndev = dev_get_drvdata(dev);
+ 	struct phy_device *phy_dev = ndev->phydev;
+@@ -138,6 +141,9 @@ static void socfpga_dwmac_fix_mac_speed(void *bsp_priv, int speed,
+ 		       sgmii_adapter_base + SGMII_ADAPTER_CTRL_REG);
+ 	if (tse_pcs_base && sgmii_adapter_base)
+ 		tse_pcs_fix_mac_speed(&dwmac->pcs, phy_dev, speed);
++
++	if (mrphy_base)
++		mrphy_fix_mac_speed(&dwmac->mrphy, phy_dev, speed);
+ }
+ 
+ static int socfpga_dwmac_parse_data(struct socfpga_dwmac *dwmac, struct device *dev)
+@@ -151,6 +157,7 @@ static int socfpga_dwmac_parse_data(struct socfpga_dwmac *dwmac, struct device *
+ 	struct resource res_splitter;
+ 	struct resource res_tse_pcs;
+ 	struct resource res_sgmii_adapter;
++	struct resource res_mrphy;
+ 
+ 	sys_mgr_base_addr =
+ 		altr_sysmgr_regmap_lookup_by_phandle(np, "altr,sysmgr-syscon");
+@@ -263,8 +270,30 @@ static int socfpga_dwmac_parse_data(struct socfpga_dwmac *dwmac, struct device *
+ 					__func__);
+ 				ret = PTR_ERR(dwmac->pcs.tse_pcs_base);
+ 				goto err_node_put;
++			}
++		}
++
++		index = of_property_match_string(np_sgmii_adapter, "reg-names",
++						 "mrphy");
++
++		if (index >= 0) {
++			if (of_address_to_resource(np_sgmii_adapter, index,
++						   &res_mrphy)) {
++				dev_err(dev,
++					"%s: ERROR: failed mapping mrphy control port\n",
++					__func__);
++				ret = -EINVAL;
++				goto err_node_put;
+ 
+ 			}
++			dwmac->mrphy.mrphy_base =
++				devm_ioremap_resource(dev, &res_mrphy);
++			if (IS_ERR(dwmac->mrphy.mrphy_base)) {
++				ret = PTR_ERR(dwmac->mrphy.mrphy_base);
++				goto err_node_put;
++			}
++
++			dwmac->mrphy.dev = dev;
+ 		}
+ 	}
+ 	dwmac->reg_offset = reg_offset;
+@@ -530,6 +559,14 @@ static int socfpga_gen10_set_phy_mode(struct socfpga_dwmac *dwmac)
+ 			return -EINVAL;
+ 		}
+ 	}
++
++	if (dwmac->mrphy.mrphy_base) {
++		if (mrphy_init(dwmac->mrphy.mrphy_base, &dwmac->mrphy) != 0) {
++			dev_err(dwmac->dev, "Unable to initialize MRPHY\n");
++			return -EINVAL;
++		}
++	}
++
+ 	return 0;
+ }
+ 
+diff --git a/drivers/net/ethernet/stmicro/stmmac/mrphy.c b/drivers/net/ethernet/stmicro/stmmac/mrphy.c
+new file mode 100644
+index 000000000000..561f94d9af98
+--- /dev/null
++++ b/drivers/net/ethernet/stmicro/stmmac/mrphy.c
+@@ -0,0 +1,162 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/* Copyright Altera Corporation (C) 2024. All rights reserved.
++ *
++ * Author: Mahesh Vaidya <mahesh.vaidya@altera.com>
++ */
++
++#include <linux/io.h>
++#include <linux/iopoll.h>
++#include <linux/phy.h>
++
++#include "mrphy.h"
++
++/* MRPHY soft-PCS register definitions */
++#define MRPHY_CONTROL_REG			0x00
++#define MRPHY_STATUS_REG			0x02
++#define MRPHY_IF_MODE_REG			0x28
++
++#define MRPHY_SW_RST_MASK			BIT(15)
++#define MRPHY_STATUS_LINK_MASK			BIT(2)
++
++#define MRPHY_SGMII_SPEED_MASK			GENMASK(3, 2)
++#define MRPHY_SGMII_SPEED_1000			BIT(3)
++#define MRPHY_SGMII_SPEED_100			BIT(2)
++#define MRPHY_SGMII_SPEED_10			0x0
++#define MRPHY_USE_SGMII_AN_MASK			BIT(1)
++#define MRPHY_USE_SGMII_ENA			BIT(0)
++
++#define MRPHY_SW_RESET_TIMEOUT_US		100
++#define AUTONEGO_LINK_TIMER_MS			20
++
++static int mrphy_reset(struct mr_phy *mrphy)
++{
++	void __iomem *base = mrphy->mrphy_base;
++	u16 val;
++	int ret;
++
++	val = readw(base + MRPHY_CONTROL_REG);
++	writew(val | MRPHY_SW_RST_MASK, base + MRPHY_CONTROL_REG);
++
++	ret = readw_poll_timeout(base + MRPHY_CONTROL_REG, val,
++				 !(val & MRPHY_SW_RST_MASK),
++				 1, MRPHY_SW_RESET_TIMEOUT_US);
++	if (ret) {
++		dev_err(mrphy->dev, "MRPHY soft reset timed out\n");
++		return ret;
++	}
++
++	return 0;
++}
++
++/* Re-enable the MRPHY GMII8 TX path. */
++static void mrphy_enable_tx(struct mr_phy *mrphy)
++{
++	void __iomem *base = mrphy->mrphy_base;
++	u16 val;
++
++	val = readw(base + MRPHY_GMII8_ADAPTER_REG);
++	writew(val & ~1, base + MRPHY_GMII8_ADAPTER_REG);
++}
++
++static void mrphy_link_timer_callback(struct mr_phy *mrphy)
++{
++	u16 val = readw(mrphy->mrphy_base + MRPHY_STATUS_REG);
++
++	if (val & MRPHY_STATUS_LINK_MASK) {
++		dev_dbg(mrphy->dev, "MRPHY: link established\n");
++		return;
++	}
++
++	mod_timer(&mrphy->aneg_link_timer,
++		  jiffies + msecs_to_jiffies(AUTONEGO_LINK_TIMER_MS));
++}
++
++static void aneg_link_timer_callback(struct timer_list *t)
++{
++	struct mr_phy *mrphy = timer_container_of(mrphy, t, aneg_link_timer);
++
++	mrphy_link_timer_callback(mrphy);
++}
++
++/* Program MRPHY soft-PCS IF_MODE for a sub-2500 SGMII speed. */
++static int mrphy_program_sub_2500(struct mr_phy *mrphy, unsigned int speed)
++{
++	void __iomem *base = mrphy->mrphy_base;
++	u16 val;
++
++	/* Clear the AN bit, program the new speed and SGMII enable. */
++	val = readw(base + MRPHY_IF_MODE_REG);
++	val &= ~MRPHY_USE_SGMII_AN_MASK;
++	val = readw(base + MRPHY_IF_MODE_REG);
++	val &= ~MRPHY_SGMII_SPEED_MASK;
++
++	switch (speed) {
++	case 1000:
++		val |= MRPHY_SGMII_SPEED_1000 | MRPHY_USE_SGMII_ENA;
++		break;
++	case 100:
++		val |= MRPHY_SGMII_SPEED_100 | MRPHY_USE_SGMII_ENA;
++		break;
++	case 10:
++		val |= MRPHY_SGMII_SPEED_10 | MRPHY_USE_SGMII_ENA;
++		break;
++	default:
++		dev_err(mrphy->dev, "unsupported sub-2500 speed %u\n", speed);
++		return -EINVAL;
++	}
++
++	writew(val, base + MRPHY_IF_MODE_REG);
++	return 0;
++}
++
++/* Program MRPHY soft-PCS IF_MODE for 2500BASE-X. */
++static void mrphy_program_2500(struct mr_phy *mrphy)
++{
++	void __iomem *base = mrphy->mrphy_base;
++	u16 val;
++
++	val = readw(base + MRPHY_IF_MODE_REG);
++	val &= ~MRPHY_USE_SGMII_AN_MASK;
++	val &= ~MRPHY_SGMII_SPEED_MASK;
++	val &= ~MRPHY_USE_SGMII_ENA;
++	writew(val, base + MRPHY_IF_MODE_REG);
++}
++
++/*
++ * One-time per-port initialization. Sets up the link polling timer
++ * and enables the GMII8 TX path.
++ */
++int mrphy_init(void __iomem *base, struct mr_phy *mrphy)
++{
++	timer_setup(&mrphy->aneg_link_timer, aneg_link_timer_callback, 0);
++	mrphy_enable_tx(mrphy);
++	return 0;
++}
++
++void mrphy_fix_mac_speed(struct mr_phy *mrphy, struct phy_device *phy_dev,
++			 unsigned int speed)
++{
++	int ret;
++
++	/* Reset MRPHY soft-PCS before reprogramming. */
++	ret = mrphy_reset(mrphy);
++	if (ret)
++		return;
++
++	/* Program MRPHY soft-PCS IF_MODE for the new speed. */
++	if (speed <= 1000) {
++		if (mrphy_program_sub_2500(mrphy, speed))
++			return;
++	} else if (speed == 2500) {
++		mrphy_program_2500(mrphy);
++	} else {
++		dev_err(mrphy->dev, "unsupported speed %u\n", speed);
++		return;
++	}
++
++	/* Re-arm the link polling timer. */
++	mod_timer(&mrphy->aneg_link_timer,
++		  jiffies + msecs_to_jiffies(AUTONEGO_LINK_TIMER_MS));
++
++	mrphy_enable_tx(mrphy);
++}
+diff --git a/drivers/net/ethernet/stmicro/stmmac/mrphy.h b/drivers/net/ethernet/stmicro/stmmac/mrphy.h
+new file mode 100644
+index 000000000000..6112cbaadfc5
+--- /dev/null
++++ b/drivers/net/ethernet/stmicro/stmmac/mrphy.h
+@@ -0,0 +1,41 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright Altera Corporation (C) 2024. All rights reserved.
++ *
++ * Author: Mahesh Vaidya <mahesh.vaidya@altera.com>
++ */
++
++#ifndef __MRPHY_H__
++#define __MRPHY_H__
++
++#include <linux/phy.h>
++#include <linux/timer.h>
++
++/* MRPHY soft-PCS detection-latency registers. */
++#define MRPHY_DET_LAT_CTRL_REG		0x2E
++#define MRPHY_TX_DL_BLOCK_IN_RESET	0x4
++#define MRPHY_RX_DL_BLOCK_IN_RESET	0x8
++
++#define MRPHY_GMII8_ADAPTER_REG		0x16
++
++/*
++ * Latency value registers. Each is laid out as two adjacent 16-bit
++ * words: the lower word contains the fractional part, the upper word
++ * contains the integer part.
++ */
++#define MRPHY_EFIFO_TX_DELAY_REG	0x30
++#define MRPHY_EFIFO_RX_DELAY_REG	0x34
++#define MRPHY_PCS_SOFT_TX_DELAY_REG	0x38
++#define MRPHY_PCS_SOFT_RX_DELAY_REG	0x3C
++
++struct mr_phy {
++	struct device *dev;
++	void __iomem *mrphy_base;
++	struct timer_list aneg_link_timer;
++};
++
++int mrphy_init(void __iomem *base, struct mr_phy *mrphy);
++void mrphy_fix_mac_speed(struct mr_phy *mrphy,
++			 struct phy_device *phy_dev,
++			 unsigned int speed);
++
++#endif /* __MRPHY_H__ */
+-- 
+2.34.1
+

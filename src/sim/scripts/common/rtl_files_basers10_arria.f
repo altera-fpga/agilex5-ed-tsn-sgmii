@@ -1,0 +1,2 @@
+${REG_LOCAL_ROOT_DIR_PATH}/ip/ethernet/alt_ethernet_crete_ll10g/qhip/scripts/funct_deterministic/common/rtl_files_BASERS1O_arria/altera_bic_qse_mac_phy_baser_reg_mode_wrapper.sv
+${REG_LOCAL_ROOT_DIR_PATH}/ip/ethernet/alt_ethernet_crete_ll10g/qhip/scripts/funct_deterministic/common/rtl_files_BASERS1O_arria/address_decode.v

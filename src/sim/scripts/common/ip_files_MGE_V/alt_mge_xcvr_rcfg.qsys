@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system name="$${FILENAME}">
+ <component
+   name="$${FILENAME}"
+   displayName="$${FILENAME}"
+   version="1.0"
+   description=""
+   tags="INTERNAL_COMPONENT=true"
+   categories="System" />
+ <parameter name="bonusData"><![CDATA[bonusData 
+{
+   element $${FILENAME}
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Arria V";
+         type = "String";
+      }
+   }
+   element alt_mge_xcvr_rcfg_inst
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
+}
+]]></parameter>
+ <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
+ <parameter name="device" value="Unknown" />
+ <parameter name="deviceFamily" value="Arria V" />
+ <parameter name="deviceSpeedGrade" value="Unknown" />
+ <parameter name="fabricMode" value="QSYS" />
+ <parameter name="generateLegacySim" value="false" />
+ <parameter name="generationId" value="0" />
+ <parameter name="globalResetBus" value="false" />
+ <parameter name="hdlLanguage" value="VERILOG" />
+ <parameter name="hideFromIPCatalog" value="true" />
+ <parameter name="maxAdditionalLatency" value="1" />
+ <parameter name="projectName" value="" />
+ <parameter name="sopcBorderPoints" value="false" />
+ <parameter name="systemHash" value="0" />
+ <parameter name="testBenchDutName" value="" />
+ <parameter name="timeStamp" value="0" />
+ <parameter name="useTestBenchNamingPattern" value="false" />
+ <instanceScript></instanceScript>
+ <interface
+   name="mgmt_clk_clk"
+   internal="alt_mge_xcvr_rcfg_inst.mgmt_clk_clk"
+   type="clock"
+   dir="end">
+  <port name="mgmt_clk_clk" internal="mgmt_clk_clk" />
+ </interface>
+ <interface
+   name="mgmt_rst_reset"
+   internal="alt_mge_xcvr_rcfg_inst.mgmt_rst_reset"
+   type="reset"
+   dir="end">
+  <port name="mgmt_rst_reset" internal="mgmt_rst_reset" />
+ </interface>
+ <interface
+   name="reconfig_busy"
+   internal="alt_mge_xcvr_rcfg_inst.reconfig_busy"
+   type="conduit"
+   dir="end">
+  <port name="reconfig_busy" internal="reconfig_busy" />
+ </interface>
+ <interface
+   name="reconfig_from_xcvr"
+   internal="alt_mge_xcvr_rcfg_inst.reconfig_from_xcvr"
+   type="conduit"
+   dir="end">
+  <port name="reconfig_from_xcvr" internal="reconfig_from_xcvr" />
+ </interface>
+ <interface
+   name="reconfig_mgmt"
+   internal="alt_mge_xcvr_rcfg_inst.reconfig_mgmt"
+   type="avalon"
+   dir="end">
+  <port name="reconfig_mgmt_address" internal="reconfig_mgmt_address" />
+  <port name="reconfig_mgmt_read" internal="reconfig_mgmt_read" />
+  <port name="reconfig_mgmt_readdata" internal="reconfig_mgmt_readdata" />
+  <port name="reconfig_mgmt_waitrequest" internal="reconfig_mgmt_waitrequest" />
+  <port name="reconfig_mgmt_write" internal="reconfig_mgmt_write" />
+  <port name="reconfig_mgmt_writedata" internal="reconfig_mgmt_writedata" />
+ </interface>
+ <interface
+   name="reconfig_mif"
+   internal="alt_mge_xcvr_rcfg_inst.reconfig_mif"
+   type="avalon"
+   dir="start">
+  <port name="reconfig_mif_address" internal="reconfig_mif_address" />
+  <port name="reconfig_mif_read" internal="reconfig_mif_read" />
+  <port name="reconfig_mif_readdata" internal="reconfig_mif_readdata" />
+  <port name="reconfig_mif_waitrequest" internal="reconfig_mif_waitrequest" />
+ </interface>
+ <interface
+   name="reconfig_to_xcvr"
+   internal="alt_mge_xcvr_rcfg_inst.reconfig_to_xcvr"
+   type="conduit"
+   dir="end">
+  <port name="reconfig_to_xcvr" internal="reconfig_to_xcvr" />
+ </interface>
+ <module
+   name="alt_mge_xcvr_rcfg_inst"
+   kind="alt_xcvr_reconfig"
+   version="14.1"
+   enabled="1"
+   autoexport="1">
+  <parameter name="ber_en" value="0" />
+  <parameter name="device_family" value="Arria V" />
+  <parameter name="enable_adce" value="0" />
+  <parameter name="enable_analog" value="1" />
+  <parameter name="enable_dcd" value="0" />
+  <parameter name="enable_dcd_power_up" value="1" />
+  <parameter name="enable_dfe" value="0" />
+  <parameter name="enable_eyemon" value="0" />
+  <parameter name="enable_mif" value="1" />
+  <parameter name="enable_offset" value="1" />
+  <parameter name="gui_cal_status_port" value="false" />
+  <parameter name="gui_enable_pll" value="0" />
+  <parameter name="gui_split_sizes" value="" />
+  <parameter name="number_of_reconfig_interfaces" value="4" />
+ </module>
+ <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
+ <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
+</system>

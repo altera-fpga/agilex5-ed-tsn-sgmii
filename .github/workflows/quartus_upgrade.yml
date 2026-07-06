@@ -1,0 +1,119 @@
+name: Quartus Upgrade
+on:
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - quartus_test
+
+    inputs:
+      Quartus_version:
+        description: 'Enter Quartus Full version(Ex:acds/<version>)'
+        required: false
+        default: " "
+        type: string
+
+jobs:
+  Quartus_upgrade:
+    runs-on: [self-hosted, psgpac]
+    outputs:
+      run_jobs: ${{ steps.check_error.outputs.run_jobs }}
+      quartus_branch: ${{ steps.check_error.outputs.quartus_branch }}
+      quartus_version: ${{ steps.version.outputs.VERSION }}
+    env:
+      WORKDIR: /nfs/site/disks/pac_release_1/github/psgpac/sed/quartus_upgrade/tsn-cfg3/agx5/sm72/mdk/3x2.5g
+      REPO: https://github.com/altera-innersource/applications.fpga.system-example-designs.test-automation.git
+      PROJECT_PATH: tsncfg3_repo/src/hw/synth
+      SCRIPT_PATH: automation_repo/scripts/upgrade_script
+      # LOGFILE: /nfs/site/disks/pac_release_1/github/psgpac/sed/quartus_upgrade/tsn-cfg3/agx5/sm72/mdk/3x2.5g/logging/quartus_update.log
+      # RUN_ID: /nfs/site/disks/pac_release_1/github/psgpac/sed/quartus_upgrade/tsn-cfg3/agx5/sm72/mdk/3x2.5g/logging/run_id
+      BRANCH: main
+
+    steps:
+      - name: Input Validation
+        id: version
+        run: |
+          if [ -z "${{ github.event.inputs.Quartus_version }}" ]; then
+            echo "::error title=Input validation failed::No input, Please pass the input as quartus version (Ex:acds/<version>)"
+            exit 1
+          else
+            QUARTUS_VERSION=$( echo '${{ github.event.inputs.Quartus_version }}' | xargs)
+            if echo "$QUARTUS_VERSION" | grep -Eq '^(acds|acdskit)/[0-9]{2,}(\.[0-9])+$'; then
+              echo "::notice title=VALID INPUT:: Valid quartus version - $QUARTUS_VERSION"
+              echo "QUARTUS_VERSION=$QUARTUS_VERSION" >> $GITHUB_ENV
+              VERSION="${QUARTUS_VERSION#*/}"
+              echo "VERSION=$VERSION" >> $GITHUB_ENV
+              echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+              exit 0
+            else
+              echo "::error title=INVALID INPUT:: Invalid quartus version - $QUARTUS_VERSION"
+              exit 1
+            fi
+          fi
+
+      - name: Setup workspace
+        run: |
+          WORKDIR=${{ env.WORKDIR }}/${{ env.VERSION }}
+          echo "WORKDIR=$WORKDIR" >> $GITHUB_ENV
+          rm -rf $WORKDIR/*;mkdir -pv $WORKDIR;cd $WORKDIR
+          git clone  -b ${{ env.BRANCH }} https://psgpac:${{ secrets.PAT }}@github.com/${{ github.repository }} tsncfg3_repo
+          git clone ${{ env.REPO }} automation_repo
+          chmod +x $WORKDIR/${{ env.SCRIPT_PATH }}/auto_upgrade.sh
+
+      - name: set up env variables
+        run: |
+          echo "LOGFILE=${{ env.WORKDIR }}/logging/quartus_update.log" >> $GITHUB_ENV
+          echo "RUN_ID=${{ env.WORKDIR }}/logging/run_id" >> $GITHUB_ENV
+          mkdir -pv ${{ env.WORKDIR }}/logging
+          
+      - name: store run id
+        run: |
+          echo "${{ github.run_id }}" > ${{ env.RUN_ID }}
+
+      - name: Execute quartus upgrade script
+        run: |
+          arc submit -I ostype/suse15 ncpus=4 mem=48G priority=99 timeout=4h iwd=$WORKDIR/tsncfg3_repo -- env http_proxy=$http_proxy https_proxy=$https_proxy WORKDIR=${{ env.WORKDIR }} QUARTUS_VERSION=${{ env.QUARTUS_VERSION }} BASE_BRANCH=${{ env.BRANCH }} GH_TOKEN=${{ secrets.PAT }} BUILD_PATH=${{ env.BUILD_PATH }} PROJECT_PATH=${{ env.WORKDIR }}/${{ env.PROJECT_PATH }} SCRIPT_PATH=${{ env.WORKDIR }}/${{ env.SCRIPT_PATH }} scripts/quartus_upgrade.sh
+      
+      - name: Validate quartus upgrade success or failure
+        id: check_error
+        run: |
+          if grep "ERROR:" "${{ env.LOGFILE }}"; then
+              echo "::error title=Upgrading quartus failed:: Refer log : ${{ env.LOGFILE }}"
+              echo "run_jobs=false" >> "$GITHUB_OUTPUT"
+              exit 1
+          else
+              echo "::notice title=Info:: Quartus upgrade is passed and created PR successfully.Build and Test jobs will be running"
+              q_branch=$(awk -F"'" '/Switched to a new branch/ {print $2}' ${{ env.LOGFILE }})
+              echo "run_jobs=true" >> "$GITHUB_OUTPUT"
+              echo "quartus_branch=${q_branch}" >> "$GITHUB_OUTPUT"
+          fi
+
+  build_hardware:
+    if: always() && ( needs.Quartus_upgrade.outputs.run_jobs == 'true' )
+    needs: Quartus_upgrade
+    uses: ./.github/workflows/build_hardware_mdk_3x2.5G.yml
+    with:
+       triggered_by_quartus_upgrade: true
+       quartus_upgrade_branch:  ${{ needs.Quartus_upgrade.outputs.quartus_branch }}
+
+  build_software:
+    if: always() && ( needs.Quartus_upgrade.outputs.run_jobs == 'true' )
+    needs: [Quartus_upgrade, build_hardware]
+    uses: ./.github/workflows/build_software_mdk_3x2.5G.yml
+    with:
+       triggered_by_quartus_upgrade: true
+       quartus_upgrade_branch:  ${{ needs.Quartus_upgrade.outputs.quartus_branch }}
+
+  # regression_test:
+  #   if: always() && ( needs.Quartus_upgrade.outputs.run_jobs == 'true' )
+  #   needs: [Quartus_upgrade, build_hardware, build_software]
+  #   uses: ./.github/workflows/test_execution.yml
+  #   with:
+  #     triggered_by_quartus_upgrade: true
+
+  email_reporting:
+    if: always()
+    needs: [Quartus_upgrade, build_hardware, build_software]
+    uses: ./.github/workflows/email_reporting.yml
+    with:
+      triggered_by_quartus_upgrade: true
+      quartus_version: ${{ needs.Quartus_upgrade.outputs.quartus_version }}

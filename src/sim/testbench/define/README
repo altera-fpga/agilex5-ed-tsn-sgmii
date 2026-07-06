@@ -1,0 +1,9 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// TODO:
+// 1. Update the macsec_tb_param to add more project specific parameters.
+// 2. Run the command (below) to generate the systemverilog files.
+//   % arc shell phv_tools -- pargen -i macsec_tb_param -use_param_as_default -pkg_name macsec_pkg
+// 3. macsec_tb_defaults.svh and macsec_tb_defines.svh files will be generated.
+// 4. These 2 files need to be included in the macsec_pkg.sv file inside the package...endpackage.
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////

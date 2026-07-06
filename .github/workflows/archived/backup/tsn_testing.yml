@@ -1,0 +1,78 @@
+name: TSN test
+on:
+  workflow_dispatch:
+    #  push:
+    #    branches:
+    #      - kamarthx/regression
+  
+  workflow_call:
+    secrets:
+        PSGPAC_SSH_KEY:
+          required: true
+        SSH_HOST_KEY:
+          required: true
+    inputs:
+      triggered_by_schedule:
+        type: boolean
+        required: false
+        default: false
+      triggered_by_tag_push:
+        type: boolean
+        required: false
+        default: false
+      release_tag:
+        type: string
+        required: false
+        default: ""
+  
+jobs:
+  tsn_test:
+    # runs-on: altera-innersource.prod.amr.dind
+    # container: cache-registry.altera.com/cache/library/alpine:3.21
+    runs-on: self-hosted
+    env:
+      SSH_HOST: psgpac@ascycron2.sc.altera.com
+      COMMIT_SHA: /nfs/site/disks/pac_release_1/github/psgpac/util/build/commit_sha
+      BUILD_PATH: /nfs/site/disks/pac_release_1/github/psgpac/sed/testing/tsn_config3/build
+      EXEC_SCRIPT_DIR: /nfs/site/disks/pac_release_1/github/psgpac/sed/testing/tsn_config3/scripts
+      REGTEST: /nfs/site/disks/pac_release_1/github/psgpac/sed/testing/tsn_config3/test_cases
+        #      REPORT_PATH: /nfs/site/disks/pac_release_1/github/psgpac/sed/build/tsn-cfg3/agilex5/sm72/mdk_3x2.5G/latest/reports
+
+    steps:
+      # - name: Install packages
+      #   run: |
+      #     apk update
+      #     apk add git openssh-client rsync
+
+      # - name: Setup ssh
+      #   run: |
+      #     umask 077
+      #     mkdir -p /root/.ssh
+      #     echo '${{ secrets.PSGPAC_SSH_KEY }}' > /root/.ssh/id_ed25519
+      #     echo '${{ env.SSH_HOST }} ${{ secrets.SSH_HOST_KEY }}' >> /root/.ssh/known_hosts
+      #     echo ServerAliveInterval 30 >> /root/.ssh/config
+      #     echo User psgpac >> /root/.ssh/config
+          
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get date
+        run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+
+      - name: Trigger Regression test
+        run: |
+          ssh "$SSH_HOST" "cd ${{ env.EXEC_SCRIPT_DIR }} && \
+          bash Top_execution.sh"
+
+          #      - name: check csv 
+          #run: |
+          #ssh -t "$SSH_HOST" << 'EOF'
+          #cd ${{ env.REPORT_PATH }}
+          #if [ -f *.csv ];then
+          #    echo "CSV File Generated"
+          #    cat *.csv
+          #else
+          #    echo "CSV File Not generated"
+          #    exit 1
+          #fi
+          EOF

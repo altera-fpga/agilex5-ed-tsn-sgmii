@@ -1,0 +1,69 @@
+From ff58016c1be5bde17adcd2663cd627e54e5c7063 Mon Sep 17 00:00:00 2001
+From: Mahesh Vaidya <mahesh.vaidya@altera.com>
+Date: Sun, 24 May 2026 11:54:13 -0700
+Subject: [PATCH] net: phy: phy_caps: Advertise sub-2500 speeds for 2500BASE-X
+
+Add CONFIG_PHY_CAPS_MRPHY_DR_2500BASEX. When set,
+phy_caps_from_interface() returns 10M / 100M / 1G in addition to
+2500FD for the 2500BASE-X interface mode.
+
+This supports hardware that can dynamically reconfigure the
+2500BASE-X serdes between 1G and 2.5G profiles (Altera Agilex 5
+Multirate PHY with DR controller). Gated by Kconfig so that
+non-MRPHY drivers, which cannot run a 2500BASE-X SerDes at sub-2500
+rates, are unaffected.
+
+Upstream-Status: Pending
+Signed-off-by: Mahesh Vaidya <mahesh.vaidya@altera.com>
+---
+ drivers/net/phy/Kconfig    |  9 +++++++++
+ drivers/net/phy/phy_caps.c | 13 +++++++++++++
+ 2 files changed, 22 insertions(+)
+
+diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
+index 98700d069191..d3ad5107df08 100644
+--- a/drivers/net/phy/Kconfig
++++ b/drivers/net/phy/Kconfig
+@@ -76,6 +76,15 @@ config RUST_PHYLIB_ABSTRACTIONS
+           Adds support needed for PHY drivers written in Rust. It provides
+           a wrapper around the C phylib core.
+ 
++config PHY_CAPS_MRPHY_DR_2500BASEX
++	bool "Advertise sub-2500 speeds for 2500BASE-X (Altera MRPHY DR)"
++	help
++	  When set, phy_caps_from_interface() returns the sub-2500 link
++	  capabilities (10M, 100M, 1G) in addition to 2500FD for the
++	  2500BASE-X interface mode, supporting hardware that can
++	  dynamically reconfigure the 2500BASE-X serdes (e.g., the
++	  Altera Agilex 5 Multirate PHY).
++
+ config SFP
+ 	tristate "SFP cage support"
+ 	depends on I2C && PHYLINK
+diff --git a/drivers/net/phy/phy_caps.c b/drivers/net/phy/phy_caps.c
+index 23c808b59b6f..171128de3e58 100644
+--- a/drivers/net/phy/phy_caps.c
++++ b/drivers/net/phy/phy_caps.c
+@@ -333,6 +333,19 @@ unsigned long phy_caps_from_interface(phy_interface_t interface)
+ 
+ 	case PHY_INTERFACE_MODE_2500BASEX:
+ 		link_caps |= BIT(LINK_CAPA_2500FD);
++#ifdef CONFIG_PHY_CAPS_MRPHY_DR_2500BASEX
++		/*
++		 * Altera Agilex 5 Multirate PHY with Dynamic
++		 * Reconfiguration: a 2500BASE-X interface can switch
++		 * the XCVR to a 1G profile at runtime, supporting
++		 * 10M / 100M / 1G via MRPHY sub-rate adaptation.
++		 * Advertise these so PHY-side autoneg can settle on a
++		 * sub-2500 speed when the link partner is not 2.5G capable.
++		 */
++		link_caps |= BIT(LINK_CAPA_1000HD) | BIT(LINK_CAPA_1000FD);
++		link_caps |= BIT(LINK_CAPA_100HD)  | BIT(LINK_CAPA_100FD);
++		link_caps |= BIT(LINK_CAPA_10HD)   | BIT(LINK_CAPA_10FD);
++#endif
+ 		break;
+ 
+ 	case PHY_INTERFACE_MODE_5GBASER:
+-- 
+2.34.1
+

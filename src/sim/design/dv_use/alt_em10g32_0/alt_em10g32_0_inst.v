@@ -1,0 +1,45 @@
+	alt_em10g32_0 u0 (
+		.csr_read                   (_connected_to_csr_read_),                   //   input,   width = 1,                csr.read
+		.csr_write                  (_connected_to_csr_write_),                  //   input,   width = 1,                   .write
+		.csr_writedata              (_connected_to_csr_writedata_),              //   input,  width = 32,                   .writedata
+		.csr_readdata               (_connected_to_csr_readdata_),               //  output,  width = 32,                   .readdata
+		.csr_waitrequest            (_connected_to_csr_waitrequest_),            //  output,   width = 1,                   .waitrequest
+		.csr_address                (_connected_to_csr_address_),                //   input,  width = 10,                   .address
+		.tx_156_25_clk              (_connected_to_tx_156_25_clk_),              //   input,   width = 1,      tx_156_25_clk.clk
+		.rx_156_25_clk              (_connected_to_rx_156_25_clk_),              //   input,   width = 1,      rx_156_25_clk.clk
+		.csr_clk                    (_connected_to_csr_clk_),                    //   input,   width = 1,            csr_clk.clk
+		.csr_rst_n                  (_connected_to_csr_rst_n_),                  //   input,   width = 1,          csr_rst_n.reset_n
+		.tx_rst_n                   (_connected_to_tx_rst_n_),                   //   input,   width = 1,           tx_rst_n.reset_n
+		.rx_rst_n                   (_connected_to_rx_rst_n_),                   //   input,   width = 1,           rx_rst_n.reset_n
+		.speed_sel                  (_connected_to_speed_sel_),                  //   input,   width = 3,          speed_sel.export
+		.avalon_st_tx_startofpacket (_connected_to_avalon_st_tx_startofpacket_), //   input,   width = 1,       avalon_st_tx.startofpacket
+		.avalon_st_tx_endofpacket   (_connected_to_avalon_st_tx_endofpacket_),   //   input,   width = 1,                   .endofpacket
+		.avalon_st_tx_valid         (_connected_to_avalon_st_tx_valid_),         //   input,   width = 1,                   .valid
+		.avalon_st_tx_data          (_connected_to_avalon_st_tx_data_),          //   input,  width = 32,                   .data
+		.avalon_st_tx_empty         (_connected_to_avalon_st_tx_empty_),         //   input,   width = 2,                   .empty
+		.avalon_st_tx_error         (_connected_to_avalon_st_tx_error_),         //   input,   width = 1,                   .error
+		.avalon_st_tx_ready         (_connected_to_avalon_st_tx_ready_),         //  output,   width = 1,                   .ready
+		.avalon_st_pause_data       (_connected_to_avalon_st_pause_data_),       //   input,   width = 2,    avalon_st_pause.data
+		.gmii16b_tx_clk             (_connected_to_gmii16b_tx_clk_),             //   input,   width = 1,     gmii16b_tx_clk.clk
+		.gmii16b_tx_d               (_connected_to_gmii16b_tx_d_),               //  output,  width = 16,       gmii16b_tx_d.export
+		.gmii16b_tx_en              (_connected_to_gmii16b_tx_en_),              //  output,   width = 2,      gmii16b_tx_en.export
+		.gmii16b_tx_err             (_connected_to_gmii16b_tx_err_),             //  output,   width = 2,     gmii16b_tx_err.export
+		.avalon_st_txstatus_valid   (_connected_to_avalon_st_txstatus_valid_),   //  output,   width = 1, avalon_st_txstatus.valid
+		.avalon_st_txstatus_data    (_connected_to_avalon_st_txstatus_data_),    //  output,  width = 40,                   .data
+		.avalon_st_txstatus_error   (_connected_to_avalon_st_txstatus_error_),   //  output,   width = 7,                   .error
+		.gmii16b_rx_clk             (_connected_to_gmii16b_rx_clk_),             //   input,   width = 1,     gmii16b_rx_clk.clk
+		.gmii16b_rx_d               (_connected_to_gmii16b_rx_d_),               //   input,  width = 16,       gmii16b_rx_d.export
+		.gmii16b_rx_dv              (_connected_to_gmii16b_rx_dv_),              //   input,   width = 2,      gmii16b_rx_dv.export
+		.gmii16b_rx_err             (_connected_to_gmii16b_rx_err_),             //   input,   width = 2,     gmii16b_rx_err.export
+		.avalon_st_rx_data          (_connected_to_avalon_st_rx_data_),          //  output,  width = 32,       avalon_st_rx.data
+		.avalon_st_rx_startofpacket (_connected_to_avalon_st_rx_startofpacket_), //  output,   width = 1,                   .startofpacket
+		.avalon_st_rx_valid         (_connected_to_avalon_st_rx_valid_),         //  output,   width = 1,                   .valid
+		.avalon_st_rx_empty         (_connected_to_avalon_st_rx_empty_),         //  output,   width = 2,                   .empty
+		.avalon_st_rx_error         (_connected_to_avalon_st_rx_error_),         //  output,   width = 6,                   .error
+		.avalon_st_rx_ready         (_connected_to_avalon_st_rx_ready_),         //   input,   width = 1,                   .ready
+		.avalon_st_rx_endofpacket   (_connected_to_avalon_st_rx_endofpacket_),   //  output,   width = 1,                   .endofpacket
+		.avalon_st_rxstatus_valid   (_connected_to_avalon_st_rxstatus_valid_),   //  output,   width = 1, avalon_st_rxstatus.valid
+		.avalon_st_rxstatus_data    (_connected_to_avalon_st_rxstatus_data_),    //  output,  width = 40,                   .data
+		.avalon_st_rxstatus_error   (_connected_to_avalon_st_rxstatus_error_)    //  output,   width = 7,                   .error
+	);
+

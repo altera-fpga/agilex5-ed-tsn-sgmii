@@ -1,0 +1,35 @@
+// ALTUVM Collaterals
+
++define+ALTUVM_ASSERT_ON
++define+ENABLE_ALTERA_AVALON_TRANSACTION_RECORDING
+
+$UVM_HOME/uvm_pkg.sv
+-f $ALTUVM_COMMON_HOME/scripts/generic/vcs/altuvm_common_pkg.f
+-f $ALTUVM_BCL_HOME/scripts/generic/vcs/altuvm_pkg.f
+-f $ALTUVM_CRU_HOME/scripts/generic/vcs/altuvm_cru_pkg.f
+-f $ALTUVM_AVALON_ST_HOME/scripts/generic/vcs/altuvm_avalon_st_pkg.f
+/p/psg/flows/common/altuvm/0.9p8/product/./altuvm_avalon_st/testbench/altuvm_avalon_st_test_pkg.sv
+-f $ALTUVM_AVALON_MM_HOME/scripts/generic/vcs/altuvm_avalon_mm_pkg.f
+-f $PHV_TOOLS_HOME/lib/perl/phv_di2uvm/verilog/phv_di2uvm_pkg.vcs.f
+
++incdir+$ALTUVM_AVALON_ST_HOME/results/default/tb_defaults
++incdir+$UVM_HOME/src
++incdir+$ALTUVM_BCL_HOME/src
++incdir+$ALTUVM_AVALON_ST_HOME/testbench
++incdir+$ALTUVM_AVALON_ST_HOME/testbench/uvc
++incdir+$ALTUVM_AVALON_ST_HOME/testbench/uvc/sequences
++incdir+$ALTUVM_AVALON_ST_HOME/testbench/define
++incdir+$ALTUVM_AVALON_ST_HOME/testbench/tests
++incdir+$ALTUVM_AVALON_ST_HOME/testbench/../src
++incdir+$ALTUVM_AVALON_ST_HOME/testbench/../src/macros
++incdir+$ALTUVM_AVALON_ST_HOME/testbench/../src/bfm
++incdir+$ALTUVM_AVALON_MM_HOME/testbench
++incdir+$ALTUVM_AVALON_MM_HOME/testbench/uvc
++incdir+$ALTUVM_AVALON_MM_HOME/testbench/uvc/sequences
++incdir+$ALTUVM_AVALON_MM_HOME/testbench/define
++incdir+$ALTUVM_AVALON_MM_HOME/testbench/tests
++incdir+$ALTUVM_AVALON_MM_HOME/testbench/../src/bfm
+
+#+incdir+$P4HOME_ROOT/avatar/common/hip/uvc/
+#+incdir+$P4HOME_ROOT/avatar/common/hip/uvc/sequence
+#//$P4HOME_ROOT/avatar/common/hip/uvc/althip_common_pkg.sv

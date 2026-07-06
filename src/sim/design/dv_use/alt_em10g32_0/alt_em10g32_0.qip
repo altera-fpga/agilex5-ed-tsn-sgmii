@@ -1,0 +1,140 @@
+set_global_assignment -entity "alt_em10g32_0" -library "alt_em10g32_0" -name IP_TOOL_NAME "QsysPrimePro"
+set_global_assignment -entity "alt_em10g32_0" -library "alt_em10g32_0" -name IP_TOOL_VERSION "23.4.1"
+set_global_assignment -entity "alt_em10g32_0" -library "alt_em10g32_0" -name IP_TOOL_ENV "QsysPrimePro"
+set_global_assignment -entity "alt_em10g32_0" -library "alt_em10g32_0" -name IP_TOOL_VENDOR_NAME "Intel Corporation"
+set_global_assignment -entity "alt_em10g32_0" -library "alt_em10g32_0" -name IP_TOP_LEVEL_COMPONENT_NAME "intel_eth_em10g32"
+set_global_assignment -library "alt_em10g32_0" -name SOPCINFO_FILE [file join $::quartus(qip_path) "alt_em10g32_0.sopcinfo"]
+set_global_assignment -entity "alt_em10g32_0" -library "alt_em10g32_0" -name SLD_INFO "QSYS_NAME alt_em10g32_0 HAS_SOPCINFO 1 GENERATION_ID 0"
+set_global_assignment -library "alt_em10g32_0" -name MISC_FILE [file join $::quartus(qip_path) "alt_em10g32_0.cmp"]
+set_global_assignment -entity "alt_em10g32_0" -library "alt_em10g32_0" -name IP_TARGETED_DEVICE_FAMILY "Agilex 5"
+set_global_assignment -entity "alt_em10g32_0" -library "alt_em10g32_0" -name IP_GENERATED_DEVICE_FAMILY "{Agilex 5}"
+set_global_assignment -entity "alt_em10g32_0" -library "alt_em10g32_0" -name IP_QSYS_MODE "STANDALONE"
+set_global_assignment -name SYNTHESIS_ONLY_QIP ON
+set_global_assignment -library "alt_em10g32_0" -name MISC_FILE [file join $::quartus(qip_path) "../alt_em10g32_0.ip"]
+
+set_global_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name IP_COMPONENT_NAME "aW50ZWxfZXRoX2VtMTBnMzI="
+set_global_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name IP_COMPONENT_DISPLAY_NAME "TG93IExhdGVuY3kgRXRoZXJuZXQgMTBHIE1BQyBJbnRlbCBGUEdBIElQ"
+set_global_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name IP_COMPONENT_REPORT_HIERARCHY "Off"
+set_global_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name IP_COMPONENT_INTERNAL "Off"
+set_global_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name IP_COMPONENT_AUTHOR "SW50ZWwgQ29ycG9yYXRpb24="
+set_global_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name IP_COMPONENT_VERSION "MS4wLjA="
+set_global_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name IP_COMPONENT_DESCRIPTION "RXRoZXJuZXQgMzIgQml0cyAxMEcgTUFD"
+set_global_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name IP_COMPONENT_GROUP "SW50ZXJmYWNlIFByb3RvY29scy9FdGhlcm5ldC8xMEcgdG8gMUcgTXVsdGktcmF0ZSBFdGhlcm5ldA=="
+set_global_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4MzQyNi8="
+set_global_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzcyMDk4NS8="
+set_global_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4MzMwOC8="
+set_global_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzcyMDk4Ny8="
+set_global_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4MzAyNi8="
+set_global_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name IP_COMPONENT_DOCUMENTATION_LINK "dHRwczovL3d3dy5pbnRlbC5jb20vY29udGVudC93d3cvdXMvZW4vZG9jcy9wcm9ncmFtbWFibGUvNjgzMDYzLw=="
+set_global_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4MzM1NC8="
+set_global_assignment -entity "alt_em10g32_0" -library "alt_em10g32_0" -name IP_COMPONENT_NAME "YWx0X2VtMTBnMzJfMA=="
+set_global_assignment -entity "alt_em10g32_0" -library "alt_em10g32_0" -name IP_COMPONENT_DISPLAY_NAME "c3lzdGVt"
+set_global_assignment -entity "alt_em10g32_0" -library "alt_em10g32_0" -name IP_COMPONENT_REPORT_HIERARCHY "On"
+set_global_assignment -entity "alt_em10g32_0" -library "alt_em10g32_0" -name IP_COMPONENT_INTERNAL "Off"
+set_global_assignment -entity "alt_em10g32_0" -library "alt_em10g32_0" -name IP_COMPONENT_AUTHOR "SW50ZWwgQ29ycG9yYXRpb24="
+set_global_assignment -entity "alt_em10g32_0" -library "alt_em10g32_0" -name IP_COMPONENT_VERSION "MS4w"
+
+
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/intel_eth_em10g32.v"]
+set_instance_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name SDC_ENTITY_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/altera_reset_controller.sdc"] -no_sdc_promotion  -no_auto_inst_discovery 
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/altera_std_synchronizer_nocut.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/alt_em10g32unit.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name SOURCE_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/alt_em10g32.ocp"]
+set_global_assignment -library "intel_eth_em10g32_100" -name TCL_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/alt_em10g32_clock_crosser_timing_info.tcl"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_clk_rst.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_clock_crosser.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_crc32.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_crc32_gf_mult32_kc.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_creg_map.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_creg_top.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_frm_decoder.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_rs_gmii_mii_layer.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_pipeline_base.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_reset_synchronizer.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rr_clock_crosser.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rst_cnt.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rx_fctl_filter_crcpad_rem.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rx_fctl_overflow.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rx_fctl_preamble.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rx_frm_control.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rx_pfc_flow_control.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rx_pfc_pause_conversion.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rx_pkt_backpressure_control.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rx_rs_gmii16b.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rx_rs_gmii16b_top.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rx_rs_gmii_mii.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rx_rs_layer.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rx_rs_xgmii.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rx_status_aligner.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rx_top.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_stat_mem.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_stat_reg.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_data_frm_gen.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_srcaddr_inserter.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_err_aligner.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_flow_control.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_frm_arbiter.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_frm_muxer.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_pause_beat_conversion.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_pause_frm_gen.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_pause_req.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_pfc_frm_gen.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rr_buffer.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_rs_gmii16b.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_rs_gmii16b_top.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_rs_layer.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_rs_xgmii_layer.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_sc_fifo.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_top.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rx_gmii_decoder.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rx_gmii_decoder_dfa.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_gmii_encoder.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_gmii_encoder_dfa.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rx_gmii_mii_decoder_if.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_gmii_mii_encoder_if.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/adapters/altera_eth_avalon_mm_adapter/altera_eth_avalon_mm_adapter.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/adapters/altera_eth_avalon_st_adapter/altera_eth_avalon_st_adapter.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/adapters/altera_eth_avalon_st_adapter/avalon_st_adapter_avalon_st_rx.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/adapters/altera_eth_avalon_st_adapter/avalon_st_adapter_avalon_st_tx.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/adapters/altera_eth_avalon_st_adapter/avalon_st_adapter.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/adapters/altera_eth_avalon_st_adapter/alt_em10g32_vldpkt_rddly.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/adapters/altera_eth_avalon_st_adapter/sideband_adapter_rx.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/adapters/altera_eth_avalon_st_adapter/sideband_adapter_tx.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/adapters/altera_eth_avalon_st_adapter/sideband_adapter.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/adapters/altera_eth_avalon_st_adapter/altera_eth_sideband_crosser.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/adapters/altera_eth_avalon_st_adapter/altera_eth_sideband_crosser_sync.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/adapters/altera_eth_xgmii_width_adaptor/alt_em10g_32_64_xgmii_conversion.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/adapters/altera_eth_xgmii_width_adaptor/alt_em10g_32_to_64_xgmii_conversion.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/adapters/altera_eth_xgmii_width_adaptor/alt_em10g_64_to_32_xgmii_conversion.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/adapters/altera_eth_xgmii_width_adaptor/alt_em10g_dcfifo_32_to_64_xgmii_conversion.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/adapters/altera_eth_xgmii_width_adaptor/alt_em10g_dcfifo_64_to_32_xgmii_conversion.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/adapters/altera_eth_xgmii_data_format_adapter/alt_em10g32_xgmii_32_to_64_adapter.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/adapters/altera_eth_xgmii_data_format_adapter/alt_em10g32_xgmii_64_to_32_adapter.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/adapters/altera_eth_xgmii_data_format_adapter/alt_em10g32_xgmii_data_format_adapter.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_altsyncram_bundle.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_altsyncram.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/alt_em10g32_avalon_dc_fifo.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/alt_em10g32_dcfifo_synchronizer_bundle.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/alt_em10g32_std_synchronizer.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_avalon_dc_fifo_lat_calc.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_avalon_dc_fifo_hecc.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_avalon_dc_fifo_secc.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_avalon_sc_fifo.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_avalon_sc_fifo_hecc.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_avalon_sc_fifo_secc.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_ecc_dec_18_12.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_ecc_dec_39_32.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_ecc_enc_12_18.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_ecc_enc_32_39.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_tx_rs_xgmii_layer_ultra.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name VERILOG_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/rtl/alt_em10g32_rx_rs_xgmii_ultra.v"]
+set_global_assignment -library "intel_eth_em10g32_100" -name TCL_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/debug/stp/build_stp.tcl"]
+set_global_assignment -library "intel_eth_em10g32_100" -name SOURCE_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/debug/stp/LL10GMAC.xml"]
+set_instance_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name SDC_ENTITY_FILE [file join $::quartus(qip_path) "intel_eth_em10g32_100/synth/low_latency_10G_ethernet.sdc"] -no_sdc_promotion  -no_auto_inst_discovery 
+set_global_assignment -library "alt_em10g32_0" -name VERILOG_FILE [file join $::quartus(qip_path) "synth/alt_em10g32_0.v"]
+
+
+set_global_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name IP_TOOL_NAME "intel_eth_em10g32"
+set_global_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name IP_TOOL_VERSION "1.0.0"
+set_global_assignment -entity "intel_eth_em10g32" -library "intel_eth_em10g32_100" -name IP_TOOL_ENV "QsysPrimePro"
+

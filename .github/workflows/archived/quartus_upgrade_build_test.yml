@@ -1,0 +1,96 @@
+name: Quartus upgrade - Build HW-SW and regression test
+on:
+  workflow_dispatch:
+  pull_request:
+
+
+jobs:
+  check_error:
+    runs-on: [self-hosted, psgpac]
+    outputs:
+      error_detected: ${{ steps.changes_check.outputs.error }}
+      test_run: ${{ steps.changes_check.outputs.test_run }}
+      run_jobs: ${{ steps.changes_check.outputs.run_jobs }}
+    env:
+      LOGFILE: /nfs/site/disks/pac_release_1/github/psgpac/sed/quartus_upgrade/tsn-cfg3/logging/quartus_update.log
+      FORCE_BUILD_FILE: /nfs/site/disks/pac_release_1/github/psgpac/sed/build/tsn-cfg3/agilex5/sm72/mdk_3x2.5G/.last_forced_build
+      RERUN_BUILD: /nfs/site/disks/pac_release_1/github/psgpac/sed/build/tsn-cfg3/agilex5/sm72/mdk_3x2.5G/latest/reports/re-run
+
+    steps:
+      - name: Check IP upgrade failed or not
+        id: changes_check
+        run: |
+          BRANCH="${GITHUB_HEAD_REF}"
+          echo "PR Source Branch: $BRANCH"
+
+          if [[ "$BRANCH" == auto-upgrade* ]]; then
+            echo "::notice title=Info:: Branch matches pattern auto-upgrade*. Build and Test jobs will be running."
+            echo "Branch matches pattern auto-upgrade*"
+            echo "run_jobs=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice title=Workflow Skipped::PR source branch '$BRANCH' does not match required pattern 'auto-upgrade*'. Build and Test jobs will be skipped."
+            echo "::notice title=Info::You can only run this workflow on 'auto-upgrade*' branches."
+            echo "run_jobs=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Decide build flags
+          BUILD=false
+          TEST_RUN=true
+
+          if [ ! -f "${{ env.LOGFILE }}" ]; then
+            echo "File not found."
+            exit 1
+          fi
+
+          # Strict case-sensitive match for "ERROR:"
+          if grep "ERROR:" "${{ env.LOGFILE }}"; then
+              echo "::error title=Upgrading quartus failed:: Refer log : ${{ env.LOGFILE }}"
+              BUILD=false
+          else
+              echo "::notice title=Info:: Quartus upgrade is passed and created PR successfully.Build and Test jobs will be running"
+              BUILD=true
+          fi
+          
+          if [ "$BUILD" == false ]; then TEST_RUN=false; fi
+
+          echo "error=$BUILD" >> $GITHUB_OUTPUT
+          echo "test_run=$TEST_RUN" >> $GITHUB_OUTPUT
+
+  build_hardware:
+    if: ${{ always() && needs.check_error.outputs.error_detected == 'true' &&  needs.check_error.outputs.run_jobs == 'true' }}
+    needs: check_error
+    uses: ./.github/workflows/build_hardware_mdk_3x2.5G.yml
+    with:
+       triggered_by_schedule: ${{ github.event_name == 'schedule' }}
+       triggered_by_tag_push: ${{ startsWith(github.ref, 'refs/tags/') }}
+       triggered_by_pull_request: ${{ github.event_name == 'pull_request' }}
+       release_tag: ${{ github.ref_name || '' }}
+
+  build_software:
+    if:  ${{ always() && needs.check_error.outputs.error_detected == 'true' &&  needs.check_error.outputs.run_jobs == 'true' }}
+    needs: [check_error, build_hardware]
+    uses: ./.github/workflows/build_software_mdk_3x2.5G.yml
+    with:
+       triggered_by_schedule: ${{ github.event_name == 'schedule' }}
+       triggered_by_tag_push: ${{ startsWith(github.ref, 'refs/tags/') }}
+       triggered_by_pull_request: ${{ github.event_name == 'pull_request' }}
+       release_tag: ${{ github.ref_name || '' }}
+
+  # regression_test:
+  #   if:  ${{ always() && needs.check_error.outputs.test_run == 'true' &&  needs.check_error.outputs.run_jobs == 'true' }}
+  #   needs: [check_error, build_hardware, build_software]
+  #   uses: ./.github/workflows/test_execution.yml
+  #   with:
+  #      triggered_by_schedule: ${{ github.event_name == 'schedule' }}
+  #      triggered_by_tag_push: ${{ startsWith(github.ref, 'refs/tags/') }}
+  #      triggered_by_pull_request: ${{ github.event_name == 'pull_request' }}
+  #      release_tag: ${{ github.ref_name || '' }}
+
+  # email_reporting:
+  #   if:  ${{ always() && needs.check_error.outputs.error_detected == 'true' &&  needs.check_error.outputs.run_jobs == 'true' }}
+  #   needs: [check_error, build_hardware, build_software, regression_test]
+  #   uses: ./.github/workflows/email_reporting.yml
+  #   with:
+  #      triggered_by_schedule: ${{ github.event_name == 'schedule' }}
+  #      triggered_by_tag_push: ${{ startsWith(github.ref, 'refs/tags/') }}
+  #      release_tag: ${{ github.ref_name || '' }}

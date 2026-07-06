@@ -1,0 +1,134 @@
+name: build Yocto image
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+    paths:
+      - '.github/workflows/build-sw.yml'
+      - 'scripts/build-sw.sh'
+      - 'src/sw/**'
+  pull_request:
+    branches:
+      - main
+    tags:
+      - '*'
+    paths:
+      - '.github/workflows/build-sw.yml'
+      - 'scripts/build-sw.sh'
+      - 'src/sw/**'
+  schedule:
+    - cron: '00 09 * * *'
+
+jobs:
+  build:
+    runs-on: altera-innersource.prod.amr.dind
+    container: cache-registry.altera.com/cache/library/alpine:3.21
+    env:
+      SSH_HOST: ascycron2.sc.altera.com
+      SSH_HOST_KEY: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHfGQUE5qmzx8TP3gqlv1KFDi4trlxlziThuHEMVLpvE'
+      WORKDIR: /nfs/site/disks/pac_release_1/github/psgpac/${{ github.repository }}/${{ github.run_id }}.${{ github.run_attempt }}
+      DESTDIR: /nfs/site/disks/pac_release_1/github/psgpac/${{ github.repository }}/${{ github.run_id }}.${{ github.run_attempt }}/src/sw/output_files
+      CONTAINER: /nfs/site/disks/pac_release_1/github/psgpac/${{ github.repository }}/container/ubuntu2204.sif
+      SSTATE_DIR: /nfs/site/disks/pac_release_1/github/psgpac/${{ github.repository }}/sstate_cache/ubuntu2204
+      SED_TSN_CFG3_NIGHTLY_PATH: /nfs/site/disks/pac_release_1/github/psgpac/sed/build/nightly
+      SED_TSN_CFG3_RELEASE_PATH: /nfs/site/disks/pac_release_1/github/psgpac/sed/build/release
+      SED_TSN_CFG3_SW_PATH: tsn-cfg3/agilex5/sm72
+      ARTIFACT_NAME_PREFIX: agilex5-sm72-ed-tsn-cfg3
+
+    steps:
+      - name: Install packages
+        run: |
+          apk update
+          apk add git openssh-client rsync
+
+      - name: Setup ssh
+        run: |
+          umask 077
+          mkdir -p /root/.ssh
+          echo '${{ secrets.PSGPAC_SSH_KEY }}' > /root/.ssh/id_ed25519
+          echo '${{ env.SSH_HOST }} ${{ env.SSH_HOST_KEY }}' >> /root/.ssh/known_hosts
+          echo ServerAliveInterval 30 >> /root/.ssh/config
+          echo User psgpac >> /root/.ssh/config
+
+      - name: Create workdir
+        id: workdir
+        run: |
+          ssh "$SSH_HOST" "mkdir -pv $WORKDIR"
+
+      - name: Get date
+        id: date
+        run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+    
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Copy inputs
+        run: |
+          rsync -rl --exclude=.git "$GITHUB_WORKSPACE"/. "$SSH_HOST":"$WORKDIR"
+
+      - name: Create FLAG DIR env
+        if: ${{ github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/') }}
+        run: |
+          if [[ ${{ github.event_name }} = "schedule" ]]; then
+            echo "FLAG_DIR=${{ env.SED_TSN_CFG3_NIGHTLY_PATH }}/${{ env.DATE }}/${{ env.SED_TSN_CFG3_SW_PATH }}/build_flags" >> $GITHUB_ENV
+          elif [[ ${{ github.ref }} == refs/tags/* ]]; then
+            echo "FLAG_DIR=${{ env.SED_TSN_CFG3_RELEASE_PATH }}/${{ env.SED_TSN_CFG3_SW_PATH }}/${{ github.ref_name }}/${{ env.DATE }}/build_flags" >> $GITHUB_ENV
+          fi
+
+      - name: Build Yocto image
+        run: |
+          ssh "$SSH_HOST" "arc submit -I ostype/ubuntu22 ncpus=4 mem=48G priority=99 timeout=4h iwd=$WORKDIR nb_container=$CONTAINER -- env http_proxy=$http_proxy https_proxy=$https_proxy GITHUB_SERVER_URL=$GITHUB_SERVER_URL GITHUB_REPOSITORY=$GITHUB_REPOSITORY GITHUB_REF=$GITHUB_REF SSTATE_DIR=$SSTATE_DIR DESTDIR=$DESTDIR FLAG_DIR=${{ env.FLAG_DIR }} scripts/build-sw.sh"
+
+      - name: Copy outputs
+        run: |
+          rsync -ri "$SSH_HOST":"$DESTDIR"/. .
+
+      - name: Upload design
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME_PREFIX }}-${{ github.run_id }}
+          if-no-files-found: error
+          path: |
+            gsrd-console-image-agilex5.tar.gz
+            kernel.itb
+            sdimage.tar.gz
+            u-boot-spl-dtb.hex
+            ghrd.core.rbf
+            ghrd.hps.rbf
+            Image
+            u-boot.itb
+            socfpga_agilex5_socdk_tsn_cfg3.dtb
+      
+      - name: Copy artifacts to psg 
+        if: github.event_name == 'schedule'
+        run: |
+            ssh "$SSH_HOST" "mkdir -pv  $SED_TSN_CFG3_NIGHTLY_PATH/${{ env.DATE }}/$SED_TSN_CFG3_SW_PATH/sw && \
+            cp -rf $DESTDIR/* $SED_TSN_CFG3_NIGHTLY_PATH/${{ env.DATE }}/$SED_TSN_CFG3_SW_PATH/sw && \
+            cd $SED_TSN_CFG3_NIGHTLY_PATH/${{ env.DATE }}/$SED_TSN_CFG3_SW_PATH/sw && \
+            mv gsrd-console-image-agilex5.tar.gz $ARTIFACT_NAME_PREFIX-${{ env.DATE }}.gsrd-console-image.tar.gz && \
+            mv kernel.itb $ARTIFACT_NAME_PREFIX-${{ env.DATE }}.kernel.itb && \
+            mv sdimage.tar.gz $ARTIFACT_NAME_PREFIX-${{ env.DATE }}.sdimage.tar.gz && \
+            cd $SED_TSN_CFG3_NIGHTLY_PATH && [ -L latest ] && rm -rf latest && ln -s ${{ env.DATE }} latest && \
+            mkdir -pv $SED_TSN_CFG3_NIGHTLY_PATH/${{ env.DATE }}/$SED_TSN_CFG3_SW_PATH/build_flags && \
+            touch $SED_TSN_CFG3_NIGHTLY_PATH/${{ env.DATE }}/$SED_TSN_CFG3_SW_PATH/build_flags/software_done"
+
+      - name: Copy artifacts to psg release folder
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+            ssh "$SSH_HOST" "mkdir -pv  $SED_TSN_CFG3_RELEASE_PATH/$SED_TSN_CFG3_SW_PATH/${{ github.ref_name }}/${{ env.DATE }}/sw && \
+            cp -rf $DESTDIR/* $SED_TSN_CFG3_RELEASE_PATH/$SED_TSN_CFG3_SW_PATH/${{ github.ref_name }}/${{ env.DATE }}/sw && \
+            cd $SED_TSN_CFG3_RELEASE_PATH/$SED_TSN_CFG3_SW_PATH/${{ github.ref_name }}/${{ env.DATE }}/sw && \
+            mv gsrd-console-image-agilex5.tar.gz $ARTIFACT_NAME_PREFIX-${{ github.ref_name }}-${{ env.DATE }}.gsrd-console-image.tar.gz && \
+            mv kernel.itb $ARTIFACT_NAME_PREFIX-${{ github.ref_name }}-${{ env.DATE }}.kernel.itb && \
+            mv sdimage.tar.gz $ARTIFACT_NAME_PREFIX-${{ github.ref_name }}-${{ env.DATE }}.sdimage.tar.gz && \
+            cd $SED_TSN_CFG3_RELEASE_PATH/$SED_TSN_CFG3_SW_PATH/${{ github.ref_name }} && [ -L latest ] && rm -rf latest;ln -s ${{ env.DATE }} latest && \
+            mkdir -pv $SED_TSN_CFG3_RELEASE_PATH/$SED_TSN_CFG3_SW_PATH/${{ github.ref_name }}/${{ env.DATE }}/build_flags && \
+            touch $SED_TSN_CFG3_RELEASE_PATH/$SED_TSN_CFG3_SW_PATH/${{ github.ref_name }}/${{ env.DATE }}/build_flags/software_done"
+
+      - name: Purge workdir
+        if: always()
+        run: |
+          ssh "$SSH_HOST" "rm -rf $WORKDIR"
