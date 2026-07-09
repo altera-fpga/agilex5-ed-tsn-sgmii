@@ -1,9 +1,0 @@
-${REG_LOCAL_ROOT_DIR_PATH}/ip/ethernet/alt_ethernet_crete_ll10g/qhip/scripts/funct_deterministic/common/rtl_files_MGEs10/alt_mge_mac_phy_wrapper.sv
-${REG_LOCAL_ROOT_DIR_PATH}/ip/ethernet/alt_ethernet_crete_ll10g/qhip/scripts/funct_deterministic/common/rtl_files_MGEs10/alt_mge_channel.v
-${REG_LOCAL_ROOT_DIR_PATH}/ip/ethernet/alt_ethernet_crete_ll10g/qhip/scripts/funct_deterministic/common/rtl_files_MGEs10/alt_mge_rd.sv
-${REG_LOCAL_ROOT_DIR_PATH}/ip/ethernet/alt_ethernet_crete_ll10g/qhip/scripts/funct_deterministic/common/rtl_files_MGEs10/alt_mge_reset_synchronizer.v
-${REG_LOCAL_ROOT_DIR_PATH}/ip/ethernet/alt_ethernet_crete_ll10g/qhip/scripts/funct_deterministic/common/rtl_files_MGEs10/alt_mge_rcfg.sv
-${REG_LOCAL_ROOT_DIR_PATH}/ip/ethernet/alt_ethernet_crete_ll10g/qhip/scripts/funct_deterministic/common/rtl_files_MGEs10/alt_mge_rcfg_ch_recal.v
-${REG_LOCAL_ROOT_DIR_PATH}/ip/ethernet/alt_ethernet_crete_ll10g/qhip/scripts/funct_deterministic/common/rtl_files_MGEs10/alt_mge_rcfg_mif_master.v
-${REG_LOCAL_ROOT_DIR_PATH}/ip/ethernet/alt_ethernet_crete_ll10g/qhip/scripts/funct_deterministic/common/rtl_files_MGEs10/alt_mge_rcfg_mif_rom.v
-${REG_LOCAL_ROOT_DIR_PATH}/ip/ethernet/alt_ethernet_crete_ll10g/qhip/scripts/funct_deterministic/common/rtl_files_MGEs10/alt_mge_rcfg_txpll_switch.v

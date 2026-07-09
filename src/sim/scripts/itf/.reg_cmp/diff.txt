@@ -1,1 +1,0 @@
-diff .reg_cmp/prev/reg.rout .reg_cmp/result/reg.rout

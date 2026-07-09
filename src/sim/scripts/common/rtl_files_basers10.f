@@ -1,3 +1,0 @@
-${REG_LOCAL_ROOT_DIR_PATH}/ip/ethernet/alt_ethernet_crete_ll10g/qhip/scripts/funct_deterministic/common/rtl_files_BASERS1O/altera_bic_qse_mac_s10_phy_baser_mode_wrapper.sv
-${REG_LOCAL_ROOT_DIR_PATH}/ip/ethernet/alt_ethernet_crete_ll10g/qhip/scripts/funct_deterministic/common/rtl_files_BASERS1O/address_decode.v
-${REG_LOCAL_ROOT_DIR_PATH}/ip/ethernet/alt_ethernet_crete_ll10g/qhip/scripts/funct_deterministic/common/rtl_files_BASERS1O/alt_em10g32_reset_synchronizer.v

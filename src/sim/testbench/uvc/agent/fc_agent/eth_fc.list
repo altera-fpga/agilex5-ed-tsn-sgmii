@@ -1,6 +1,0 @@
-
-`include "eth_fc_interface.sv"
-`include "eth_fc_mon.sv"
-`include "eth_fc_drv.sv"
-`include "eth_fc_sqr.sv"
-`include "eth_fc_agent.sv"

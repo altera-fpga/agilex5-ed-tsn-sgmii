@@ -1,9 +1,0 @@
-
-`include "seg_rx_pkg.sv"
-`include "seg_rx_if.sv"
-`include "seg_rx_param_defaults.svh"
-`include "seg_rx_param_defines.svh"
-`include "seg_rx_monitor.svh"
-`include "seg_rx_monitor_abstract.svh"
-`include "seg_rx_agent.svh"
-`include "seg_rx_rtb_module.sv"

@@ -1,4 +1,0 @@
-${REG_LOCAL_ROOT_DIR_PATH}/ip/ethernet/alt_ethernet_crete_ll10g/qhip/scripts/funct_deterministic/common/rtl_files_ftile/alt_mge_multi_channel.sv
-${REG_LOCAL_ROOT_DIR_PATH}/ip/ethernet/alt_ethernet_crete_ll10g/qhip/scripts/funct_deterministic/common/rtl_files_ftile/alt_mge_channel_wrapper.v
-${REG_LOCAL_ROOT_DIR_PATH}/ip/ethernet/alt_ethernet_crete_ll10g/qhip/scripts/funct_deterministic/common/rtl_files_ftile/address_decoder_channel.v
-${REG_LOCAL_ROOT_DIR_PATH}/ip/ethernet/alt_ethernet_crete_ll10g/qhip/scripts/funct_deterministic/common/rtl_files_ftile/alt_mge_reset_synchronizer.v

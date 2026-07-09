@@ -1,7 +1,0 @@
-
-`include "ehip_mii_tx_if.sv"
-`include "ehip_mii_monitor.sv"
-`include "ehip_mii_tx_driver.sv"
-`include "ehip_mii_tx_sequencer.sv" 
-`include "ehip_mii_tx_agent.sv"
-

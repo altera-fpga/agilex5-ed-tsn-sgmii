@@ -1,7 +1,0 @@
-
-`include "vector_uvc_defines.sv"
-`include "vector_uvc_interface.sv"
-`include "vector_uvc_pkg.sv"
-`include "vector_uvc_mon.sv"
-`include "vector_uvc_scoreboard.sv"
-
